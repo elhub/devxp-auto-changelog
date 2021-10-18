@@ -3,16 +3,46 @@ package no.elhub.tools.autochangelog.project
 import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import java.io.StringReader
 
 class ChangelogReaderTest : DescribeSpec({
     val changelog = ChangelogReader(TestRepository.changelogPath).read()
 
     it("should return latest released version from the changelog file") {
-        val version: Version = changelog.lastRelease
+        val version: Version? = changelog.lastRelease
         assertSoftly {
-            version.major shouldBe 1
-            version.minor shouldBe 1
-            version.patch shouldBe 0
+            version?.major shouldBe 1
+            version?.minor shouldBe 1
+            version?.patch shouldBe 0
         }
     }
+
+    it("should return null version if changelog file does not have releases") {
+        val reader = ChangelogReader(StringReader(changelogContent))
+        reader.read().lastRelease shouldBe null
+    }
+
+    it("should return null version for an empty changelog file") {
+        val reader = ChangelogReader(StringReader(""))
+        reader.read().lastRelease shouldBe null
+    }
 })
+
+private val changelogContent = """
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+
+- Added Dutch translation
+
+### Fixed
+
+- Fixed foldouts in Dutch translation
+""".trimIndent()

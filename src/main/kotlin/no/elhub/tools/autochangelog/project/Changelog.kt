@@ -1,15 +1,14 @@
 package no.elhub.tools.autochangelog.project
 
 data class Changelog(
-    val lastRelease: Version
+    val lastRelease: Version?
 ) {
 
     class Builder internal constructor() {
-        private var lastRelease: Version = Version(0, 0, 0)
+        private var lastRelease: Version? = null
 
         fun withLastRelease(lastRelease: Version): Builder {
-            this.lastRelease = lastRelease
-            return this
+            return this.also { it.lastRelease = lastRelease }
         }
 
         fun build(): Changelog = Changelog(
