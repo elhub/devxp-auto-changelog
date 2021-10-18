@@ -11,12 +11,12 @@ class Version : Comparable<Version> {
     val preReleaseId: String?
     val preRelease: Int?
 
-    constructor (maj: Int, min: Int, pat: Int, preRelId: String? = null, preRel: Int? = null) {
-        major = maj
-        minor = min
-        patch = pat
-        preReleaseId = preRelId
-        preRelease = preRel
+    constructor (major: Int, minor: Int, patch: Int, preReleaseId: String? = null, preRelease: Int? = null) {
+        this.major = major
+        this.minor = minor
+        this.patch = patch
+        this.preReleaseId = preReleaseId
+        this.preRelease = preRelease
     }
 
     constructor (versionString: String) {
