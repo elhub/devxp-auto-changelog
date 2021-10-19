@@ -1,8 +1,10 @@
-package no.elhub.tools.autochangelog.project
+package no.elhub.tools.autochangelog.io
 
 import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import no.elhub.tools.autochangelog.project.TestRepository
+import no.elhub.tools.autochangelog.project.Version
 import java.io.StringReader
 
 class ChangelogReaderTest : DescribeSpec({

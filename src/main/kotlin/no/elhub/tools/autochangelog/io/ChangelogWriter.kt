@@ -1,5 +1,6 @@
 package no.elhub.tools.autochangelog.io
 
+import no.elhub.tools.autochangelog.project.Version
 import java.io.BufferedReader
 import java.io.StringReader
 import java.io.StringWriter
@@ -20,20 +21,36 @@ class ChangelogWriter {
         initialContent = { BufferedReader(StringReader(changelogContent)) }
     }
 
-    fun writeToString(content: String): String = write(content).toString()
+    /**
+     * Appends/prepends new changelog [content]s to a default/existing changelog and returns
+     * the new changelog as String value.
+     *
+     * The following contract is used when writing the contents:
+     * * `if version != null` - prepends the [content]s before the version header line
+     * * `else` - appends the [content]s after the default description text
+     *
+     * @param content - new content to write
+     * @param version - last released version in the static changelog file
+     */
+    fun writeToString(content: String, version: Version? = null): String = write(content, version).toString()
 
-    private fun write(content: String): Writer {
+    private fun write(content: String, version: Version? = null): Writer {
         return initialContent().useLines {
             it.ifEmpty { defaultContent }.fold(StringWriter()) { acc, s ->
-                if (s == lastDescriptionLine) {
-                    acc.append(s)
-                    acc.appendLine()
-                    acc.appendLine()
-                    acc.append(content)
-                    acc.appendLine()
-                } else {
-                    acc.append(s)
-                    acc.appendLine()
+                when {
+                    // prepend content before the last release
+                    version != null && s.startsWith("## [$version]") -> {
+                        acc.appendLine(content)
+                        acc.appendLine()
+                        acc.appendLine(s)
+                    }
+                    // append content after description text
+                    version == null && s == lastDescriptionLine -> {
+                        acc.appendLine(s)
+                        acc.appendLine()
+                        acc.appendLine(content)
+                    }
+                    else -> acc.appendLine(s)
                 }
                 acc
             }
@@ -53,4 +70,5 @@ private val defaultContent = sequence {
     yieldAll(lines)
 }
 
-private const val lastDescriptionLine = "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."
+private const val lastDescriptionLine =
+    "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."

@@ -1,5 +1,8 @@
-package no.elhub.tools.autochangelog.project
+package no.elhub.tools.autochangelog.io
 
+import no.elhub.tools.autochangelog.project.Changelog
+import no.elhub.tools.autochangelog.project.Version
+import no.elhub.tools.autochangelog.project.versionPattern
 import java.io.BufferedReader
 import java.io.Reader
 import java.nio.file.Path
