@@ -35,15 +35,16 @@ class ChangelogReader {
 
     fun read(): Changelog {
         val builder = Changelog.Builder()
-        changelogContent.useLines {
-            it.forEach { s ->
+        return changelogContent.useLines {
+            val lines = it.map { s ->
                 val matcher = releaseHeaderRegex.matcher(s)
-                if (matcher.matches()) {
+                if (matcher.matches() && builder.lastRelease == null) {
                     builder.withLastRelease(Version(matcher.group(1).toString()))
-                    return@useLines
                 }
-            }
+                s
+            }.toList()
+            builder.withLines { yieldAll(lines) }
+            builder.build()
         }
-        return builder.build()
     }
 }

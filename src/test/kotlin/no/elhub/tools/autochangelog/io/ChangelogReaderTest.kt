@@ -2,6 +2,7 @@ package no.elhub.tools.autochangelog.io
 
 import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.sequences.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import no.elhub.tools.autochangelog.project.TestRepository
 import no.elhub.tools.autochangelog.project.Version
@@ -27,6 +28,19 @@ class ChangelogReaderTest : DescribeSpec({
     it("should return null version for an empty changelog file") {
         val reader = ChangelogReader(StringReader(""))
         reader.read().lastRelease shouldBe null
+    }
+
+    it("should return contents of a changelog") {
+        val cl = """
+            # Changelog
+
+            All notable changes to this project will be documented in this file.
+
+            The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+            and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+        """.trimIndent()
+        val lines = ChangelogReader(StringReader(cl)).read().lines
+        lines shouldContainExactly cl.splitToSequence("\n")
     }
 })
 
