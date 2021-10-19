@@ -50,3 +50,18 @@ data class Changelog(
     }
 
 }
+
+val defaultContent = sequence {
+    val lines = listOf(
+        "# Changelog",
+        "",
+        "All notable changes to this project will be documented in this file.",
+        "",
+        "The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),",
+        lastDescriptionLine
+    )
+    yieldAll(lines)
+}
+
+const val lastDescriptionLine =
+    "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."
