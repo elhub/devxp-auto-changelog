@@ -21,7 +21,7 @@ class Version : Comparable<Version> {
 
     constructor (versionString: String) {
         val matcher = versionPattern.matcher(versionString)
-        matcher.matches()
+        if (!matcher.matches()) throw IllegalArgumentException("Version '$versionString' is not compliant with semantic release rules")
         major = matcher.group(1).toInt()
         minor = matcher.group(2).toInt()
         patch = matcher.group(3).toInt()

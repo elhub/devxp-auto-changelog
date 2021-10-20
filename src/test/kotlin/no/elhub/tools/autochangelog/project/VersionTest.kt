@@ -33,14 +33,14 @@ class VersionTest : DescribeSpec({
             sut.preRelease shouldBe 4
         }
 
-        it("1.2 should throw an illegal state exception") {
-            shouldThrow<IllegalStateException> {
+        it("1.2 should throw an illegal argument exception") {
+            shouldThrow<IllegalArgumentException> {
                 Version("1.2")
             }
         }
 
-        it("1.B.3 should throw an illegal state exception") {
-            shouldThrow<IllegalStateException> {
+        it("1.B.3 should throw an illegal argument exception") {
+            shouldThrow<IllegalArgumentException> {
                 Version("1.B.3")
             }
         }
