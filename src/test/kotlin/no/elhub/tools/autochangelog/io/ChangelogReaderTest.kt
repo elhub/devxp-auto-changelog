@@ -65,6 +65,11 @@ class ChangelogReaderTest : DescribeSpec({
         val lines = ChangelogReader(StringReader(cl)).read().lines
         lines shouldContainExactly cl.splitToSequence("\n").take(7)
     }
+
+    it("should return empty lines sequence for empty changelog contents") {
+        val lines = ChangelogReader(StringReader("")).read().lines
+        lines shouldContainExactly emptySequence()
+    }
 })
 
 private val changelogContent = """
