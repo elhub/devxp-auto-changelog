@@ -7,6 +7,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import no.elhub.tools.autochangelog.extensions.delete
+import no.elhub.tools.autochangelog.extensions.description
 import no.elhub.tools.autochangelog.git.GitCommit
 import no.elhub.tools.autochangelog.git.GitMessage
 import org.eclipse.jgit.api.Git
@@ -100,6 +101,25 @@ class GitRepoTest : DescribeSpec({
                 git.tag().setAnnotated(true).setName("v0.5.0").setForceUpdate(true).call()
                 GitRepo(git).constructLog(start = commit.id).commits shouldHaveSize 7
             }
+
+            it("should return a constructed log consisting of commits with linked JIRA Issues") {
+                val seventh = git.addCommit(path, "Seventh commit\n\nCommit description\n\n$jiraIssues")
+                git.tag().setAnnotated(false).setName("v0.4.0").setForceUpdate(true).call()
+                val eighth = git.addCommit(path, "Eighth commit\n\nRelease version 0.5.0\n\n$jiraIssues")
+                git.tag().setAnnotated(true).setName("v0.5.0").setForceUpdate(true).call()
+                GitRepo(git).constructLog { it.description.contains(jiraIssues) }.commits shouldContainExactly listOf(
+                    GitCommit(
+                        GitMessage("Eighth commit", listOf("Release version 0.5.0", jiraIssues)),
+                        eighth.id,
+                        Version("0.5.0")
+                    ),
+                    GitCommit(
+                        GitMessage("Seventh commit", listOf("Commit description", jiraIssues)),
+                        seventh.id,
+                        Version("0.4.0")
+                    )
+                )
+            }
         }
     }
 })
@@ -111,3 +131,5 @@ private fun Git.addCommit(repoPath: Path, message: String): RevCommit {
 }
 
 private val faker = Faker()
+
+private const val jiraIssues = "JIRA Issues: TD-1872"

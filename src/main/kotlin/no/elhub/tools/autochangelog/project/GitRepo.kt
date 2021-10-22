@@ -60,7 +60,7 @@ class GitRepo(private val git: Git) {
      * @param start the commit to start git log graph traversal from
      * @param end same as `--not start` or `start^`
      */
-    fun constructLog(start: ObjectId? = null, end: ObjectId? = null): GitLog {
+    fun constructLog(start: ObjectId? = null, end: ObjectId? = null, predicate: (RevCommit) -> Boolean = { true }): GitLog {
         val versionedCommits: List<Pair<String, ObjectId>> = git.tagList().call().map {
             val name = it.name.replace("refs/tags/v", "")
             git.repository.refDatabase.peel(it).peeledObjectId?.let { id -> name to id }
@@ -68,16 +68,19 @@ class GitRepo(private val git: Git) {
         }
 
         val commits = log(start = start, end = end).fold(mutableListOf<GitCommit>()) { acc, commit ->
-            val v = versionedCommits.firstOrNull { it.second == commit.id }?.first
-            val c = GitCommit(
-                message = GitMessage(
-                    title = commit.title,
-                    description = commit.description
-                ),
-                objectId = commit.id,
-                version = v?.let { Version(it) }
-            )
-            acc.add(c)
+            if (predicate(commit)) {
+                val v = versionedCommits.firstOrNull { it.second == commit.id }?.first
+                val c = GitCommit(
+                    message = GitMessage(
+                        title = commit.title,
+                        description = commit.description
+                    ),
+                    objectId = commit.id,
+                    version = v?.let { Version(it) }
+                )
+                acc.add(c)
+            }
+
             acc
         }
 
