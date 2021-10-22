@@ -99,14 +99,17 @@ class GitRepo(private val git: Git) {
     fun createChangelist(gitLog: GitLog): Changelist {
         val map = gitLog.commits.foldRight(hashMapOf<Version, List<ChangelogEntry>>()) { commit, acc ->
             val builder = ChangelogEntry.Builder()
-            builder.unknown.add(commit.message.title) // TODO add to correct list based on commit title
+            builder.unknown.add(commit.message.title) // TODO add to correct list instead of 'unknown' based on commit title
             commit.version?.let { v ->
                 builder.withRelease(ChangelogEntry.Release(v, commit.date))
-                val list = acc[Unreleased]
-                acc[v] = mutableListOf(builder.build()).also { it.addAll(list!!) }
+                acc[v] = mutableListOf(builder.build()).also { new ->
+                    acc[Unreleased]?.let { existing -> new.addAll(existing) }
+                }
                 acc.remove(Unreleased)
             } ?: run {
-                acc[Unreleased] = acc[Unreleased]?.plus(builder.build()) ?: listOf(builder.build())
+                acc.merge(Unreleased, listOf(builder.build())) { existing, new ->
+                    new + existing
+                }
             }
 
             acc

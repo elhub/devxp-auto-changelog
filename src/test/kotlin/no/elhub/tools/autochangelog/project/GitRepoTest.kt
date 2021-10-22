@@ -158,7 +158,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Fifth commit")
+                unknown = listOf("Sixth commit")
             ),
             ChangelogEntry(
                 release = null,
@@ -166,7 +166,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Sixth commit")
+                unknown = listOf("Fifth commit")
             )
         ),
         SemanticVersion("0.3.0") to listOf(
@@ -187,7 +187,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Fourth 1 commit")
+                unknown = listOf("Fourth 3 commit")
             ),
             ChangelogEntry(
                 release = null,
@@ -203,7 +203,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Fourth 3 commit")
+                unknown = listOf("Fourth 1 commit")
             )
         ),
         SemanticVersion("0.2.0") to listOf(
@@ -224,7 +224,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Third 1 commit")
+                unknown = listOf("Third 3 commit")
             ),
             ChangelogEntry(
                 release = null,
@@ -240,7 +240,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Third 3 commit")
+                unknown = listOf("Third 1 commit")
             )
         ),
         SemanticVersion("0.1.0") to listOf(
