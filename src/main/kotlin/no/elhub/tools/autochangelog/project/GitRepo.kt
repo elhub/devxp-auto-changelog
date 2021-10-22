@@ -9,6 +9,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.revwalk.RevCommit
+import java.time.ZoneId
 
 /**
  * Represents a generic git repository.
@@ -60,7 +61,11 @@ class GitRepo(private val git: Git) {
      * @param start the commit to start git log graph traversal from
      * @param end same as `--not start` or `start^`
      */
-    fun constructLog(start: ObjectId? = null, end: ObjectId? = null, predicate: (RevCommit) -> Boolean = { true }): GitLog {
+    fun constructLog(
+        start: ObjectId? = null,
+        end: ObjectId? = null,
+        predicate: (RevCommit) -> Boolean = { true }
+    ): GitLog {
         val versionedCommits: List<Pair<String, ObjectId>> = git.tagList().call().map {
             val name = it.name.replace("refs/tags/v", "")
             git.repository.refDatabase.peel(it).peeledObjectId?.let { id -> name to id }
@@ -76,6 +81,7 @@ class GitRepo(private val git: Git) {
                         description = commit.description
                     ),
                     objectId = commit.id,
+                    date = commit.authorIdent.`when`.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                     version = v?.let { SemanticVersion(it) }
                 )
                 acc.add(c)
@@ -85,5 +91,27 @@ class GitRepo(private val git: Git) {
         }
 
         return GitLog(commits)
+    }
+
+    /**
+     * Creates a [Changelist] for from the [gitLog] log of commits.
+     */
+    fun createChangelist(gitLog: GitLog): Changelist {
+        val map = gitLog.commits.foldRight(hashMapOf<Version, List<ChangelogEntry>>()) { commit, acc ->
+            val builder = ChangelogEntry.Builder()
+            builder.unknown.add(commit.message.title) // TODO add to correct list based on commit title
+            commit.version?.let { v ->
+                builder.withRelease(ChangelogEntry.Release(v, commit.date))
+                val list = acc[Unreleased]
+                acc[v] = mutableListOf(builder.build()).also { it.addAll(list!!) }
+                acc.remove(Unreleased)
+            } ?: run {
+                acc[Unreleased] = acc[Unreleased]?.plus(builder.build()) ?: listOf(builder.build())
+            }
+
+            acc
+        }
+
+        return Changelist(map)
     }
 }

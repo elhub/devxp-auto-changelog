@@ -15,6 +15,7 @@ import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.revwalk.RevCommit
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.LocalDate
 
 class GitRepoTest : DescribeSpec({
     describe("TestRepository") {
@@ -63,9 +64,15 @@ class GitRepoTest : DescribeSpec({
                 git.addCommit(path, "Second commit\n\nRelease version 0.1.0")
                 git.tag().setAnnotated(true).setName("v0.1.0").setForceUpdate(true).call()
 
+                git.addCommit(path, "Third 1 commit")
+                git.addCommit(path, "Third 2 commit")
+                git.addCommit(path, "Third 3 commit")
                 git.addCommit(path, "Third commit\n\nRelease version 0.2.0")
                 git.tag().setAnnotated(false).setName("v0.2.0").setForceUpdate(true).call()
 
+                git.addCommit(path, "Fourth 1 commit")
+                git.addCommit(path, "Fourth 2 commit")
+                git.addCommit(path, "Fourth 3 commit")
                 git.addCommit(path, "Fourth commit\n\nRelease version 0.3.0")
                 git.tag().setAnnotated(true).setName("v0.3.0").setForceUpdate(true).call()
 
@@ -77,7 +84,7 @@ class GitRepoTest : DescribeSpec({
             afterEach { path.delete() }
 
             it("should return a constructed GitLog out of a sequence of commits") {
-                GitRepo(git).constructLog().commits shouldHaveSize 6
+                GitRepo(git).constructLog().commits shouldHaveSize 12
             }
 
             it("should return a constructed log with the 'end' commit") {
@@ -89,6 +96,7 @@ class GitRepoTest : DescribeSpec({
                     GitCommit(
                         GitMessage("Eighth commit", listOf("Release version 0.5.0")),
                         lastCommit.id,
+                        LocalDate.now(),
                         SemanticVersion("0.5.0")
                     )
                 )
@@ -99,7 +107,7 @@ class GitRepoTest : DescribeSpec({
                 git.tag().setAnnotated(true).setName("v0.4.0").setForceUpdate(true).call()
                 git.addCommit(path, "Eighth commit\n\nRelease version 0.5.0")
                 git.tag().setAnnotated(true).setName("v0.5.0").setForceUpdate(true).call()
-                GitRepo(git).constructLog(start = commit.id).commits shouldHaveSize 7
+                GitRepo(git).constructLog(start = commit.id).commits shouldHaveSize 13
             }
 
             it("should return a constructed log consisting of commits with linked JIRA Issues") {
@@ -111,14 +119,21 @@ class GitRepoTest : DescribeSpec({
                     GitCommit(
                         GitMessage("Eighth commit", listOf("Release version 0.5.0", jiraIssues)),
                         eighth.id,
+                        LocalDate.now(),
                         SemanticVersion("0.5.0")
                     ),
                     GitCommit(
                         GitMessage("Seventh commit", listOf("Commit description", jiraIssues)),
                         seventh.id,
+                        LocalDate.now(),
                         SemanticVersion("0.4.0")
                     )
                 )
+            }
+
+            it("test me") {
+                val r = GitRepo(git)
+                r.createChangelist(r.constructLog()) shouldBe changelist
             }
         }
     }
@@ -133,3 +148,121 @@ private fun Git.addCommit(repoPath: Path, message: String): RevCommit {
 private val faker = Faker()
 
 private const val jiraIssues = "JIRA Issues: TD-1872"
+
+private val changelist = Changelist(
+    mapOf(
+        Unreleased to listOf(
+            ChangelogEntry(
+                release = null,
+                added = emptyList(),
+                changed = emptyList(),
+                fixed = emptyList(),
+                breakingChange = emptyList(),
+                unknown = listOf("Fifth commit")
+            ),
+            ChangelogEntry(
+                release = null,
+                added = emptyList(),
+                changed = emptyList(),
+                fixed = emptyList(),
+                breakingChange = emptyList(),
+                unknown = listOf("Sixth commit")
+            )
+        ),
+        SemanticVersion("0.3.0") to listOf(
+            ChangelogEntry(
+                release = ChangelogEntry.Release(
+                    version = SemanticVersion("0.3.0"),
+                    date = LocalDate.now()
+                ),
+                added = emptyList(),
+                changed = emptyList(),
+                fixed = emptyList(),
+                breakingChange = emptyList(),
+                unknown = listOf("Fourth commit")
+            ),
+            ChangelogEntry(
+                release = null,
+                added = emptyList(),
+                changed = emptyList(),
+                fixed = emptyList(),
+                breakingChange = emptyList(),
+                unknown = listOf("Fourth 1 commit")
+            ),
+            ChangelogEntry(
+                release = null,
+                added = emptyList(),
+                changed = emptyList(),
+                fixed = emptyList(),
+                breakingChange = emptyList(),
+                unknown = listOf("Fourth 2 commit")
+            ),
+            ChangelogEntry(
+                release = null,
+                added = emptyList(),
+                changed = emptyList(),
+                fixed = emptyList(),
+                breakingChange = emptyList(),
+                unknown = listOf("Fourth 3 commit")
+            )
+        ),
+        SemanticVersion("0.2.0") to listOf(
+            ChangelogEntry(
+                release = ChangelogEntry.Release(
+                    version = SemanticVersion("0.2.0"),
+                    date = LocalDate.now()
+                ),
+                added = emptyList(),
+                changed = emptyList(),
+                fixed = emptyList(),
+                breakingChange = emptyList(),
+                unknown = listOf("Third commit")
+            ),
+            ChangelogEntry(
+                release = null,
+                added = emptyList(),
+                changed = emptyList(),
+                fixed = emptyList(),
+                breakingChange = emptyList(),
+                unknown = listOf("Third 1 commit")
+            ),
+            ChangelogEntry(
+                release = null,
+                added = emptyList(),
+                changed = emptyList(),
+                fixed = emptyList(),
+                breakingChange = emptyList(),
+                unknown = listOf("Third 2 commit")
+            ),
+            ChangelogEntry(
+                release = null,
+                added = emptyList(),
+                changed = emptyList(),
+                fixed = emptyList(),
+                breakingChange = emptyList(),
+                unknown = listOf("Third 3 commit")
+            )
+        ),
+        SemanticVersion("0.1.0") to listOf(
+            ChangelogEntry(
+                release = ChangelogEntry.Release(
+                    version = SemanticVersion("0.1.0"),
+                    date = LocalDate.now()
+                ),
+                added = emptyList(),
+                changed = emptyList(),
+                fixed = emptyList(),
+                breakingChange = emptyList(),
+                unknown = listOf("Second commit")
+            ),
+            ChangelogEntry(
+                release = null,
+                added = emptyList(),
+                changed = emptyList(),
+                fixed = emptyList(),
+                breakingChange = emptyList(),
+                unknown = listOf("Initial Commit")
+            )
+        )
+    )
+)
