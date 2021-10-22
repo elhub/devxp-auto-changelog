@@ -1,6 +1,6 @@
 package no.elhub.tools.autochangelog.git
 
-import no.elhub.tools.autochangelog.project.Version
+import no.elhub.tools.autochangelog.project.SemanticVersion
 import org.eclipse.jgit.lib.ObjectId
 
 /**
@@ -10,5 +10,5 @@ import org.eclipse.jgit.lib.ObjectId
 data class GitCommit(
     val message: GitMessage,
     val objectId: ObjectId,
-    val version: Version? = null
+    val version: SemanticVersion? = null
 )

@@ -4,8 +4,8 @@ import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.sequences.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import no.elhub.tools.autochangelog.project.SemanticVersion
 import no.elhub.tools.autochangelog.project.TestRepository
-import no.elhub.tools.autochangelog.project.Version
 import java.io.StringReader
 import kotlin.time.ExperimentalTime
 
@@ -14,7 +14,7 @@ class ChangelogReaderTest : DescribeSpec({
     val changelog = ChangelogReader(TestRepository.changelogPath).read()
 
     it("should return latest released version from the changelog file") {
-        val version: Version? = changelog.lastRelease
+        val version: SemanticVersion? = changelog.lastRelease as SemanticVersion?
         assertSoftly {
             version?.major shouldBe 1
             version?.minor shouldBe 1

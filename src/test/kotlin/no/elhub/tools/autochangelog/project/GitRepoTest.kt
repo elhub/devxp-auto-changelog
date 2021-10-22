@@ -22,18 +22,18 @@ class GitRepoTest : DescribeSpec({
         context("git log") {
 
             it("should return git ref for a given version") {
-                repo.findTagRef(Version(1, 1, 0))?.name shouldBe "refs/tags/v1.1.0"
+                repo.findTagRef(SemanticVersion(1, 1, 0))?.name shouldBe "refs/tags/v1.1.0"
             }
 
             it("should find a commit for a given ref") {
-                val c = repo.findCommitId(Version(1, 1, 0))?.let {
+                val c = repo.findCommitId(SemanticVersion(1, 1, 0))?.let {
                     repo.findCommit(it)
                 }
                 c?.shortMessage shouldStartWith "Merge pull request #197"
             }
 
             it("should find a parent for a given ref") {
-                val c = repo.findCommitId(Version(1, 1, 0))?.let {
+                val c = repo.findCommitId(SemanticVersion(1, 1, 0))?.let {
                     repo.findParent(it)
                 }
                 c?.shortMessage shouldBe "Bump Ruby version to 2.4"
@@ -89,7 +89,7 @@ class GitRepoTest : DescribeSpec({
                     GitCommit(
                         GitMessage("Eighth commit", listOf("Release version 0.5.0")),
                         lastCommit.id,
-                        Version("0.5.0")
+                        SemanticVersion("0.5.0")
                     )
                 )
             }
@@ -111,12 +111,12 @@ class GitRepoTest : DescribeSpec({
                     GitCommit(
                         GitMessage("Eighth commit", listOf("Release version 0.5.0", jiraIssues)),
                         eighth.id,
-                        Version("0.5.0")
+                        SemanticVersion("0.5.0")
                     ),
                     GitCommit(
                         GitMessage("Seventh commit", listOf("Commit description", jiraIssues)),
                         seventh.id,
-                        Version("0.4.0")
+                        SemanticVersion("0.4.0")
                     )
                 )
             }

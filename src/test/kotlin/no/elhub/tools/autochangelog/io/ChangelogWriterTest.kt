@@ -2,7 +2,7 @@ package no.elhub.tools.autochangelog.io
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import no.elhub.tools.autochangelog.project.Version
+import no.elhub.tools.autochangelog.project.SemanticVersion
 
 class ChangelogWriterTest : DescribeSpec({
     describe("ChangelogWriter") {
@@ -23,7 +23,7 @@ class ChangelogWriterTest : DescribeSpec({
             }
 
             it("should prepend new content before the last version header") {
-                val s = writer.writeToString(nextReleaseContent, Version(1, 1, 0))
+                val s = writer.writeToString(nextReleaseContent, SemanticVersion(1, 1, 0))
                 s shouldBe """
                     |$defaultDescription${'\n'}
                     |$nextReleaseContent${'\n'}

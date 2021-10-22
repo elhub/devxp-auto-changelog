@@ -4,7 +4,9 @@ import java.util.regex.Pattern
 
 val versionPattern: Pattern = Pattern.compile("""(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z]+).(\d+))?""")
 
-class Version : Comparable<Version> {
+interface Version
+
+class SemanticVersion : Comparable<SemanticVersion>, Version {
     val major: Int
     val minor: Int
     val patch: Int
@@ -30,7 +32,7 @@ class Version : Comparable<Version> {
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other !is Version) return false
+        if (other !is SemanticVersion) return false
         return major == other.major &&
                 minor == other.minor &&
                 patch == other.patch &&
@@ -48,7 +50,7 @@ class Version : Comparable<Version> {
         return result
     }
 
-    override fun compareTo(other: Version): Int {
+    override fun compareTo(other: SemanticVersion): Int {
         when {
             major != other.major -> return major - other.major
             minor != other.minor -> return minor - other.minor
@@ -73,4 +75,8 @@ class Version : Comparable<Version> {
         else
             "$major.$minor.$patch-$preReleaseId.$preRelease"
     }
+}
+
+object Unreleased : Version {
+    override fun toString() = "UNRELEASED"
 }

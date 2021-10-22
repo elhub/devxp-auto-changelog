@@ -37,14 +37,14 @@ class GitRepo(private val git: Git) {
      * Returns a [Ref] from this [versionTag]
      * or null if the ref is not found in tha tag list of this [git] object.
      */
-    fun findTagRef(versionTag: Version): Ref? = git.tagList().call().firstOrNull {
+    fun findTagRef(versionTag: SemanticVersion): Ref? = git.tagList().call().firstOrNull {
         it.name == "refs/tags/v$versionTag"
     }
 
     /**
      * Returns the git tag id for the [versionTag] value.
      */
-    fun findCommitId(versionTag: Version): ObjectId? = findTagRef(versionTag)?.let {
+    fun findCommitId(versionTag: SemanticVersion): ObjectId? = findTagRef(versionTag)?.let {
         git.repository.refDatabase.peel(it).peeledObjectId ?: it.objectId
     }
 
@@ -76,7 +76,7 @@ class GitRepo(private val git: Git) {
                         description = commit.description
                     ),
                     objectId = commit.id,
-                    version = v?.let { Version(it) }
+                    version = v?.let { SemanticVersion(it) }
                 )
                 acc.add(c)
             }

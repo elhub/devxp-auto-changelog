@@ -5,11 +5,11 @@ import kotlin.experimental.ExperimentalTypeInference
 /**
  * A class representation of a changelog.
  *
- * @property lastRelease the last released [Version] in the changelog
+ * @property lastRelease the last released [SemanticVersion] in the changelog
  * @property lines a [Sequence] of lines in the changelog
  */
 data class Changelog(
-    val lastRelease: Version?,
+    val lastRelease: SemanticVersion?,
     val lines: Sequence<String>
 ) {
 
@@ -17,7 +17,7 @@ data class Changelog(
      * Builder implementation for this [Changelog] class
      */
     class Builder internal constructor() {
-        internal var lastRelease: Version? = null
+        internal var lastRelease: SemanticVersion? = null
             private set
         private var lines: Sequence<String> = emptySequence()
 
@@ -25,7 +25,7 @@ data class Changelog(
          * Sets this [Builder.lastRelease] to [lastRelease]
          * and returns an instance of this [Builder]
          */
-        fun withLastRelease(lastRelease: Version): Builder {
+        fun withLastRelease(lastRelease: SemanticVersion): Builder {
             return this.also { it.lastRelease = lastRelease }
         }
 

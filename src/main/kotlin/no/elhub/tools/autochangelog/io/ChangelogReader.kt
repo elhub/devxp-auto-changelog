@@ -1,7 +1,7 @@
 package no.elhub.tools.autochangelog.io
 
 import no.elhub.tools.autochangelog.project.Changelog
-import no.elhub.tools.autochangelog.project.Version
+import no.elhub.tools.autochangelog.project.SemanticVersion
 import no.elhub.tools.autochangelog.project.versionPattern
 import java.io.BufferedReader
 import java.io.Reader
@@ -39,7 +39,7 @@ class ChangelogReader {
                 it.takeWhile { s ->
                     val matcher = releaseHeaderRegex.matcher(s)
                     if (matcher.matches() && lastRelease == null) {
-                        withLastRelease(Version(matcher.group(1).toString()))
+                        withLastRelease(SemanticVersion(matcher.group(1).toString()))
                         false
                     } else true
                 }.toList()
