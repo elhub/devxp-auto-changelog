@@ -22,3 +22,19 @@ fun File.linesAfter(predicate: (String) -> Boolean): Sequence<String> {
         }
     }
 }
+
+/**
+ * Returns a list containing first lines from this [File] receiver
+ * that satisfy the given [predicate] function.
+ *
+ * @throws IllegalArgumentException if this file is not a *normal* file
+ */
+fun File.linesUntil(predicate: (String) -> Boolean): List<String> {
+    return if (!this.isFile) throw IllegalArgumentException("File '${this.path}' is not a regular file") else {
+        FileInputStream(this@linesUntil).use { fis ->
+            fis.bufferedReader().useLines {
+                it.takeWhile { s -> !predicate(s) }.toList()
+            }
+        }
+    }
+}
