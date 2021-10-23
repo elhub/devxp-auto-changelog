@@ -1,5 +1,8 @@
 package no.elhub.tools.autochangelog.project
 
+import no.elhub.tools.autochangelog.git.GitMessage
+import no.elhub.tools.autochangelog.git.TitleKeyword
+import no.elhub.tools.autochangelog.git.titleKeyword
 import java.time.LocalDate
 
 data class ChangelogEntry(
@@ -25,6 +28,18 @@ data class ChangelogEntry(
 
         fun withRelease(release: Release): Builder {
             return apply { this.release = release }
+        }
+
+        fun withMessage(gitMessage: GitMessage): Builder {
+            when (gitMessage.titleKeyword) {
+                TitleKeyword.ADD -> this.added.add(gitMessage.title)
+                TitleKeyword.BREAKING_CHANGE -> this.breakingChange.add(gitMessage.title)
+                TitleKeyword.CHANGE -> this.changed.add(gitMessage.title)
+                TitleKeyword.FIX -> this.fixed.add(gitMessage.title)
+                TitleKeyword.UNKNOWN -> this.unknown.add(gitMessage.title)
+            }
+
+            return this
         }
 
         fun build() = ChangelogEntry(

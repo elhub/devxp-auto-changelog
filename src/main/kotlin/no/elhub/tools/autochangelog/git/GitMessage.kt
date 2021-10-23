@@ -8,3 +8,16 @@ data class GitMessage(
     val title: String,
     val description: List<String>
 )
+
+enum class TitleKeyword(val keywords: List<String>) {
+    ADD(listOf("Add", "Create", "Implement")),
+    BREAKING_CHANGE(listOf("Breaking Change")),
+    CHANGE(listOf("Change", "Deprecate", "Delete", "Refactor", "Update", "Remove", "Update")),
+    FIX(listOf("Fix")),
+    UNKNOWN(emptyList())
+}
+
+val GitMessage.titleKeyword: TitleKeyword
+    get() = TitleKeyword.values().firstOrNull {
+        it.keywords.any { keyword -> title.startsWith(keyword) }
+    } ?: TitleKeyword.UNKNOWN

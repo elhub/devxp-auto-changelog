@@ -99,7 +99,7 @@ class GitRepo(private val git: Git) {
     fun createChangelist(gitLog: GitLog): Changelist {
         val map = gitLog.commits.foldRight(linkedMapOf<Version, List<ChangelogEntry>>()) { commit, acc ->
             val builder = ChangelogEntry.Builder()
-            builder.unknown.add(commit.message.title) // TODO add to correct list instead of 'unknown' based on commit title
+            builder.withMessage(commit.message)
             commit.version?.let { v ->
                 builder.withRelease(ChangelogEntry.Release(v, commit.date))
                 acc[v] = mutableListOf(builder.build()).also { new ->
