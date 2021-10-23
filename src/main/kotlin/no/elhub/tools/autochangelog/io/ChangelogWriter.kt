@@ -35,13 +35,14 @@ class ChangelogWriter {
      * Writes the changelog with this [changelist]
      * and returns the new changelog as String value.
      */
-    fun writeToString(changelist: Changelist): String = write(changelist).toString()
+    fun writeToString(changelist: Changelist): String = write(changelist).toString().trim()
 
     private fun write(changelist: Changelist): Writer {
         return start()
             .ifEmpty { defaultContent }
             .plus("")
             .plus(changelist.toChangelogLines())
+            .plus("")
             .plus(end())
             .fold(StringWriter()) { acc, s ->
                 acc.appendLine(s)
@@ -50,18 +51,46 @@ class ChangelogWriter {
     }
 
     private fun Changelist.toChangelogLines(): List<String> = this.entries.map { (k, v) ->
+        val additions = v.flatMap { it.added.map { s -> s } }
+        val breakingChanges = v.flatMap { it.breakingChange.map { s -> s } }
+        val changes = v.flatMap { it.changed.map { s -> s } }
+        val fixes = v.flatMap { it.fixed.map { s -> s } }
+        val unknown = v.flatMap { it.unknown.map { s -> s } }
+
+        val sb = StringBuilder()
+
+        if (additions.isNotEmpty()) {
+            sb.appendLine("### Added\n")
+            sb.appendLine(additions.joinToString("\n") { "- $it" })
+            sb.appendLine()
+        }
+        if (breakingChanges.isNotEmpty()) {
+            sb.appendLine("### Breaking Change\n")
+            sb.appendLine(breakingChanges.joinToString("\n") { "- $it" })
+            sb.appendLine()
+        }
+        if (changes.isNotEmpty()) {
+            sb.appendLine("### Changed\n")
+            sb.appendLine(changes.joinToString("\n") { "- $it" })
+            sb.appendLine()
+        }
+        if (fixes.isNotEmpty()) {
+            sb.appendLine("### Fixed\n")
+            sb.appendLine(fixes.joinToString("\n") { "- $it" })
+            sb.appendLine()
+        }
+        if (unknown.isNotEmpty()) {
+            sb.appendLine("### Unknown\n")
+            sb.appendLine(unknown.joinToString("\n") { "- $it" })
+            sb.appendLine()
+        }
+
         val releaseHeader = v.first().release?.date?.let { "## [$k] - $it" } ?: "## [$k]"
-        val values = v.flatMap { it.unknown.map { s -> s } }
-            .joinToString("\n") { "- $it" }
 
         """
             |$releaseHeader
             |
-            |### Unknown
-            |
-            |$values
-            |
+            |${sb.trim()}
         """.trimMargin()
     }
 }
-

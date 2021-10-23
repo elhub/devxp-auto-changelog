@@ -22,7 +22,6 @@ class ChangelogWriterTest : DescribeSpec({
                     |$expectedChangelogContent
                     |
                     |$existingContent
-                    |
                 """.trimMargin()
             }
         }
@@ -36,8 +35,6 @@ class ChangelogWriterTest : DescribeSpec({
                     |${defaultContent.joinToString("\n")}
                     |
                     |$expectedChangelogContent
-                    |
-                    |
                 """.trimMargin()
             }
         }
@@ -73,7 +70,9 @@ private val changelist = Changelist(
                     SemanticVersion(42, 0, 0),
                     LocalDate.parse("2063-04-05")
                 ),
-                unknown = listOf("First human warp flight") // todo should use 'added' section
+                added = listOf("First human warp flight"),
+                changed = listOf("Human interstellar travel"),
+                breakingChange = listOf("First contact with Vulcans")
             )
         )
     )
@@ -82,7 +81,15 @@ private val changelist = Changelist(
 val expectedChangelogContent = """
     |## [42.0.0] - 2063-04-05
     |
-    |### Unknown
+    |### Added
     |
     |- First human warp flight
+    |
+    |### Breaking Change
+    |
+    |- First contact with Vulcans
+    |
+    |### Changed
+    |
+    |- Human interstellar travel
 """.trimMargin()
