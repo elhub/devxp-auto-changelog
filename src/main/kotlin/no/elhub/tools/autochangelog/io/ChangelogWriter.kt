@@ -42,7 +42,6 @@ class ChangelogWriter {
             .ifEmpty { defaultContent }
             .plus("")
             .plus(changelist.toChangelogLines())
-            .plus("")
             .plus(end())
             .fold(StringWriter()) { acc, s ->
                 acc.appendLine(s)
@@ -50,7 +49,7 @@ class ChangelogWriter {
             }
     }
 
-    private fun Changelist.toChangelogLines(): List<String> = this.entries.map { (k, v) ->
+    private fun Changelist.toChangelogLines(): List<String> = this.changes.entries.reversed().map { (k, v) ->
         val additions = v.flatMap { it.added.map { s -> s } }
         val breakingChanges = v.flatMap { it.breakingChange.map { s -> s } }
         val changes = v.flatMap { it.changed.map { s -> s } }
@@ -91,6 +90,7 @@ class ChangelogWriter {
             |$releaseHeader
             |
             |${sb.trim()}
+            |
         """.trimMargin()
     }
 }

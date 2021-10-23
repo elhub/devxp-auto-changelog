@@ -2,8 +2,11 @@ package no.elhub.tools.autochangelog.project
 
 import io.github.serpro69.kfaker.Faker
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.collections.containExactly
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.maps.shouldContainExactly
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import no.elhub.tools.autochangelog.extensions.delete
@@ -131,9 +134,10 @@ class GitRepoTest : DescribeSpec({
                 )
             }
 
-            it("test me") {
+            it("should return a reversed changelist from the log of commits") {
                 val r = GitRepo(git)
-                r.createChangelist(r.constructLog()) shouldBe changelist
+                val cl = r.createChangelist(r.constructLog())
+                cl.changes.entries shouldContainExactly changelist.changes.entries.reversed()
             }
         }
     }

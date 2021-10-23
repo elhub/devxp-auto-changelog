@@ -94,10 +94,10 @@ class GitRepo(private val git: Git) {
     }
 
     /**
-     * Creates a [Changelist] for from the [gitLog] log of commits.
+     * Creates a [Changelist] for from the [gitLog] log of commits in reversed chronological order.
      */
     fun createChangelist(gitLog: GitLog): Changelist {
-        val map = gitLog.commits.foldRight(hashMapOf<Version, List<ChangelogEntry>>()) { commit, acc ->
+        val map = gitLog.commits.foldRight(linkedMapOf<Version, List<ChangelogEntry>>()) { commit, acc ->
             val builder = ChangelogEntry.Builder()
             builder.unknown.add(commit.message.title) // TODO add to correct list instead of 'unknown' based on commit title
             commit.version?.let { v ->
