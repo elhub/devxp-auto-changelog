@@ -1,5 +1,6 @@
 package no.elhub.tools.autochangelog.project
 
+import java.util.regex.Pattern
 import kotlin.experimental.ExperimentalTypeInference
 
 /**
@@ -50,6 +51,8 @@ data class Changelog(
     }
 
 }
+
+val releaseHeaderRegex: Pattern = Pattern.compile("""^## \[($versionPattern)] - \d{4}-\d{2}-\d{2}""")
 
 val defaultContent = sequence {
     val lines = listOf(

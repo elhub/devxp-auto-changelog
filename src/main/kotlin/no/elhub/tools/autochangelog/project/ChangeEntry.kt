@@ -4,11 +4,11 @@ import java.time.LocalDate
 
 data class ChangelogEntry(
     val release: Release?,
-    val added: List<String>,
-    val changed: List<String>,
-    val fixed: List<String>,
-    val breakingChange: List<String>,
-    val unknown: List<String>
+    val added: List<String> = emptyList(),
+    val changed: List<String> = emptyList(),
+    val fixed: List<String> = emptyList(),
+    val breakingChange: List<String> = emptyList(),
+    val unknown: List<String> = emptyList()
 ) {
     data class Release(
         val version: Version,

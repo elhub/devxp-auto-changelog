@@ -2,43 +2,42 @@ package no.elhub.tools.autochangelog.io
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import no.elhub.tools.autochangelog.project.Changelist
+import no.elhub.tools.autochangelog.project.ChangelogEntry
 import no.elhub.tools.autochangelog.project.SemanticVersion
+import no.elhub.tools.autochangelog.project.defaultContent
+import java.time.LocalDate
 
 class ChangelogWriterTest : DescribeSpec({
     describe("ChangelogWriter") {
+
         context("write with non-empty original changelog contents") {
-            val content = """
-                |$defaultDescription${'\n'}
-                |$existingContent${'\n'}
-            """.trimMargin()
-            val writer = ChangelogWriter(content)
+            val writer = ChangelogWriter(start = defaultDescription, end = existingContent)
 
             it("should append new content after default description") {
-                val s = writer.writeToString(nextReleaseContent)
+                val s = writer.writeToString(changelist)
                 s shouldBe """
-                    |$defaultDescription${'\n'}
-                    |$nextReleaseContent${'\n'}
-                    |$existingContent${'\n'}
-                """.trimMargin()
-            }
-
-            it("should prepend new content before the last version header") {
-                val s = writer.writeToString(nextReleaseContent, SemanticVersion(1, 1, 0))
-                s shouldBe """
-                    |$defaultDescription${'\n'}
-                    |$nextReleaseContent${'\n'}
-                    |$existingContent${'\n'}
+                    |$defaultDescription
+                    |
+                    |$expectedChangelogContent
+                    |
+                    |$existingContent
+                    |
                 """.trimMargin()
             }
         }
+
         context("write with empty original changelog contents") {
             val writer = ChangelogWriter()
 
-            it("should append new content with default description") {
-                val s = writer.writeToString(nextReleaseContent)
+            it("should append new content to default description") {
+                val s = writer.writeToString(changelist)
                 s shouldBe """
-                    |$defaultDescription${'\n'}
-                    |$nextReleaseContent${'\n'}
+                    |${defaultContent.joinToString("\n")}
+                    |
+                    |$expectedChangelogContent
+                    |
+                    |
                 """.trimMargin()
             }
         }
@@ -49,9 +48,6 @@ private val defaultDescription = """
 # Changelog
 
 All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 """.trimIndent()
 
 private val existingContent = """
@@ -69,10 +65,24 @@ private val existingContent = """
 - Fixed typos in Indonesian translation from [@ekojs](https://github.com/ekojs).
 """.trimIndent()
 
-private val nextReleaseContent = """
-## [42.0.0] - 2063-04-05
+private val changelist = Changelist(
+    mapOf(
+        SemanticVersion(42, 0, 0) to listOf(
+            ChangelogEntry(
+                release = ChangelogEntry.Release(
+                    SemanticVersion(42, 0, 0),
+                    LocalDate.parse("2063-04-05")
+                ),
+                unknown = listOf("First human warp flight") // todo should use 'added' section
+            )
+        )
+    )
+)
 
-### Added
-
-- First human warp flight
-""".trimIndent()
+val expectedChangelogContent = """
+    |## [42.0.0] - 2063-04-05
+    |
+    |### Unknown
+    |
+    |- First human warp flight
+""".trimMargin()

@@ -1,62 +1,67 @@
 package no.elhub.tools.autochangelog.io
 
-import no.elhub.tools.autochangelog.project.Version
+import no.elhub.tools.autochangelog.extensions.linesAfter
+import no.elhub.tools.autochangelog.extensions.linesUntil
+import no.elhub.tools.autochangelog.project.Changelist
 import no.elhub.tools.autochangelog.project.defaultContent
-import no.elhub.tools.autochangelog.project.lastDescriptionLine
-import java.io.BufferedReader
-import java.io.StringReader
+import no.elhub.tools.autochangelog.project.releaseHeaderRegex
 import java.io.StringWriter
 import java.io.Writer
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.bufferedReader
 
 class ChangelogWriter {
-    private val initialContent: () -> BufferedReader
+    private val start: () -> Sequence<String>
+    private val end: () -> Sequence<String>
 
     @OptIn(ExperimentalPathApi::class)
     constructor(changelogPath: Path) {
-        initialContent = { changelogPath.bufferedReader() }
+        start = {
+            changelogPath.toFile()
+                .linesUntil { it.matches(releaseHeaderRegex.toRegex()) }
+                .asSequence()
+        }
+        end = {
+            changelogPath.toFile().linesAfter { it.matches(releaseHeaderRegex.toRegex()) }
+        }
     }
 
-    constructor(changelogContent: String = "") {
-        initialContent = { BufferedReader(StringReader(changelogContent)) }
+    constructor(start: String = "", end: String = "") {
+        this.start = { if (start != "") start.lineSequence() else emptySequence() }
+        this.end = { if (end != "") end.lineSequence() else emptySequence() }
     }
 
     /**
-     * Appends/prepends new changelog [content]s to a default/existing changelog and returns
-     * the new changelog as String value.
-     *
-     * The following contract is used when writing the contents:
-     * * `if version != null` - prepends the [content]s before the version header line
-     * * `else` - appends the [content]s after the default description text
-     *
-     * @param content - new content to write
-     * @param version - last released version in the static changelog file
+     * Writes the changelog with this [changelist]
+     * and returns the new changelog as String value.
      */
-    fun writeToString(content: String, version: Version? = null): String = write(content, version).toString()
+    fun writeToString(changelist: Changelist): String = write(changelist).toString()
 
-    private fun write(content: String, version: Version? = null): Writer {
-        return initialContent().useLines {
-            it.ifEmpty { defaultContent }.fold(StringWriter()) { acc, s ->
-                when {
-                    // prepend content before the last release
-                    version != null && s.startsWith("## [$version]") -> {
-                        acc.appendLine(content)
-                        acc.appendLine()
-                        acc.appendLine(s)
-                    }
-                    // append content after description text
-                    version == null && s == lastDescriptionLine -> {
-                        acc.appendLine(s)
-                        acc.appendLine()
-                        acc.appendLine(content)
-                    }
-                    else -> acc.appendLine(s)
-                }
+    private fun write(changelist: Changelist): Writer {
+        return start()
+            .ifEmpty { defaultContent }
+            .plus("")
+            .plus(changelist.toChangelogLines())
+            .plus(end())
+            .fold(StringWriter()) { acc, s ->
+                acc.appendLine(s)
                 acc
             }
-        }
+    }
+
+    private fun Changelist.toChangelogLines(): List<String> = this.entries.map { (k, v) ->
+        val releaseHeader = v.first().release?.date?.let { "## [$k] - $it" } ?: "## [$k]"
+        val values = v.flatMap { it.unknown.map { s -> s } }
+            .joinToString("\n") { "- $it" }
+
+        """
+            |$releaseHeader
+            |
+            |### Unknown
+            |
+            |$values
+            |
+        """.trimMargin()
     }
 }
 

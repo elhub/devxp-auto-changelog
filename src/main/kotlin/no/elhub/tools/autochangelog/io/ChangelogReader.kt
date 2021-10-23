@@ -2,16 +2,14 @@ package no.elhub.tools.autochangelog.io
 
 import no.elhub.tools.autochangelog.project.Changelog
 import no.elhub.tools.autochangelog.project.SemanticVersion
-import no.elhub.tools.autochangelog.project.versionPattern
+import no.elhub.tools.autochangelog.project.releaseHeaderRegex
 import java.io.BufferedReader
 import java.io.Reader
 import java.nio.file.Path
-import java.util.regex.Pattern
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.bufferedReader
 
 class ChangelogReader {
-    private val releaseHeaderRegex = Pattern.compile("""^## \[($versionPattern)] - \d{4}-\d{2}-\d{2}""")
     private val changelogContent: BufferedReader
 
     /**
