@@ -50,6 +50,7 @@ buildNumber.properties
 
 # Log file
 *.log
+*.log*
 
 # Package Files #
 *.jar
@@ -82,6 +83,9 @@ thumb
 sketch
 screenshots/*
 !screenshots/.gitkeep
+
+### NPM ###
+dist/
 
 ### Testing ###
 /coverage

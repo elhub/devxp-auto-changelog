@@ -1,7 +1,7 @@
+import org.gradle.jvm.tasks.Jar
 import java.net.URI
 
 description = "Automated changelog generation for git projects"
-val mainClassName = "no.elhub.tools.autochangelog.cli.AutoChangelogKt"
 
 val kotestVersion = "4.4.1"
 val jgitVersion = "5.11.0.202103091610-r"
@@ -28,7 +28,9 @@ dependencies {
     testImplementation("io.github.serpro69:kotlin-faker:1.9.0-SNAPSHOT")
 }
 
-val fatJar = task("fatJar", type = org.gradle.jvm.tasks.Jar::class) {
+val mainClassName : String by project
+
+val fatJar = task("fatJar", type = Jar::class) {
     archiveBaseName.set(rootProject.name)
     manifest {
         attributes["Implementation-Title"] = rootProject.name
@@ -40,3 +42,5 @@ val fatJar = task("fatJar", type = org.gradle.jvm.tasks.Jar::class) {
     with(tasks.jar.get() as CopySpec)
     mustRunAfter(tasks["jar"])
 }
+
+tasks["assemble"].dependsOn(tasks["fatJar"])
