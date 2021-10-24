@@ -31,12 +31,18 @@ data class ChangelogEntry(
         }
 
         fun withMessage(gitMessage: GitMessage): Builder {
+            val msg = gitMessage.description.firstOrNull { it.startsWith("JIRA Issues") }?.let { jiraIds ->
+                val title = gitMessage.title
+                val jiraIssues = jiraIds.replace("JIRA Issues: ", "")
+                "[$jiraIssues] $title"
+            } ?: gitMessage.title
+
             when (gitMessage.titleKeyword) {
-                TitleKeyword.ADD -> this.added.add(gitMessage.title)
-                TitleKeyword.BREAKING_CHANGE -> this.breakingChange.add(gitMessage.title)
-                TitleKeyword.CHANGE -> this.changed.add(gitMessage.title)
-                TitleKeyword.FIX -> this.fixed.add(gitMessage.title)
-                TitleKeyword.UNKNOWN -> this.unknown.add(gitMessage.title)
+                TitleKeyword.ADD -> this.added.add(msg)
+                TitleKeyword.BREAKING_CHANGE -> this.breakingChange.add(msg)
+                TitleKeyword.CHANGE -> this.changed.add(msg)
+                TitleKeyword.FIX -> this.fixed.add(msg)
+                TitleKeyword.UNKNOWN -> this.unknown.add(msg)
             }
 
             return this
