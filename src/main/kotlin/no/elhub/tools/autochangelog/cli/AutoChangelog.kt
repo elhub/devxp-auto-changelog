@@ -1,9 +1,14 @@
 package no.elhub.tools.autochangelog.cli
 
+import no.elhub.tools.autochangelog.config.Configuration.includeOnlyWithJira
+import no.elhub.tools.autochangelog.config.Configuration.jiraIssuesPatternString
+import no.elhub.tools.autochangelog.extensions.description
+import no.elhub.tools.autochangelog.git.GitLog
 import no.elhub.tools.autochangelog.io.ChangelogReader
 import no.elhub.tools.autochangelog.io.ChangelogWriter
 import no.elhub.tools.autochangelog.project.GitRepo
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.lib.ObjectId
 import picocli.CommandLine
 import java.io.File
 import java.nio.file.Paths
@@ -58,10 +63,10 @@ object AutoChangelog : Callable<Int> {
         val content = if (changelogFile.exists()) {
             val lastRelease = ChangelogReader(changelogFile).getLastRelease()
             val end = lastRelease?.let { repo.findCommitId(it) }
-            val changelist = repo.createChangelist(repo.constructLog(end = end))
+            val changelist = repo.createChangelist(repo.getLog(end = end))
             ChangelogWriter(changelogFile).writeToString(changelist)
         } else {
-            val changelist = repo.createChangelist(repo.constructLog())
+            val changelist = repo.createChangelist(repo.getLog())
             ChangelogWriter().writeToString(changelist)
         }
 
@@ -72,6 +77,10 @@ object AutoChangelog : Callable<Int> {
                 it.flush()
             }
         return 0
+    }
+
+    private fun GitRepo.getLog(end: ObjectId? = null): GitLog = constructLog(end = end) {
+        if (includeOnlyWithJira) it.description.any { s -> s.startsWith(jiraIssuesPatternString) } else true
     }
 }
 

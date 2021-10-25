@@ -14,8 +14,8 @@ class ChangeEntryTest : DescribeSpec({
                 it("should add entry to correct collection $it title keyword") {
                     val builder = ChangelogEntry.Builder()
                     val msg = GitMessage(
-                        "${it.keywords.ifEmpty { listOf("Unknown") }.first()} test commit",
-                        emptyList()
+                        title = "${it.keywords.ifEmpty { listOf("Unknown") }.first()} test commit",
+                        description = listOf("JIRA Issues: TD-42")
                     )
                     builder.withMessage(msg)
 
@@ -49,7 +49,7 @@ class ChangeEntryTest : DescribeSpec({
                 builder.withMessage(msg)
                 builder.added shouldHaveSize 1
                 builder.added.first() shouldBe """
-                    [ [TD-1]($jiraIssuesUrl/TD-1),[TD-2]($jiraIssuesUrl/TD-2),[TD-3]($jiraIssuesUrl/TD-3) ] Add test commit
+                    [ [TD-1]($jiraIssuesUrl/TD-1), [TD-2]($jiraIssuesUrl/TD-2), [TD-3]($jiraIssuesUrl/TD-3) ] Add test commit
                 """.trimIndent()
             }
         }

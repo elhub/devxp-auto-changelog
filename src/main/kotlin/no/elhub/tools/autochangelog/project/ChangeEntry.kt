@@ -1,5 +1,7 @@
 package no.elhub.tools.autochangelog.project
 
+import no.elhub.tools.autochangelog.config.Configuration.includeJiraLinks
+import no.elhub.tools.autochangelog.config.Configuration.jiraIssuesPatternString
 import no.elhub.tools.autochangelog.config.Configuration.jiraIssuesUrl
 import no.elhub.tools.autochangelog.git.GitMessage
 import no.elhub.tools.autochangelog.git.TitleKeyword
@@ -32,12 +34,11 @@ data class ChangelogEntry(
         }
 
         fun withMessage(gitMessage: GitMessage): Builder {
-            val msg = gitMessage.description.firstOrNull { it.startsWith("JIRA Issues") }?.let { jiraIds ->
+            val msg = gitMessage.description.firstOrNull { it.startsWith(jiraIssuesPatternString) }?.let { jiraIds ->
                 val title = gitMessage.title
-                val jiraIssues = jiraIds.replace("JIRA Issues: ", "")
-                    .split(",")
-                    .map { it.trim() }
-                    .joinToString(",") { "[$it]($jiraIssuesUrl/$it)" } // TODO make linking jira issues configurable
+                val jiraIssues = jiraIds.replace(jiraIssuesPatternString, "")
+                    .split(", ")
+                    .joinToString(", ") { if (includeJiraLinks) "[$it]($jiraIssuesUrl/$it)" else it }
                 "[ $jiraIssues ] $title"
             } ?: gitMessage.title
 
