@@ -18,6 +18,6 @@ enum class TitleKeyword(val keywords: List<String>) {
 }
 
 val GitMessage.titleKeyword: TitleKeyword
-    get() = TitleKeyword.values().firstOrNull {
+    get() = TitleKeyword.values().dropLast(1).firstOrNull {
         it.keywords.any { keyword -> title.startsWith(keyword) }
     } ?: TitleKeyword.UNKNOWN
