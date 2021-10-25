@@ -8,6 +8,7 @@ val jgitVersion = "5.11.0.202103091610-r"
 val mockkVersion = "1.10.6"
 
 repositories {
+    mavenCentral()
     maven {
         url = URI("https://oss.sonatype.org/content/repositories/snapshots/")
     }
