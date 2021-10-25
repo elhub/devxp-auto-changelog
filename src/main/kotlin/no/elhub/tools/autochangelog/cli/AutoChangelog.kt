@@ -1,13 +1,18 @@
 package no.elhub.tools.autochangelog.cli
 
+import no.elhub.tools.autochangelog.io.ChangelogReader
 import no.elhub.tools.autochangelog.io.ChangelogWriter
 import no.elhub.tools.autochangelog.project.GitRepo
 import org.eclipse.jgit.api.Git
 import picocli.CommandLine
 import java.io.File
+import java.nio.file.Paths
 import java.util.concurrent.Callable
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.exists
 import kotlin.system.exitProcess
 
+@ExperimentalPathApi
 @CommandLine.Command(
     name = "auto-changelog",
     mixinStandardHelpOptions = true,
@@ -45,11 +50,23 @@ object AutoChangelog : Callable<Int> {
     override fun call(): Int {
         val git = Git.open(File(repoPath))
         val repo = GitRepo(git)
-        val changelist = repo.createChangelist(repo.constructLog())
-        File("$outputDir/$outputFileName").writer().use {
-            it.write(ChangelogWriter().writeToString(changelist))
-            it.flush()
+        val changelogFile = Paths.get(repoPath).resolve("CHANGELOG.md") // TODO name should be configurable?
+        val content = if (changelogFile.exists()) {
+            val lastRelease = ChangelogReader(changelogFile).getLastRelease()
+            val end = lastRelease?.let { repo.findCommitId(it) }
+            val changelist = repo.createChangelist(repo.constructLog(end = end))
+            ChangelogWriter(changelogFile).writeToString(changelist)
+        } else {
+            val changelist = repo.createChangelist(repo.constructLog())
+            ChangelogWriter().writeToString(changelist)
         }
+
+        File("$outputDir/$outputFileName")
+            .apply { if (!exists()) createNewFile() }
+            .writer().use {
+                it.write(content)
+                it.flush()
+            }
         return 0
     }
 }
@@ -63,6 +80,7 @@ object ManifestVersionProvider : CommandLine.IVersionProvider {
 
 }
 
+@OptIn(ExperimentalPathApi::class)
 @Suppress("SpreadOperator")
 fun main(args: Array<String>): Unit = exitProcess(
     CommandLine(AutoChangelog).execute(*args)

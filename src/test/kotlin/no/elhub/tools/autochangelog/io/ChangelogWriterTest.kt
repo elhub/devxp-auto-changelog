@@ -12,12 +12,12 @@ class ChangelogWriterTest : DescribeSpec({
     describe("ChangelogWriter") {
 
         context("write with non-empty original changelog contents") {
-            val writer = ChangelogWriter(start = defaultDescription, end = existingContent)
+            val writer = ChangelogWriter(start = existingDescription, end = existingContent)
 
             it("should append new content after default description") {
                 val s = writer.writeToString(changelist)
                 s shouldBe """
-                    |$defaultDescription
+                    |$existingDescription
                     |
                     |$expectedChangelogContent
                     |
@@ -38,10 +38,14 @@ class ChangelogWriterTest : DescribeSpec({
                 """.trimMargin()
             }
         }
+
+        context("write using existing changelog file") {
+
+        }
     }
 })
 
-private val defaultDescription = """
+private val existingDescription = """
 # Changelog
 
 All notable changes to this project will be documented in this file.
