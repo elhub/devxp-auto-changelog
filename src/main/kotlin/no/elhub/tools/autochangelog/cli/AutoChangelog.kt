@@ -26,31 +26,35 @@ object AutoChangelog : Callable<Int> {
     @CommandLine.Option(
         names = ["-d", "--dir-path"],
         required = false,
-        description = ["Path to directory with git repository.", "Defaults to '.'"],
-        defaultValue = "."
+        description = ["Path to directory with git repository.", "Defaults to '.'"]
     )
     private var repoPath: String = "."
 
     @CommandLine.Option(
-        names = ["-f", "--file-name"],
+        names = ["-n", "--changelog-name"],
         required = false,
-        description = ["Output file name.", "Defaults to 'CHANGELOG.md'"],
-        defaultValue = "CHANGELOG.md"
+        description = ["Input changelog file name.", "Defaults to 'CHANGELOG.md'"]
     )
-    private var outputFileName: String = "CHANGELOG.md"
+    private var inputFileName: String = "CHANGELOG.md"
 
     @CommandLine.Option(
         names = ["-o", "--output-dir"],
         required = false,
-        description = ["Output directory path where changelog file will be written.", "Defaults to '.'"],
-        defaultValue = "."
+        description = ["Output directory path to which changelog file will be written.", "Defaults to '.'"]
     )
     private var outputDir: String = "."
+
+    @CommandLine.Option(
+        names = ["-f", "--file-name"],
+        required = false,
+        description = ["Output file name.", "Defaults to 'CHANGELOG.md'"]
+    )
+    private var outputFileName: String = "CHANGELOG.md"
 
     override fun call(): Int {
         val git = Git.open(File(repoPath))
         val repo = GitRepo(git)
-        val changelogFile = Paths.get(repoPath).resolve("CHANGELOG.md") // TODO name should be configurable?
+        val changelogFile = Paths.get(repoPath).resolve(inputFileName)
         val content = if (changelogFile.exists()) {
             val lastRelease = ChangelogReader(changelogFile).getLastRelease()
             val end = lastRelease?.let { repo.findCommitId(it) }
