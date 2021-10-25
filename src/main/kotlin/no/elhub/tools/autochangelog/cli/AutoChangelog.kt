@@ -18,17 +18,40 @@ import kotlin.system.exitProcess
 )
 object AutoChangelog : Callable<Int> {
 
+    @CommandLine.Option(
+        names = ["-d", "--dir-path"],
+        required = false,
+        description = ["Path to directory with git repository.", "Defaults to '.'"],
+        defaultValue = "."
+    )
+    private var repoPath: String = "."
+
+    @CommandLine.Option(
+        names = ["-f", "--file-name"],
+        required = false,
+        description = ["Output file name.", "Defaults to 'CHANGELOG.md'"],
+        defaultValue = "CHANGELOG.md"
+    )
+    private var outputFileName: String = "CHANGELOG.md"
+
+    @CommandLine.Option(
+        names = ["-o", "--output-dir"],
+        required = false,
+        description = ["Output directory path where changelog file will be written.", "Defaults to '.'"],
+        defaultValue = "."
+    )
+    private var outputDir: String = "."
+
     override fun call(): Int {
-        val git = Git.open(File("."))
+        val git = Git.open(File(repoPath))
         val repo = GitRepo(git)
         val changelist = repo.createChangelist(repo.constructLog())
-        File("CHANGELOG.md").writer().use {
+        File("$outputDir/$outputFileName").writer().use {
             it.write(ChangelogWriter().writeToString(changelist))
             it.flush()
         }
         return 0
     }
-
 }
 
 object ManifestVersionProvider : CommandLine.IVersionProvider {
