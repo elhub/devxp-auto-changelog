@@ -15,6 +15,7 @@ import java.nio.file.Paths
 import java.util.concurrent.Callable
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.exists
+import kotlin.io.path.isRegularFile
 import kotlin.system.exitProcess
 
 @ExperimentalPathApi
@@ -57,21 +58,24 @@ object AutoChangelog : Callable<Int> {
     private var outputFileName: String = "CHANGELOG.md"
 
     override fun call(): Int {
-        val git = Git.open(File(repoPath))
+        val repoDir = File(repoPath)
+        val git = Git.open(repoDir)
         val repo = GitRepo(git)
-        val changelogFile = Paths.get(repoPath).resolve(inputFileName)
-        val content = if (changelogFile.exists()) {
-            val lastRelease = ChangelogReader(changelogFile).getLastRelease()
+        val changelogFile = repoDir.resolve(inputFileName)
+        val content = if (changelogFile.exists() && changelogFile.isFile) {
+            val lastRelease = ChangelogReader(changelogFile.toPath()).getLastRelease()
             val end = lastRelease?.let { repo.findCommitId(it) }
             val changelist = repo.createChangelist(repo.getLog(end = end))
-            ChangelogWriter(changelogFile).writeToString(changelist)
+            ChangelogWriter(changelogFile.toPath()).writeToString(changelist)
         } else {
             val changelist = repo.createChangelist(repo.getLog())
             ChangelogWriter().writeToString(changelist)
         }
 
-        File("$outputDir/$outputFileName")
-            .apply { if (!exists()) createNewFile() }
+        File(outputDir)
+            .apply { createDirIfNotExists() ?: return 1 }
+            .resolve(outputFileName)
+            .apply { createFileIfNotExists() ?: return 1 }
             .writer().use {
                 it.write(content)
                 it.flush()
@@ -81,6 +85,24 @@ object AutoChangelog : Callable<Int> {
 
     private fun GitRepo.getLog(end: ObjectId? = null): GitLog = constructLog(end = end) {
         if (includeOnlyWithJira) it.description.any { s -> s.startsWith(jiraIssuesPatternString) } else true
+    }
+
+    private fun File.createDirIfNotExists(): Boolean? = when {
+        !exists() -> mkdirs()
+        !isDirectory -> {
+            println("'${this.path}' is not a directory")
+            null
+        }
+        else -> false
+    }
+
+    private fun File.createFileIfNotExists(): Boolean? = when {
+        !exists() -> createNewFile()
+        !isFile -> {
+            println("'${this.path}' is not a regular file")
+            null
+        }
+        else -> false
     }
 }
 
