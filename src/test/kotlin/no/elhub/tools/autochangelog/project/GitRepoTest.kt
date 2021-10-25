@@ -139,6 +139,15 @@ class GitRepoTest : DescribeSpec({
                 val cl = r.createChangelist(r.constructLog())
                 cl.changes.entries shouldContainExactly changelist.changes.entries.reversed()
             }
+
+            it("should not have UNRELEASED section in the changelog if HEAD is at git tag with a preceding tag") {
+                git.tag().setAnnotated(false).setName("v0.4.0").setForceUpdate(true).call()
+                git.addCommit(path, "Test commit")
+                git.tag().setAnnotated(false).setName("v0.5.0").setForceUpdate(true).call()
+                val r = GitRepo(git)
+                val cl = r.createChangelist(r.constructLog())
+                cl.changes[Unreleased] shouldBe null
+            }
         }
     }
 })

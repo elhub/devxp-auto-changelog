@@ -104,8 +104,8 @@ class GitRepo(private val git: Git) {
                 builder.withRelease(ChangelogEntry.Release(v, commit.date))
                 acc[v] = mutableListOf(builder.build()).also { new ->
                     acc[Unreleased]?.let { existing -> new.addAll(existing) }
+                    acc.remove(Unreleased)
                 }
-                acc.remove(Unreleased)
             } ?: run {
                 acc.merge(Unreleased, listOf(builder.build())) { existing, new ->
                     new + existing
