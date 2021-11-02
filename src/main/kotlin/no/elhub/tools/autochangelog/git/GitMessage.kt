@@ -14,10 +14,10 @@ enum class TitleKeyword(val keywords: List<String>) {
     BREAKING_CHANGE(listOf("Breaking Change")),
     CHANGE(listOf("Change", "Deprecate", "Delete", "Refactor", "Update", "Remove", "Update")),
     FIX(listOf("Fix")),
-    UNKNOWN(emptyList())
+    OTHER(emptyList())
 }
 
 val GitMessage.titleKeyword: TitleKeyword
     get() = TitleKeyword.values().dropLast(1).firstOrNull {
         it.keywords.any { keyword -> title.startsWith(keyword) }
-    } ?: TitleKeyword.UNKNOWN
+    } ?: TitleKeyword.OTHER

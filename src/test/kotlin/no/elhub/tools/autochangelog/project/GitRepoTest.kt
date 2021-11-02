@@ -2,11 +2,8 @@ package no.elhub.tools.autochangelog.project
 
 import io.github.serpro69.kfaker.Faker
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.collections.containExactly
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.maps.shouldContainExactly
-import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import no.elhub.tools.autochangelog.extensions.delete
@@ -171,7 +168,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Sixth commit")
+                other = listOf("Sixth commit")
             ),
             ChangelogEntry(
                 release = null,
@@ -179,7 +176,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Fifth commit")
+                other = listOf("Fifth commit")
             )
         ),
         SemanticVersion("0.3.0") to listOf(
@@ -192,7 +189,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Fourth commit")
+                other = listOf("Fourth commit")
             ),
             ChangelogEntry(
                 release = null,
@@ -200,7 +197,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Fourth 3 commit")
+                other = listOf("Fourth 3 commit")
             ),
             ChangelogEntry(
                 release = null,
@@ -208,7 +205,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Fourth 2 commit")
+                other = listOf("Fourth 2 commit")
             ),
             ChangelogEntry(
                 release = null,
@@ -216,7 +213,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Fourth 1 commit")
+                other = listOf("Fourth 1 commit")
             )
         ),
         SemanticVersion("0.2.0") to listOf(
@@ -229,7 +226,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Third commit")
+                other = listOf("Third commit")
             ),
             ChangelogEntry(
                 release = null,
@@ -237,7 +234,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Third 3 commit")
+                other = listOf("Third 3 commit")
             ),
             ChangelogEntry(
                 release = null,
@@ -245,7 +242,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Third 2 commit")
+                other = listOf("Third 2 commit")
             ),
             ChangelogEntry(
                 release = null,
@@ -253,7 +250,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Third 1 commit")
+                other = listOf("Third 1 commit")
             )
         ),
         SemanticVersion("0.1.0") to listOf(
@@ -266,7 +263,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Second commit")
+                other = listOf("Second commit")
             ),
             ChangelogEntry(
                 release = null,
@@ -274,7 +271,7 @@ private val changelist = Changelist(
                 changed = emptyList(),
                 fixed = emptyList(),
                 breakingChange = emptyList(),
-                unknown = listOf("Initial Commit")
+                other = listOf("Initial Commit")
             )
         )
     )

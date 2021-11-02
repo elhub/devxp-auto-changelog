@@ -14,7 +14,7 @@ data class ChangelogEntry(
     val changed: List<String> = emptyList(),
     val fixed: List<String> = emptyList(),
     val breakingChange: List<String> = emptyList(),
-    val unknown: List<String> = emptyList()
+    val other: List<String> = emptyList()
 ) {
     data class Release(
         val version: Version,
@@ -27,7 +27,7 @@ data class ChangelogEntry(
         val changed: MutableList<String> = mutableListOf()
         val fixed: MutableList<String> = mutableListOf()
         val breakingChange: MutableList<String> = mutableListOf()
-        val unknown: MutableList<String> = mutableListOf()
+        val other: MutableList<String> = mutableListOf()
 
         fun withRelease(release: Release): Builder {
             return apply { this.release = release }
@@ -47,7 +47,7 @@ data class ChangelogEntry(
                 TitleKeyword.BREAKING_CHANGE -> this.breakingChange.add(msg)
                 TitleKeyword.CHANGE -> this.changed.add(msg)
                 TitleKeyword.FIX -> this.fixed.add(msg)
-                TitleKeyword.UNKNOWN -> this.unknown.add(msg)
+                TitleKeyword.OTHER -> this.other.add(msg)
             }
 
             return this
@@ -59,7 +59,7 @@ data class ChangelogEntry(
             changed = changed,
             fixed = fixed,
             breakingChange = breakingChange,
-            unknown = unknown
+            other = other
         )
     }
 }

@@ -54,7 +54,7 @@ class ChangelogWriter {
         val breakingChanges = v.flatMap { it.breakingChange.map { s -> s } }
         val changes = v.flatMap { it.changed.map { s -> s } }
         val fixes = v.flatMap { it.fixed.map { s -> s } }
-        val unknown = v.flatMap { it.unknown.map { s -> s } }
+        val unknown = v.flatMap { it.other.map { s -> s } }
 
         val sb = StringBuilder()
 
