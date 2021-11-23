@@ -72,8 +72,7 @@ project {
         }
     }
 
-    val publishDocs =         buildType(
-        PublishDocs(
+    val publishDocs = PublishDocs(
             PublishDocs.Config(
                 vcsRoot = DslContext.settingsRoot,
                 type = projectType,
@@ -87,7 +86,6 @@ project {
                 }
             }
         }
-    )
 
     listOf(unitTest, sonarScan, assemble, autoRelease, publishDocs).forEach { buildType(it) }
 
