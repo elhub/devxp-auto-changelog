@@ -10,11 +10,11 @@ import no.elhub.common.build.configuration.ProjectType
 import no.elhub.common.build.configuration.SonarScan
 import no.elhub.common.build.configuration.UnitTest
 
-version = "2021.1"
+version = "2021.2"
 
 project {
 
-    val projectId = "no.elhub.tools:dev-tools-auto-changelog"
+    val projectId = "no.elhub.devxp:devxp-auto-changelog"
     val projectType = ProjectType.GRADLE
     val artifactoryRepository = "elhub-bin-release-local"
 
@@ -71,7 +71,24 @@ project {
         }
     }
 
-    listOf(unitTest, sonarScan, assemble, autoRelease).forEach { buildType(it) }
+    val publishDocs =         buildType(
+        PublishDocs(
+            PublishDocs.Config(
+                vcsRoot = DslContext.settingsRoot,
+                type = projectType,
+                dest = "devxp/devxp-auto-changelog"
+            )
+        ) {
+            triggers {
+                vcs {
+                    branchFilter = "+:<default>"
+                    quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_DEFAULT
+                }
+            }
+        }
+    )
+
+    listOf(unitTest, sonarScan, assemble, autoRelease, publishDocs).forEach { buildType(it) }
 
     buildType(
         CodeReview(
