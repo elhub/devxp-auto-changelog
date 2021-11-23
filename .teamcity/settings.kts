@@ -63,13 +63,6 @@ project {
         dependencies {
             snapshot(assemble) { }
         }
-
-        triggers {
-            vcs {
-                branchFilter = "+:<default>"
-                quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_DEFAULT
-            }
-        }
     }
 
     val publishDocs = PublishDocs(
