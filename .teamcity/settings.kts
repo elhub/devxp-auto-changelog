@@ -79,6 +79,9 @@ project {
                 dest = "devxp/devxp-auto-changelog"
             )
         ) {
+            dependencies {
+                snapshot(autoRelease) { }
+            }
             triggers {
                 vcs {
                     branchFilter = "+:<default>"
