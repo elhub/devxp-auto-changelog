@@ -150,7 +150,7 @@ class GitRepoTest : DescribeSpec({
 })
 
 private fun Git.addCommit(repoPath: Path, message: String): RevCommit {
-    repoPath.resolve("${faker.random.randomAlphanumeric(10)}.txt").toFile().createNewFile()
+    repoPath.resolve("${faker.random.randomString(10)}.txt").toFile().createNewFile()
     add().addFilepattern(".").call()
     return commit().setMessage(message).call()
 }

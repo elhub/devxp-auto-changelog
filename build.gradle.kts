@@ -1,5 +1,4 @@
 import org.gradle.jvm.tasks.Jar
-import java.net.URI
 
 description = "Automated changelog generation for git projects"
 
@@ -7,15 +6,9 @@ val kotestVersion = "4.4.1"
 val jgitVersion = "5.11.0.202103091610-r"
 val mockkVersion = "1.10.6"
 
-repositories {
-    maven {
-        url = URI("https://oss.sonatype.org/content/repositories/snapshots/")
-    }
-}
-
 dependencies {
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.6.0"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0")
     implementation("org.eclipse.jgit:org.eclipse.jgit:$jgitVersion")
     implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:$jgitVersion")
     implementation("info.picocli:picocli:4.6.1")
@@ -25,7 +18,7 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.kotest:kotest-extensions-allure-jvm:$kotestVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("io.github.serpro69:kotlin-faker:1.9.0-SNAPSHOT")
+    testImplementation("io.github.serpro69:kotlin-faker:1.9.0")
 }
 
 val mainClassName : String by project
@@ -44,3 +37,7 @@ val fatJar = task("fatJar", type = Jar::class) {
 }
 
 tasks["assemble"].dependsOn(tasks["fatJar"])
+
+// TODO remove once https://phabricator.elhub.cloud/D3943 is closed and jacoco on TC is updated
+//  + update elhub-gradle of course
+tasks["jacocoTestReport"].enabled = false
