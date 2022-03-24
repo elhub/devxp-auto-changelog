@@ -17,11 +17,20 @@ project {
 
     val projectId = "no.elhub.devxp:devxp-auto-changelog"
     val projectType = ProjectType.GRADLE
-    val artifactoryRepository = "elhub-bin-release-local"
+    val artifactoryRepository = "N/A" // this is set for each module individually
 
     params {
         param("teamcity.ui.settings.readOnly", "true")
     }
+
+    val modules = listOf("cli", "core")
+
+    val sonarScanConfig = SonarScan.Config(
+        vcsRoot = DslContext.settingsRoot,
+        type = projectType,
+        sonarId = projectId,
+        sonarProjectModules = modules,
+    )
 
     val unitTest = UnitTest(
         UnitTest.Config(
@@ -30,13 +39,7 @@ project {
         )
     )
 
-    val sonarScan = SonarScan(
-        SonarScan.Config(
-            vcsRoot = DslContext.settingsRoot,
-            type = projectType,
-            sonarId = projectId
-        )
-    ) {
+    val sonarScan = SonarScan(sonarScanConfig) {
         dependencies {
             snapshot(unitTest) { }
         }
@@ -66,22 +69,22 @@ project {
     }
 
     val publishDocs = PublishDocs(
-            PublishDocs.Config(
-                vcsRoot = DslContext.settingsRoot,
-                type = projectType,
-                dest = "devxp/devxp-auto-changelog"
-            )
-        ) {
-            dependencies {
-                snapshot(autoRelease) { }
-            }
-            triggers {
-                vcs {
-                    branchFilter = "+:<default>"
-                    quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_DEFAULT
-                }
+        PublishDocs.Config(
+            vcsRoot = DslContext.settingsRoot,
+            type = projectType,
+            dest = "devxp/devxp-auto-changelog"
+        )
+    ) {
+        dependencies {
+            snapshot(autoRelease) { }
+        }
+        triggers {
+            vcs {
+                branchFilter = "+:<default>"
+                quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_DEFAULT
             }
         }
+    }
 
     listOf(unitTest, sonarScan, assemble, autoRelease, publishDocs).forEach { buildType(it) }
 
@@ -90,7 +93,7 @@ project {
             CodeReview.Config(
                 vcsRoot = DslContext.settingsRoot,
                 type = projectType,
-                sonarId = projectId
+                sonarScanConfig = sonarScanConfig,
             )
         )
     )
