@@ -19,9 +19,10 @@ group = "no.elhub.devxp"
 description = "Automated changelog generation for git projects"
 
 subprojects {
-    group = parent?.group?.toString() ?: "no.elhub.devxp"
+    group = if (this.name == "cli") "" else parent?.group?.toString() ?: "no.elhub.devxp"
     version = rootProject.version
-    val artifactId = "${rootProject.name}-${this@subprojects.name}"
+    val subproject = this@subprojects
+    val subprojectName = subproject.name
 
     repositories {
         maven("https://jfrog.elhub.cloud/artifactory/elhub-mvn/")
@@ -48,20 +49,20 @@ subprojects {
     tasks["assemble"].dependsOn(tasks["jar"])
 
     tasks.withType(Jar::class.java) {
-        archiveBaseName.set(artifactId)
+        archiveBaseName.set(rootProject.name)
         manifest {
-            attributes["Implementation-Title"] = artifactId
+            attributes["Implementation-Title"] = subprojectName
             attributes["Implementation-Version"] = rootProject.version
         }
     }
 
     publishing {
         publications {
-            create<MavenPublication>(this@subprojects.name) {
+            create<MavenPublication>(subprojectName) {
+                groupId = subproject.group.toString()
+                artifactId = subprojectName
+                version = subproject.version.toString()
                 from(components["java"])
-                pom {
-                    setArtifactId(artifactId)
-                }
             }
         }
     }
@@ -82,8 +83,9 @@ subprojects {
                 setProperty("password", project.findProperty("mavenpass") ?: "nopass")
             })
             defaults(delegateClosureOf<GroovyObject> {
-                invokeMethod("publications", this@subprojects.name)
+                invokeMethod("publications", subprojectName)
                 setProperty("publishArtifacts", true)
+                setProperty("publishPom", subprojectName == "core")
             })
         })
         resolve(delegateClosureOf<ResolverConfig> {
@@ -136,4 +138,8 @@ fun isNonStable(version: String): Boolean {
     val regex = "^[0-9,.v-]+(-r|-jre)?$".toRegex()
     val isStable = stableKeyword || regex.matches(version)
     return isStable.not()
+}
+
+tasks.withType(Jar::class.java) {
+    enabled = false // nothing to build in the root project
 }

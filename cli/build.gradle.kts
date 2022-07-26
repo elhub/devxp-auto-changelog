@@ -9,6 +9,8 @@ val mainClassName: String by project
 
 val fatJar by tasks.creating(type = Jar::class) {
     manifest {
+        attributes["Implementation-Title"] = rootProject.name
+        attributes["Implementation-Version"] = rootProject.version
         attributes["Main-Class"] = mainClassName
     }
     from(configurations.compileClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
