@@ -51,7 +51,7 @@ subprojects {
     tasks.withType(Jar::class.java) {
         archiveBaseName.set(rootProject.name)
         manifest {
-            attributes["Implementation-Title"] = subprojectName
+            attributes["Implementation-Title"] = rootProject.name
             attributes["Implementation-Version"] = rootProject.version
         }
     }
@@ -60,7 +60,7 @@ subprojects {
         publications {
             create<MavenPublication>(subprojectName) {
                 groupId = subproject.group.toString()
-                artifactId = subprojectName
+                artifactId = rootProject.name
                 version = subproject.version.toString()
                 from(components["java"])
             }
