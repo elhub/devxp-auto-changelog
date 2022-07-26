@@ -6,7 +6,7 @@ import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
 
 plugins {
     java
-    kotlin("jvm") version "1.6.10" apply false
+    kotlin("jvm") version "1.7.10" apply false
     id("com.adarshr.test-logger") version "2.1.1"
     id("com.github.ben-manes.versions") version "0.28.0" apply false
     id("io.qameta.allure") version "2.8.1" apply false
@@ -20,7 +20,7 @@ group = "no.elhub.devxp"
 description = "Automated changelog generation for git projects"
 
 subprojects {
-    group = parent?.group?.toString() ?: "no.elhub.core.eip"
+    group = parent?.group?.toString() ?: "no.elhub.devxp"
     version = rootProject.version
     val artifactId = "${rootProject.name}-${this@subprojects.name}"
 
