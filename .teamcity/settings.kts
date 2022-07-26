@@ -11,7 +11,7 @@ import no.elhub.common.build.configuration.PublishDocs
 import no.elhub.common.build.configuration.SonarScan
 import no.elhub.common.build.configuration.UnitTest
 
-version = "2021.2"
+version = "2022.04"
 
 project {
 
@@ -35,7 +35,8 @@ project {
     val unitTest = UnitTest(
         UnitTest.Config(
             vcsRoot = DslContext.settingsRoot,
-            type = projectType
+            type = projectType,
+            generateAllureReport = false,
         )
     )
 

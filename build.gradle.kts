@@ -9,7 +9,6 @@ plugins {
     kotlin("jvm") version "1.7.10" apply false
     id("com.adarshr.test-logger") version "2.1.1"
     id("com.github.ben-manes.versions") version "0.28.0" apply false
-    id("io.qameta.allure") version "2.8.1" apply false
     id("com.github.johnrengelman.shadow") version "6.1.0" apply false
     `maven-publish`
     id("com.jfrog.artifactory") version "4.18.3"
@@ -33,7 +32,6 @@ subprojects {
         plugin("org.jetbrains.kotlin.jvm")
         plugin("com.adarshr.test-logger")
         plugin("com.github.ben-manes.versions")
-        plugin("io.qameta.allure")
         plugin("jacoco")
         plugin("maven-publish")
         plugin("com.jfrog.artifactory")
@@ -75,7 +73,11 @@ subprojects {
         setContextUrl("https://jfrog.elhub.cloud/artifactory")
         publish(delegateClosureOf<PublisherConfig> {
             repository(delegateClosureOf<GroovyObject> {
-                setProperty("repoKey", project.findProperty("targetRepoKey"))
+                setProperty(
+                    "repoKey",
+                    project.findProperty("targetRepoKey")
+                        ?: throw NoSuchElementException("targetRepoKey property must be set")
+                )
                 setProperty("username", project.findProperty("mavenuser") ?: "nouser")
                 setProperty("password", project.findProperty("mavenpass") ?: "nopass")
             })
