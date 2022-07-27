@@ -2,7 +2,7 @@ package no.elhub.devxp.autochangelog.project
 
 import java.util.regex.Pattern
 
-val versionPattern: Pattern = Pattern.compile("""(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z]+).(\d+))?""")
+val versionPattern: Pattern = Pattern.compile("""^(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z]+).(\d+))?""")
 
 interface Version
 

@@ -66,11 +66,13 @@ class GitRepo(private val git: Git) {
         end: ObjectId? = null,
         predicate: (RevCommit) -> Boolean = { true }
     ): GitLog {
-        val versionedCommits: List<Pair<String, ObjectId>> = git.tagList().call().map {
-            val name = it.name.replace("refs/tags/v", "")
-            git.repository.refDatabase.peel(it).peeledObjectId?.let { id -> name to id }
-                ?: (name to it.objectId)
-        }
+        val versionedCommits: List<Pair<String, ObjectId>> = git.tagList().call()
+            .map {
+                val name = it.name.replace("refs/tags/v", "")
+                git.repository.refDatabase.peel(it).peeledObjectId?.let { id -> name to id }
+                    ?: (name to it.objectId)
+            }
+            .filter { (v, _) -> v.matches(versionPattern.toRegex()) }
 
         val commits = log(start = start, end = end).fold(mutableListOf<GitCommit>()) { acc, commit ->
             if (predicate(commit)) {

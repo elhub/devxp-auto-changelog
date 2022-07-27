@@ -145,6 +145,12 @@ class GitRepoTest : DescribeSpec({
                 val cl = r.createChangelist(r.constructLog())
                 cl.changes[Unreleased] shouldBe null
             }
+            it("should ignore non-semver compliant tags") {
+                git.tag().setAnnotated(false).setName("foobar").setForceUpdate(true).call()
+                val r = GitRepo(git)
+                val cl = r.createChangelist(r.constructLog())
+                cl.changes.entries shouldContainExactly changelist.changes.entries.reversed()
+            }
         }
     }
 })

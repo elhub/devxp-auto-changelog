@@ -52,7 +52,9 @@ data class Changelog(
 
 }
 
-val releaseHeaderRegex: Pattern = Pattern.compile("""^## \[($versionPattern)] - \d{4}-\d{2}-\d{2}""")
+val releaseHeaderRegex: Pattern = Pattern.compile(
+    """^## \[(${versionPattern.pattern().drop(1)})] - \d{4}-\d{2}-\d{2}"""
+)
 
 val defaultContent = sequence {
     val lines = listOf(
