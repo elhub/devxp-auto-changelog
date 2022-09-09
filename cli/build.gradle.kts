@@ -1,3 +1,8 @@
+plugins {
+    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("application")
+}
+
 dependencies {
     implementation(project(":core"))
     implementation("info.picocli:picocli:4.6.3")
@@ -5,19 +10,15 @@ dependencies {
 
 group = ""
 
-val mainClassName: String by project
+val applicationMainClass : String by project
 
-val fatJar by tasks.creating(type = Jar::class) {
-    manifest {
-        attributes["Implementation-Title"] = rootProject.name
-        attributes["Implementation-Version"] = rootProject.version
-        attributes["Main-Class"] = mainClassName
-    }
-    from(configurations.compileClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
-    exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "*.html")
-    with(tasks.jar.get() as CopySpec)
-    mustRunAfter(tasks["jar"])
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+application {
+    mainClass.set(applicationMainClass)
 }
 
-tasks["assemble"].dependsOn("fatJar")
+val shadowJar by tasks.getting(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
+    archiveBaseName.set(rootProject.name)
+    archiveClassifier.set("")
+}
+
+tasks["assemble"].dependsOn(tasks["shadowJar"])
