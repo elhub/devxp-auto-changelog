@@ -10,7 +10,7 @@ import no.elhub.common.build.configuration.ProjectType
 import no.elhub.common.build.configuration.SonarScan
 import no.elhub.common.build.configuration.UnitTest
 
-version = "2021.2"
+version = "2022.04"
 
 project {
 
@@ -32,8 +32,7 @@ project {
     val sonarScanConfig = SonarScan.Config(
         vcsRoot = DslContext.settingsRoot,
         type = projectType,
-        sonarId = projectId,
-        sonarProjectSources = "src"
+        sonarId = projectId
     )
 
     val sonarScan = SonarScan(sonarScanConfig) {

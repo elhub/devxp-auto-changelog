@@ -41,7 +41,9 @@ This application requires Java 1.8 or later. In addition, auto-changelog must be
 
 ### Installation
 
-The latest version can be downloaded from Elhub's internal artifactory under _elhub-bin/auto-changelog/_.
+#### CLI Application
+
+The latest version can be downloaded from Elhub's internal artifactory under _elhub-bin/auto-changelog-cli/_.
 
 To build the current version, run:
 
@@ -55,12 +57,30 @@ To publish the executable jar to artifactory, run:
 ./gradlew publish
 ```
 
+#### API
+
+Add the library to dependencies.
+
+Gradle:
+```kotlin
+implementation("no.elhub.devxp:auto-changelog-core:$version")
+```
+
+Maven:
+```xml
+<dependency>
+  <groupId>no.elhub.devxp</groupId>
+  <artifactId>auto-changelog-core</artifactId>
+  <version>${version}</version>
+</dependency>
+```
+
 ## Usage
 
-To run the project on the existing repository for a gradle project, use:
+### CLI
 
 ```sh
-java -jar auto-changelog.jar
+java -jar auto-changelog-cli.jar --help
 ```
 
 ## Testing
