@@ -59,6 +59,13 @@ project {
             repository = artifactoryRepository
         )
     ) {
+        triggers {
+            vcs {
+                branchFilter = "+:<default>"
+                quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_DEFAULT
+            }
+        }
+
         dependencies {
             snapshot(assemble) { }
         }
