@@ -7,7 +7,6 @@ import no.elhub.common.build.configuration.Assemble
 import no.elhub.common.build.configuration.AutoRelease
 import no.elhub.common.build.configuration.CodeReview
 import no.elhub.common.build.configuration.ProjectType
-import no.elhub.common.build.configuration.PublishDocs
 import no.elhub.common.build.configuration.SonarScan
 import no.elhub.common.build.configuration.UnitTest
 
@@ -30,13 +29,14 @@ project {
         )
     )
 
-    val sonarScan = SonarScan(
-        SonarScan.Config(
-            vcsRoot = DslContext.settingsRoot,
-            type = projectType,
-            sonarId = projectId
-        )
-    ) {
+    val sonarScanConfig = SonarScan.Config(
+        vcsRoot = DslContext.settingsRoot,
+        type = projectType,
+        sonarId = projectId,
+        sonarProjectSources = "src"
+    )
+
+    val sonarScan = SonarScan(sonarScanConfig) {
         dependencies {
             snapshot(unitTest) { }
         }
@@ -65,32 +65,14 @@ project {
         }
     }
 
-    val publishDocs = PublishDocs(
-            PublishDocs.Config(
-                vcsRoot = DslContext.settingsRoot,
-                type = projectType,
-                dest = "devxp/devxp-auto-changelog"
-            )
-        ) {
-            dependencies {
-                snapshot(autoRelease) { }
-            }
-            triggers {
-                vcs {
-                    branchFilter = "+:<default>"
-                    quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_DEFAULT
-                }
-            }
-        }
-
-    listOf(unitTest, sonarScan, assemble, autoRelease, publishDocs).forEach { buildType(it) }
+    listOf(unitTest, sonarScan, assemble, autoRelease).forEach { buildType(it) }
 
     buildType(
         CodeReview(
             CodeReview.Config(
                 vcsRoot = DslContext.settingsRoot,
                 type = projectType,
-                sonarId = projectId
+                sonarScanConfig = sonarScanConfig,
             )
         )
     )
