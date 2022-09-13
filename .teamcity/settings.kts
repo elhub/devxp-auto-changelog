@@ -35,6 +35,7 @@ project {
         type = projectType,
         sonarId = projectId,
         sonarProjectSources = "cli/src, core/src",
+        sonarProjectTests = "cli/test, core/test"
         sonarProjectBinaries = "cli/build/classes, core/build/classes",
     )
 
