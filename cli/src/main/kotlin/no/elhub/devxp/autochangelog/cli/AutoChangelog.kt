@@ -24,6 +24,7 @@ import kotlin.system.exitProcess
     versionProvider = ManifestVersionProvider::class,
     sortOptions = false
 )
+
 object AutoChangelog : Callable<Int> {
 
     @CommandLine.Option(
