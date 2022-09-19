@@ -1,8 +1,11 @@
 package no.elhub.devxp.autochangelog.io
 
+import no.elhub.devxp.autochangelog.config.Configuration
 import no.elhub.devxp.autochangelog.extensions.linesAfter
 import no.elhub.devxp.autochangelog.extensions.linesUntil
 import no.elhub.devxp.autochangelog.project.Changelist
+import no.elhub.devxp.autochangelog.project.GitRepo
+import no.elhub.devxp.autochangelog.project.Unreleased
 import no.elhub.devxp.autochangelog.project.defaultContent
 import no.elhub.devxp.autochangelog.project.releaseHeaderRegex
 import java.io.StringWriter
@@ -47,6 +50,33 @@ class ChangelogWriter {
                 acc.appendLine(s)
                 acc
             }
+    }
+
+    fun generateCompareUrl(changelist: Changelist, repo: GitRepo): String {
+        val versions = changelist.changes.entries.drop(changelist.changes.size - 2).map { it.key }
+        val first = versions.first()
+        val last = versions.last()
+
+        val remoteUri = repo.git.remoteList().call()
+            .firstOrNull { it.name == Configuration.gitRemoteName }
+            ?.urIs
+            ?.first()
+
+        val s = remoteUri.toString()
+            .replace(regex = Regex("""\.git$"""), "")
+            .replaceBefore("github.com/", "")
+            .replaceBefore("code.elhub.cloud/", "")
+
+        val end = if (last == Unreleased) Configuration.gitDefaultBranchName else "v${last}"
+        val compareString = if (s.startsWith("github.com")) {
+            "https://$s/compare/v$first...$end"
+        } else if (end == Configuration.gitDefaultBranchName) {
+            "https://$s/compare/commits?targetBranch=refs%2Ftags%2Fv$first"
+        } else {
+            "https://$s/compare/commits?targetBranch=refs%2Ftags%2Fv$first&sourceBranch=refs%2Ftags%2F$end"
+        }
+
+        return compareString
     }
 
     private fun Changelist.toChangelogLines(): List<String> = this.changes.entries.reversed().map { (k, v) ->

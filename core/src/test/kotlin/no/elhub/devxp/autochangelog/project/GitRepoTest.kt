@@ -10,6 +10,7 @@ import no.elhub.devxp.autochangelog.extensions.delete
 import no.elhub.devxp.autochangelog.extensions.description
 import no.elhub.devxp.autochangelog.git.GitCommit
 import no.elhub.devxp.autochangelog.git.GitMessage
+import no.elhub.devxp.autochangelog.io.ChangelogWriter
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.revwalk.RevCommit
@@ -151,6 +152,12 @@ class GitRepoTest : DescribeSpec({
                 val cl = r.createChangelist(r.constructLog())
                 cl.changes.entries shouldContainExactly changelist.changes.entries.reversed()
             }
+        }
+
+        it("should generate compare url") {
+            val cl = repo.createChangelist(repo.constructLog())
+            val writer = ChangelogWriter()
+            writer.generateCompareUrl(cl, repo) shouldBe "https://github.com/elhub/keep-a-changelog/compare/v1.1.0...master"
         }
     }
 })

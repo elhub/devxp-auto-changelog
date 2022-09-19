@@ -16,7 +16,7 @@ import java.time.ZoneId
  *
  * Serves mainly as a wrapper around [git] functionality.
  */
-class GitRepo(private val git: Git) {
+class GitRepo(val git: Git) {
 
     /**
      * Returns the log from this [git] object as sequence of commits.

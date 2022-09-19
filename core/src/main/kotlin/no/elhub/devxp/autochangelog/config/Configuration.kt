@@ -19,4 +19,10 @@ object Configuration {
     const val includeJiraLinks: Boolean = true
 
     const val jiraIssuesPatternString: String = "JIRA Issues: "
+
+    // TODO this needs to be configurable
+    const val gitRemoteName: String = "origin"
+
+    // TODO this needs to be configurable
+    const val gitDefaultBranchName: String = "master"
 }
