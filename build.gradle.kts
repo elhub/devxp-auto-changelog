@@ -21,3 +21,4 @@ subprojects {
 tasks.withType(Jar::class.java) {
     enabled = false // nothing to build in the root project
 }
+    implementation(platform("no.elhub.test:test-bom:34.1.0"))
