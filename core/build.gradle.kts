@@ -1,3 +1,7 @@
+plugins {
+    id("no.elhub.devxp.kotlin-library")
+}
+
 dependencies {
     val mockkVersion = "1.12.4"
     val implementation by configurations

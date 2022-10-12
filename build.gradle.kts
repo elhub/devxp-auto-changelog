@@ -1,6 +1,11 @@
+plugins {
+    id("no.elhub.devxp.kotlin-core") version "0.0.1"
+}
+
 description = "Automated changelog generation for git projects"
 
 subprojects {
+    apply(plugin = "no.elhub.devxp.kotlin-core")
     group = if (this.name == "cli") "" else parent?.group?.toString() ?: "no.elhub.devxp"
     version = rootProject.version
     val subproject = this@subprojects
