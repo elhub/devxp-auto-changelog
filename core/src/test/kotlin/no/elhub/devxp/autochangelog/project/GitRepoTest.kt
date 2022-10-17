@@ -157,7 +157,7 @@ class GitRepoTest : DescribeSpec({
         it("should generate compare url") {
             val cl = repo.createChangelist(repo.constructLog())
             val writer = ChangelogWriter()
-            writer.generateCompareUrl(cl, repo) shouldBe "https://github.com/elhub/keep-a-changelog/compare/v1.1.0...master"
+            writer.generateCompareUrl(cl, repo) shouldBe "https://code.elhub.cloud/scm/ext/ext-keep-a-changelog/compare/commits?targetBranch=refs%2Ftags%2Fv1.1.0"
         }
     }
 })

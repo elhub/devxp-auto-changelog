@@ -13,7 +13,7 @@ object TestRepository {
     val git: Git by lazy {
         Git.cloneRepository()
             .setDirectory(tempFolderPath.toFile())
-            .setURI("https://github.com/elhub/keep-a-changelog.git")
+            .setURI("https://code.elhub.cloud/scm/ext/ext-keep-a-changelog.git")
             .call()
     }
 
