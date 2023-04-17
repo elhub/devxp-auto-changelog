@@ -10,7 +10,7 @@ import no.elhub.devxp.build.configuration.ProjectType
 import no.elhub.devxp.build.configuration.SonarScan
 import no.elhub.devxp.build.configuration.UnitTest
 
-version = "2022.04"
+version = "2022.10"
 
 project {
 
