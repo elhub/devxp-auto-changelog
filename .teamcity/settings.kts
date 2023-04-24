@@ -20,6 +20,9 @@ project {
 
     params {
         param("teamcity.ui.settings.readOnly", "true")
+        param("env.JAVA_HOME", "%env.JDK_17_0%")
+        param("env.JDK_HOME", "%env.JDK_17_0%")
+        param("env.JRE_HOME", "%env.JDK_17_0%")
     }
 
     val unitTest = UnitTest(
