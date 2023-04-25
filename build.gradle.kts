@@ -1,5 +1,5 @@
 plugins {
-    id("no.elhub.devxp.kotlin-core") version "0.0.15"
+    id("no.elhub.devxp.kotlin-core") version "0.1.0"
 }
 
 description = "Automated changelog generation for git projects"
