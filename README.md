@@ -37,13 +37,13 @@
 
 ### Prerequisites
 
-This application requires Java 1.8 or later. In addition, auto-changelog must be run in a directory with an initialized git repository.
+This application requires Java 17 or later. In addition, auto-changelog must be run in a directory with an initialized git repository.
 
 ### Installation
 
 #### CLI Application
 
-The latest version can be downloaded from Elhub's internal artifactory under _elhub-bin/auto-changelog-cli/_.
+The latest version can be downloaded from Elhub's internal artifactory under _elhub-bin/auto-changelog/_.
 
 To build the current version, run:
 
