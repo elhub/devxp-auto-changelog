@@ -37,7 +37,11 @@ project {
         vcsRoot = DslContext.settingsRoot,
         type = projectType,
         sonarId = projectId,
-        sonarProjectModules = listOf("cli","core")
+        sonarProjectModules = listOf("cli", "core"),
+        additionalParams = listOf(
+            "-Dsonar.dependencyCheck.jsonReportPath=build/reports/dependency-check-report.json",
+            "-Dsonar.dependencyCheck.htmlReportPath=build/reports/dependency-check-report.html",
+        )
     )
 
     val sonarScan = SonarScan(sonarScanConfig) {
