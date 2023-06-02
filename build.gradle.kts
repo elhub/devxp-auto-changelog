@@ -1,7 +1,7 @@
 import org.owasp.dependencycheck.reporting.ReportGenerator
 
 plugins {
-    id("no.elhub.devxp.kotlin-core") version "0.1.0"
+    id("no.elhub.devxp.kotlin-core") version "0.1.2"
 }
 
 description = "Automated changelog generation for git projects"
@@ -23,11 +23,4 @@ subprojects {
 
 tasks.withType(Jar::class.java) {
     enabled = false // nothing to build in the root project
-}
-
-dependencyCheck {
-    formats = listOf(
-        ReportGenerator.Format.JSON,
-        ReportGenerator.Format.HTML,
-    )
 }
