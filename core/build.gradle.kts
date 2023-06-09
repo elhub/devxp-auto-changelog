@@ -1,5 +1,4 @@
 plugins {
-    id("no.elhub.devxp.kotlin-library")
 }
 
 dependencies {

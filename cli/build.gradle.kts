@@ -1,5 +1,4 @@
 plugins {
-    id("no.elhub.devxp.kotlin-application")
 }
 
 dependencies {
@@ -11,13 +10,19 @@ group = ""
 
 val applicationMainClass : String by project
 
-application {
-    mainClass.set(applicationMainClass)
+val fatJar by tasks.creating(type = Jar::class) {
+    manifest {
+        attributes["Implementation-Title"] = rootProject.name
+        attributes["Implementation-Version"] = rootProject.version
+        attributes["Main-Class"] = applicationMainClass
+    }
+    from(configurations.compileClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "*.html")
+    with(tasks.jar.get() as CopySpec)
+    mustRunAfter(tasks["jar"])
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-val shadowJar by tasks.getting(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
-    archiveBaseName.set(rootProject.name)
-    archiveClassifier.set("")
-}
+tasks["assemble"].dependsOn("fatJar")
 
-tasks["assemble"].dependsOn(tasks["shadowJar"])
+tasks["generateMetadataFileForCliPublication"].dependsOn("fatJar")
