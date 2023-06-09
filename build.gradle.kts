@@ -1,4 +1,5 @@
 import groovy.lang.GroovyObject
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
 import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
 
@@ -28,12 +29,39 @@ subprojects {
     }
 
     dependencies {
+        val jgitVersion = "5.11.0.202103091610-r" // java8 compatible version
         implementation(platform(rootProject.libs.kotlin.bom))
         implementation(rootProject.libs.kotlin.stdlib.jdk8)
-        implementation(rootProject.libs.git.jgit)
-        implementation(rootProject.libs.git.jgit.ssh)
+        implementation(rootProject.libs.git.jgit) {
+            version {
+                strictly(jgitVersion)
+            }
+        }
+        implementation(rootProject.libs.git.jgit.ssh) {
+            version {
+                strictly(jgitVersion)
+            }
+        }
         testImplementation(rootProject.libs.test.kotest.runner.junit5)
     }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlin {
+        jvmToolchain {
+            languageVersion.set(JavaLanguageVersion.of(8))
+        }
+    }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
+    }
+
 
     tasks["assemble"].dependsOn(tasks["jar"])
 
