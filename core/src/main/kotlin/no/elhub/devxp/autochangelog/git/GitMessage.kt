@@ -14,7 +14,8 @@ enum class TitleKeyword(val keywords: List<String>) {
     BREAKING_CHANGE(listOf("Breaking Change")),
     CHANGE(listOf("Change", "Deprecate", "Delete", "Refactor", "Update", "Remove", "Update")),
     FIX(listOf("Fix")),
-    OTHER(emptyList())
+    RELEASE(listOf("Release")),
+    OTHER(emptyList()),
 }
 
 val GitMessage.titleKeyword: TitleKeyword

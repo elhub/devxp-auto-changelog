@@ -1,5 +1,6 @@
 package no.elhub.devxp.autochangelog.project
 
+import java.time.ZoneId
 import no.elhub.devxp.autochangelog.extensions.description
 import no.elhub.devxp.autochangelog.extensions.title
 import no.elhub.devxp.autochangelog.git.GitCommit
@@ -9,7 +10,6 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.revwalk.RevCommit
-import java.time.ZoneId
 
 /**
  * Represents a generic git repository.
@@ -17,6 +17,8 @@ import java.time.ZoneId
  * Serves mainly as a wrapper around [git] functionality.
  */
 class GitRepo(val git: Git) {
+
+    val tags: () -> List<Ref> = { git.tagList().call() }
 
     /**
      * Returns the log from this [git] object as sequence of commits.

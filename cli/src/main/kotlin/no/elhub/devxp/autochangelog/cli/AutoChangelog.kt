@@ -1,5 +1,9 @@
 package no.elhub.devxp.autochangelog.cli
 
+import java.io.File
+import java.util.concurrent.Callable
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.system.exitProcess
 import no.elhub.devxp.autochangelog.config.Configuration.includeOnlyWithJira
 import no.elhub.devxp.autochangelog.config.Configuration.jiraIssuesPatternString
 import no.elhub.devxp.autochangelog.extensions.description
@@ -10,10 +14,6 @@ import no.elhub.devxp.autochangelog.project.GitRepo
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
 import picocli.CommandLine
-import java.io.File
-import java.util.concurrent.Callable
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.system.exitProcess
 
 @ExperimentalPathApi
 @CommandLine.Command(
@@ -82,7 +82,11 @@ object AutoChangelog : Callable<Int> {
     }
 
     private fun GitRepo.getLog(end: ObjectId? = null): GitLog = constructLog(end = end) {
-        if (includeOnlyWithJira) it.description.any { s -> s.startsWith(jiraIssuesPatternString) } else true
+        if (includeOnlyWithJira) {
+            it.description.any { s -> s.startsWith(jiraIssuesPatternString) } || tags().any { t ->
+                (git.repository.refDatabase.peel(t).peeledObjectId ?: t.objectId) == it.toObjectId()
+            }
+        } else true
     }
 
     private fun File.createDirIfNotExists(): Boolean? = when {

@@ -47,6 +47,7 @@ data class ChangelogEntry(
                 TitleKeyword.BREAKING_CHANGE -> this.breakingChange.add(msg)
                 TitleKeyword.CHANGE -> this.changed.add(msg)
                 TitleKeyword.FIX -> this.fixed.add(msg)
+                TitleKeyword.RELEASE -> { /* do not include release commits in the changelog */ }
                 TitleKeyword.OTHER -> this.other.add(msg)
             }
 

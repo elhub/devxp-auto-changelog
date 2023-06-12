@@ -24,6 +24,7 @@ class ChangeEntryTest : DescribeSpec({
                         TitleKeyword.BREAKING_CHANGE -> builder.breakingChange shouldHaveSize 1
                         TitleKeyword.CHANGE -> builder.changed shouldHaveSize 1
                         TitleKeyword.FIX -> builder.fixed shouldHaveSize 1
+                        TitleKeyword.RELEASE -> {}
                         TitleKeyword.OTHER -> builder.other shouldHaveSize 1
                     }
                 }
