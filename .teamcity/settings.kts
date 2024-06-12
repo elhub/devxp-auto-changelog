@@ -3,7 +3,7 @@ import no.elhub.devxp.build.configuration.pipeline.constants.Group.DEVXP
 import no.elhub.devxp.build.configuration.pipeline.jobs.gradleAutoRelease
 import no.elhub.devxp.build.configuration.pipeline.jobs.gradleVerify
 
-elhubProject(DEVXP, "devxp-build-configuration") {
+elhubProject(DEVXP, "devxp-auto-changelog") {
 
     pipeline {
         sequential {
