@@ -3,27 +3,22 @@
 [<img src="https://img.shields.io/badge/repo-github-blue" alt="">](https://github.com/elhub/devxp-auto-changelog)
 [<img src="https://img.shields.io/badge/issues-jira-orange" alt="">](https://jira.elhub.cloud/issues/?jql=project%20%3D%20%22Team%20Dev%22%20AND%20component%20%3D%20devxp-auto-changelog%20AND%20status%20!%3D%20Done)
 [<img src="https://teamcity.elhub.cloud/app/rest/builds/buildType:(id:DevXp_DevXpAutoChangelog_PublishDocs)/statusIcon" alt="">](https://teamcity.elhub.cloud/project/DevXp_DevXpAutoChangelog?mode=builds#all-projects)
-[<img src="https://sonar.elhub.cloud/api/project_badges/measure?project=no.elhub.devxp%3Adevxp-auto-changelog&metric=alert_status" alt="">](https://sonar.elhub.cloud/dashboard?id=no.elhub.devxp%3Adevxp-auto-changelog)
-[<img src="https://sonar.elhub.cloud/api/project_badges/measure?project=no.elhub.devxp%3Adevxp-auto-changelog&metric=ncloc" alt="">](https://sonar.elhub.cloud/dashboard?id=no.elhub.devxp%3Adevxp-auto-changelog)
-[<img src="https://sonar.elhub.cloud/api/project_badges/measure?project=no.elhub.devxp%3Adevxp-auto-changelog&metric=bugs" alt="">](https://sonar.elhub.cloud/dashboard?id=no.elhub.devxp%3Adevxp-auto-changelog)
-[<img src="https://sonar.elhub.cloud/api/project_badges/measure?project=no.elhub.devxp%3Adevxp-auto-changelog&metric=vulnerabilities" alt="">](https://sonar.elhub.cloud/dashboard?id=no.elhub.devxp%3Adevxp-auto-changelog)
-[<img src="https://sonar.elhub.cloud/api/project_badges/measure?project=no.elhub.devxp%3Adevxp-auto-changelog&metric=coverage" alt="">](https://sonar.elhub.cloud/dashboard?id=no.elhub.devxp%3Adevxp-auto-changelog)
 
 ## Table of Contents
 
-* [About](#about)
-* [Getting Started](#getting-started)
-  * [Prerequisites](#prerequisites)
-  * [Installation](#installation)
-* [Usage](#usage)
-  * [Gradle](#gradle)
-  * [Maven](#maven)
-  * [Multi-module Maven](#multi-module-maven)
-* [Testing](#testing)
-* [Roadmap](#roadmap)
-* [Contributing](#contributing)
-* [Owners](#owners)
-* [License](#license)
+- [auto-changelog](#auto-changelog)
+  - [Table of Contents](#table-of-contents)
+  - [About](#about)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+      - [CLI Application](#cli-application)
+      - [API](#api)
+  - [Usage](#usage)
+    - [CLI](#cli)
+  - [Testing](#testing)
+  - [Contributing](#contributing)
+  - [Owners](#owners)
 
 ## About
 
@@ -91,20 +86,12 @@ The full suite of tests can be run using:
 ./gradlew test
 ```
 
-## Roadmap
-
-See the [open issues](https://github.com/elhub/dev-tools-auto-changelog/issues) for a list of proposed features (and known issues).
 
 ## Contributing
 
-Contributing, issues and feature requests are welcome. See the
-[Contributing](https://github.com/elhub/dev-tools-auto-changelog/blob/main/CONTRIBUTING.md) file.
+Contributing, issues and feature requests are welcome. See the [Contributing](https://github.com/elhub/devx-auto-changelog/blob/main/.github/CONTRIBUTING) file.
 
 ## Owners
 
-This project is developed by [Elhub](https://github.com/elhub). For the specific development group responsible for this
-code, see the [Codeowners](https://github.com/elhub/dev-tools-auto-changelog/blob/main/CODEOWNERS) file.
-
-## License
-
-This project is [MIT](https://github.com/elhub/dev-tools-auto-changelog/blob/main/LICENSE.md) licensed.
+This project is developed by [Elhub](https://www.elhub.no). For the specific development group responsible for this
+code, see the [Codeowners](https://github.com/elhub/devxp-auto-changelog/blob/main/.github/CODEOWNERS) file.
