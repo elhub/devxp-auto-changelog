@@ -10,15 +10,15 @@ data class GitMessage(
 )
 
 enum class TitleKeyword(val keywords: List<String>) {
-    ADD(listOf("Add", "Create", "Implement")),
-    BREAKING_CHANGE(listOf("Breaking Change")),
-    CHANGE(listOf("Change", "Deprecate", "Delete", "Refactor", "Update", "Remove", "Update")),
-    FIX(listOf("Fix")),
-    RELEASE(listOf("Release")),
+    ADD(listOf("Add", "add", "Create", "create", "Implement", "implement")),
+    BREAKING_CHANGE(listOf("Breaking Change", "breaking change")),
+    CHANGE(listOf("Change", "change", "Deprecate", "deprecate", "Delete", "delete", "Refactor", "refactor", "Update", "update", "Remove", "remove", "feat")),
+    FIX(listOf("Fix", "fix", "Bug", "bug", "BugFix", "bugfix")),
+    RELEASE(listOf("Release", "release")),
     OTHER(emptyList()),
 }
 
 val GitMessage.titleKeyword: TitleKeyword
     get() = TitleKeyword.values().dropLast(1).firstOrNull {
-        it.keywords.any { keyword -> title.startsWith(keyword) }
+        it.keywords.any { keyword -> title.startsWith(keyword, ignoreCase = true) }
     } ?: TitleKeyword.OTHER
