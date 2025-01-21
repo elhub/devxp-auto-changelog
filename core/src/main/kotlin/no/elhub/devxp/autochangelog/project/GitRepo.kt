@@ -10,6 +10,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.revwalk.RevCommit
+import org.slf4j.LoggerFactory
 
 /**
  * Represents a generic git repository.
@@ -101,6 +102,8 @@ class GitRepo(val git: Git) {
      * Creates a [Changelist] for from the [gitLog] log of commits in reversed chronological order.
      */
     fun createChangelist(gitLog: GitLog): Changelist {
+        val logger = LoggerFactory.getLogger(this::class.java)
+        logger.warn("I AM WARNING YOU")
         val map = gitLog.commits.foldRight(linkedMapOf<Version, List<ChangelogEntry>>()) { commit, acc ->
             val builder = ChangelogEntry.Builder()
             builder.withMessage(commit.message)

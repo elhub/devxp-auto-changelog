@@ -1,12 +1,11 @@
-import groovy.lang.GroovyObject
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
-import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
-
 plugins {
-    id("no.elhub.devxp.kotlin-core") version "0.1.2"
+    id("no.elhub.devxp.kotlin-application") version "0.2.3"
     `maven-publish`
-    id("com.jfrog.artifactory") version "4.18.3"
+}
+
+val applicationMainClass: String by project
+application {
+    mainClass = applicationMainClass
 }
 
 group = "no.elhub.devxp"
@@ -23,45 +22,16 @@ subprojects {
     }
 
     apply {
-        plugin("no.elhub.devxp.kotlin-core")
-        plugin("maven-publish")
-        plugin("com.jfrog.artifactory")
+        plugin("no.elhub.devxp.kotlin-application")
     }
 
     dependencies {
-        val jgitVersion = "5.11.0.202103091610-r" // java8 compatible version
         implementation(platform(rootProject.libs.kotlin.bom))
         implementation(rootProject.libs.kotlin.stdlib.jdk8)
-        implementation(rootProject.libs.git.jgit) {
-            version {
-                strictly(jgitVersion)
-            }
-        }
-        implementation(rootProject.libs.git.jgit.ssh) {
-            version {
-                strictly(jgitVersion)
-            }
-        }
+        implementation(rootProject.libs.git.jgit)
+        implementation(rootProject.libs.git.jgit.ssh)
         testImplementation(rootProject.libs.test.kotest.runner.junit5)
     }
-
-    java {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlin {
-        jvmToolchain {
-            languageVersion.set(JavaLanguageVersion.of(8))
-        }
-    }
-
-    tasks.withType<KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "1.8"
-        }
-    }
-
 
     tasks["assemble"].dependsOn(tasks["jar"])
 
@@ -88,26 +58,17 @@ subprojects {
     tasks["artifactoryPublish"].dependsOn("assemble")
 
     artifactory {
-        setContextUrl("https://jfrog.elhub.cloud/artifactory")
-        publish(delegateClosureOf<PublisherConfig> {
-            repository(delegateClosureOf<GroovyObject> {
-                setProperty(
-                    "repoKey",
-                    project.findProperty("targetRepoKey")
-                        ?: throw NoSuchElementException("targetRepoKey property must be set")
+        publish {
+            repository {
+                setRepoKey(
+                    when (project.name) {
+                        "core" -> "elhub-mvn-release-local"
+                        "cli" -> "elhub-bin-release-local"
+                        else -> throw IllegalArgumentException("No repository configured for project ${project.name}")
+                    }
                 )
-                setProperty("username", project.findProperty("artifactoryUsername") ?: "nouser")
-                setProperty("password", project.findProperty("artifactoryPassword") ?: "nopass")
-            })
-            defaults(delegateClosureOf<GroovyObject> {
-                invokeMethod("publications", subprojectName)
-                setProperty("publishArtifacts", true)
-                setProperty("publishPom", subprojectName == "core")
-            })
-        })
-        resolve(delegateClosureOf<ResolverConfig> {
-            setProperty("repoKey", "repo")
-        })
+            }
+        }
     }
 }
 
