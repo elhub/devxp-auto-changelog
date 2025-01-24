@@ -1,5 +1,4 @@
-plugins {
-}
+group = parent!!.group
 
 dependencies {
     val implementation by configurations
@@ -9,4 +8,12 @@ dependencies {
     testImplementation(libs.apache.commons.io)
     testImplementation(libs.test.kotlin.faker)
     testImplementation(libs.test.mockk)
+}
+
+artifactory {
+    publish {
+        repository {
+            repoKey = "elhub-mvn-release-local"
+        }
+    }
 }
