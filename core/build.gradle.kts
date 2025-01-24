@@ -1,4 +1,16 @@
-group = parent!!.group
+plugins {
+    id("no.elhub.devxp.kotlin-library") version "0.2.3"
+}
+
+group = "no.elhub.devxp"
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+        }
+    }
+}
 
 dependencies {
     val implementation by configurations
@@ -8,12 +20,8 @@ dependencies {
     testImplementation(libs.apache.commons.io)
     testImplementation(libs.test.kotlin.faker)
     testImplementation(libs.test.mockk)
-}
-
-artifactory {
-    publish {
-        repository {
-            repoKey = "elhub-mvn-release-local"
-        }
-    }
+    implementation(platform(rootProject.libs.kotlin.bom))
+    implementation(rootProject.libs.git.jgit)
+    implementation(rootProject.libs.git.jgit.ssh)
+    testImplementation(rootProject.libs.test.kotest.runner.junit5)
 }
