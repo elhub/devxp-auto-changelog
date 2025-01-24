@@ -102,26 +102,28 @@ class GitRepo(val git: Git) {
      * Creates a [Changelist] for from the [gitLog] log of commits in reversed chronological order.
      */
     fun createChangelist(gitLog: GitLog): Changelist {
-        val logger = LoggerFactory.getLogger(this::class.java)
-        logger.warn("I AM WARNING YOU")
-        val map = gitLog.commits.foldRight(linkedMapOf<Version, List<ChangelogEntry>>()) { commit, acc ->
-            val builder = ChangelogEntry.Builder()
-            builder.withMessage(commit.message)
-            commit.version?.let { v ->
-                builder.withRelease(ChangelogEntry.Release(v, commit.date))
-                acc[v] = mutableListOf(builder.build()).also { new ->
-                    acc[Unreleased]?.let { existing -> new.addAll(existing) }
-                    acc.remove(Unreleased)
-                }
-            } ?: run {
-                acc.merge(Unreleased, listOf(builder.build())) { existing, new ->
-                    new + existing
-                }
-            }
+        val commitMap = mutableMapOf<Version, MutableList<ChangelogEntry>>()
 
-            acc
+        gitLog.commits.reversed().forEach { commit ->
+            val entry = ChangelogEntry.Builder()
+                .withMessage(commit.message)
+                .apply {
+                    commit.version?.let { version ->
+                        withRelease(ChangelogEntry.Release(version, commit.date))
+                    }
+                }.build()
+
+            if (commit.version != null) {
+                commitMap.computeIfAbsent(commit.version) { mutableListOf() }.add(entry)
+                commitMap[Unreleased]?.let { unreleasedEntries ->
+                    commitMap[commit.version]?.addAll(unreleasedEntries)
+                    commitMap.remove(Unreleased)
+                }
+            } else {
+                commitMap.computeIfAbsent(Unreleased) { mutableListOf() }.add(entry)
+            }
         }
 
-        return Changelist(map)
+        return Changelist(commitMap)
     }
 }

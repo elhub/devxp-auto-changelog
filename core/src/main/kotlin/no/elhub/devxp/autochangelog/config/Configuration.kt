@@ -11,7 +11,7 @@ object Configuration {
     /**
      * Includes only commits with linked jira issues
      */
-    const val includeOnlyWithJira: Boolean = true
+    const val includeOnlyWithJira: Boolean = false
 
     /**
      * Adds a link for jira issues in the resulting markdown
