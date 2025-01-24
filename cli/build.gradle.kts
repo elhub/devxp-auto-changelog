@@ -1,38 +1,23 @@
-group = ""
-
-val applicationMainClass: String by project
-
-dependencies {
-    implementation(project(":core"))
-    implementation(libs.cli.picocli)
+plugins {
+    id("no.elhub.devxp.kotlin-application") version "0.2.3"
 }
 
-artifactory {
-    publish {
-        repository {
-            repoKey = "elhub-bin-release-local"
+group = ""
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            artifact(tasks.shadowJar)
         }
     }
 }
 
-val shadowJar by tasks.getting(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
-    archiveBaseName.set(rootProject.name)
-    archiveClassifier.set("")
-    isZip64 = true
-    manifest {
-        attributes(
-            mapOf(
-                "Implementation-Title" to project.name,
-                "Implementation-Version" to project.version,
-                "Main-Class" to applicationMainClass
-            )
-        )
-    }
-    from(project.configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
-    exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
-    mergeServiceFiles("META-INF/cxf/bus-extensions.txt")
-    with(tasks.jar.get() as CopySpec)
-    dependsOn(tasks.jar)
+dependencies {
+    implementation(project(":core"))
+    implementation(libs.cli.picocli)
+    implementation(platform(rootProject.libs.kotlin.bom))
+    implementation(rootProject.libs.git.jgit)
+    implementation(rootProject.libs.git.jgit.ssh)
+    testImplementation(rootProject.libs.test.kotest.runner.junit5)
 }
-
-tasks["assemble"].dependsOn("shadowJar")

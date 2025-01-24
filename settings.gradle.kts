@@ -1,6 +1,9 @@
 @file:Suppress("UnstableApiUsage")
 
-rootProject.name = "auto-changelog"
+rootProject.name = "devxp-auto-changelog"
+
+include("cli")
+include("core")
 
 pluginManagement {
     repositories {
@@ -20,6 +23,3 @@ dependencyResolutionManagement {
         }
     }
 }
-
-include("cli")
-include("core")
