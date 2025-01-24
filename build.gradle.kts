@@ -23,4 +23,6 @@ subprojects {
         implementation(rootProject.libs.git.jgit.ssh)
         testImplementation(rootProject.libs.test.kotest.runner.junit5)
     }
+
+    tasks["publish"].dependsOn(tasks["artifactoryPublish"])
 }
