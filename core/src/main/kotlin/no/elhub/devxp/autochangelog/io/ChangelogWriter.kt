@@ -13,12 +13,12 @@ import java.io.Writer
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
 
-class ChangelogWriter {
-    private val start: () -> Sequence<String>
-    private val end: () -> Sequence<String>
+class ChangelogWriter(private val noDate: Boolean = false) {
+    private var start: () -> Sequence<String> = { emptySequence() }
+    private var end: () -> Sequence<String> = { emptySequence() }
 
     @OptIn(ExperimentalPathApi::class)
-    constructor(changelogPath: Path) {
+    constructor(changelogPath: Path, noDate: Boolean) : this(noDate) {
         start = {
             changelogPath.toFile()
                 .linesUntil { it.matches(releaseHeaderRegex.toRegex()) }
@@ -29,7 +29,7 @@ class ChangelogWriter {
         }
     }
 
-    constructor(start: String = "", end: String = "") {
+    constructor(start: String = "", end: String = "") : this() {
         this.start = { if (start != "") start.lineSequence() else emptySequence() }
         this.end = { if (end != "") end.lineSequence() else emptySequence() }
     }
@@ -114,7 +114,11 @@ class ChangelogWriter {
             sb.appendLine()
         }
 
-        val releaseHeader = v.first().release?.date?.let { "## [$k] - $it" } ?: "## [$k]"
+        val releaseHeader = if (noDate) {
+            "## [$k]"
+        } else {
+            v.first().release?.date?.let { "## [$k] - $it" } ?: "## [$k]"
+        }
 
         """
             |$releaseHeader

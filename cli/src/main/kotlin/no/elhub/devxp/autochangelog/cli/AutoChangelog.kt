@@ -4,8 +4,7 @@ import java.io.File
 import java.util.concurrent.Callable
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.system.exitProcess
-import no.elhub.devxp.autochangelog.config.Configuration.includeOnlyWithJira
-import no.elhub.devxp.autochangelog.config.Configuration.jiraIssuesPatternString
+import no.elhub.devxp.autochangelog.config.Configuration
 import no.elhub.devxp.autochangelog.extensions.description
 import no.elhub.devxp.autochangelog.git.GitLog
 import no.elhub.devxp.autochangelog.io.ChangelogReader
@@ -24,7 +23,6 @@ import picocli.CommandLine
     versionProvider = ManifestVersionProvider::class,
     sortOptions = false
 )
-
 object AutoChangelog : Callable<Int> {
 
     @CommandLine.Option(
@@ -55,20 +53,26 @@ object AutoChangelog : Callable<Int> {
     )
     private var outputFileName: String = "CHANGELOG.md"
 
+    @CommandLine.Option(
+        names = ["--no-date"],
+        required = false,
+        description = ["Generate changelog without dates."]
+    )
+    private var noDate: Boolean = false
+
     override fun call(): Int {
         val repoDir = File(repoPath)
         val git = Git.open(repoDir)
         val repo = GitRepo(git)
         val changelogFile = repoDir.resolve(inputFileName)
-        val content = if (changelogFile.exists() && changelogFile.isFile) {
+        val end = if (changelogFile.exists() && changelogFile.isFile) {
             val lastRelease = ChangelogReader(changelogFile.toPath()).getLastRelease()
-            val end = lastRelease?.let { repo.findCommitId(it) }
-            val changelist = repo.createChangelist(repo.getLog(end = end))
-            ChangelogWriter(changelogFile.toPath()).writeToString(changelist)
+            lastRelease?.let { repo.findCommitId(it) }
         } else {
-            val changelist = repo.createChangelist(repo.getLog())
-            ChangelogWriter().writeToString(changelist)
+            null
         }
+        val changelist = repo.createChangelist(repo.getLog(end = end))
+        val content = ChangelogWriter(changelogFile.toPath(), noDate).writeToString(changelist)
 
         File(outputDir)
             .apply { createDirIfNotExists() ?: return 1 }
@@ -82,8 +86,8 @@ object AutoChangelog : Callable<Int> {
     }
 
     private fun GitRepo.getLog(end: ObjectId? = null): GitLog = constructLog(end = end) {
-        if (includeOnlyWithJira) {
-            it.description.any { s -> s.startsWith(jiraIssuesPatternString) } || tags().any { t ->
+        if (Configuration.includeOnlyWithJira) {
+            it.description.any { s -> s.startsWith(Configuration.jiraIssuesPatternString) } || tags().any { t ->
                 (git.repository.refDatabase.peel(t).peeledObjectId ?: t.objectId) == it.toObjectId()
             }
         } else true
