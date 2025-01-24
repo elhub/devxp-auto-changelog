@@ -10,19 +10,26 @@ group = ""
 
 val applicationMainClass : String by project
 
-val fatJar by tasks.creating(type = Jar::class) {
+val shadowJar by tasks.getting(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
+    archiveBaseName.set(rootProject.name)
+    archiveClassifier.set("")
+    isZip64 = true
     manifest {
-        attributes["Implementation-Title"] = rootProject.name
-        attributes["Implementation-Version"] = rootProject.version
-        attributes["Main-Class"] = applicationMainClass
+        attributes(
+            mapOf(
+                "Implementation-Title" to project.name,
+                "Implementation-Version" to project.version,
+                "Main-Class" to applicationMainClass
+            )
+        )
     }
-    from(configurations.compileClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
-    exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "*.html")
+    from(project.configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+    mergeServiceFiles("META-INF/cxf/bus-extensions.txt")
     with(tasks.jar.get() as CopySpec)
-    mustRunAfter(tasks["jar"])
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    dependsOn(tasks.jar)
 }
 
-tasks["assemble"].dependsOn("fatJar")
+tasks["assemble"].dependsOn("shadowJar")
 
-tasks["generateMetadataFileForCliPublication"].dependsOn("fatJar")
+tasks["generateMetadataFileForCliPublication"].dependsOn("shadowJar")
