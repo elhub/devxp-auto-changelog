@@ -18,7 +18,7 @@ class ChangelogWriter(private val noDate: Boolean = false) {
     private var end: () -> Sequence<String> = { emptySequence() }
 
     @OptIn(ExperimentalPathApi::class)
-    constructor(changelogPath: Path, noDate: Boolean) : this(noDate) {
+    constructor(changelogPath: Path, noDate: Boolean = false) : this(noDate) {
         start = {
             changelogPath.toFile()
                 .linesUntil { it.matches(releaseHeaderRegex.toRegex()) }

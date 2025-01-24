@@ -65,14 +65,15 @@ object AutoChangelog : Callable<Int> {
         val git = Git.open(repoDir)
         val repo = GitRepo(git)
         val changelogFile = repoDir.resolve(inputFileName)
-        val end = if (changelogFile.exists() && changelogFile.isFile) {
+        val content = if (changelogFile.exists() && changelogFile.isFile) {
             val lastRelease = ChangelogReader(changelogFile.toPath()).getLastRelease()
-            lastRelease?.let { repo.findCommitId(it) }
+            val end = lastRelease?.let { repo.findCommitId(it) }
+            val changelist = repo.createChangelist(repo.getLog(end = end))
+            ChangelogWriter(changelogFile.toPath(), noDate).writeToString(changelist)
         } else {
-            null
+            val changelist = repo.createChangelist(repo.getLog())
+            ChangelogWriter(noDate).writeToString(changelist)
         }
-        val changelist = repo.createChangelist(repo.getLog(end = end))
-        val content = ChangelogWriter(changelogFile.toPath(), noDate).writeToString(changelist)
 
         File(outputDir)
             .apply { createDirIfNotExists() ?: return 1 }
