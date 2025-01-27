@@ -2,8 +2,8 @@
 
 rootProject.name = "devxp-auto-changelog"
 
-include("cli")
 include("core")
+include("cli")
 
 pluginManagement {
     repositories {
