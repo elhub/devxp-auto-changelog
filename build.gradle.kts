@@ -1,7 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    kotlin("jvm") version "2.1.0"
+    id("no.elhub.devxp.kotlin-core") version "0.2.3"
     id("maven-publish")
     id("com.jfrog.artifactory") version "5.2.5"
 }
@@ -15,13 +13,9 @@ subprojects {
     val subprojectName = subproject.name
 
     apply {
-        plugin("kotlin")
+        plugin("no.elhub.devxp.kotlin-core")
         plugin("maven-publish")
         plugin("com.jfrog.artifactory")
-    }
-
-    repositories {
-        maven(url = "https://jfrog.elhub.cloud/artifactory/elhub-mvn/")
     }
 
     dependencies {
@@ -29,18 +23,6 @@ subprojects {
         implementation(rootProject.libs.git.jgit)
         implementation(rootProject.libs.git.jgit.ssh)
         testImplementation(rootProject.libs.test.kotest.runner.junit5)
-    }
-
-    java {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlin {
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_17
-            javaParameters = true
-        }
     }
 
     publishing {
