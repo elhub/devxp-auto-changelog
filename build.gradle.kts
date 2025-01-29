@@ -4,10 +4,6 @@ plugins {
     id("com.jfrog.artifactory") version "5.2.5"
 }
 
-repositories {
-    maven(url = "https://jfrog.elhub.cloud/artifactory/elhub-mvn/")
-}
-
 subprojects {
     val subproject = this@subprojects
     val subprojectName = subproject.name
