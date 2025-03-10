@@ -18,6 +18,9 @@ elhubProject(DEVXP, "devxp-auto-changelog") {
             gradleAutoRelease(artifacts = listOf(artifacts)) {
                 gradleModule = "cli"
             }
+            gradleAutoRelease(artifacts = listOf(artifacts)) {
+                gradleModule = "core"
+            }
         }
     }
 }
