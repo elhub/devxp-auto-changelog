@@ -23,7 +23,7 @@ application {
 tasks.jar { enabled = false }
 
 val shadowJar by tasks.getting(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
-    archiveBaseName.set(project.name)
+    archiveBaseName.set(rootProject.name)
     archiveClassifier.set("")
     isZip64 = true
     manifest {
