@@ -4,6 +4,8 @@ plugins {
     id("com.jfrog.artifactory") version "5.2.5"
 }
 
+group = "no.elhub.devxp"
+
 subprojects {
     val subproject = this@subprojects
     val subprojectName = subproject.name
@@ -24,7 +26,7 @@ subprojects {
     publishing {
         publications {
             create<MavenPublication>(subprojectName) {
-                groupId = subproject.group.toString()
+                groupId = rootProject.group.toString()
                 artifactId = rootProject.name
                 version = subproject.version.toString()
                 from(components["java"])
