@@ -3,26 +3,26 @@ package no.elhub.devxp.autochangelog.config
 object Configuration {
 
     // TODO make configurable
-    private const val jiraUrl = "https://jira.elhub.cloud"
+    private const val JIRA_URL = "https://elhub.atlassian.net/jira"
 
-    const val jiraIssuesUrl = "$jiraUrl/browse"
+    const val JIRA_ISSUES_URL = "$JIRA_URL/browse"
 
     // TODO make configurable
     /**
      * Includes only commits with linked jira issues
      */
-    const val includeOnlyWithJira: Boolean = true
+    const val INCLUDE_ONLY_WITH_JIRA: Boolean = true
 
     /**
      * Adds a link for jira issues in the resulting markdown
      */
-    const val includeJiraLinks: Boolean = true
+    const val INCLUDE_JIRA_LINKS: Boolean = true
 
-    const val jiraIssuesPatternString: String = "JIRA Issues: "
-
-    // TODO this needs to be configurable
-    const val gitRemoteName: String = "origin"
+    const val JIRA_ISSUES_PATTERN_STRING: String = "Issue ID(s): "
 
     // TODO this needs to be configurable
-    const val gitDefaultBranchName: String = "master"
+    const val GIT_REMOTE_NAME: String = "origin"
+
+    // TODO this needs to be configurable
+    const val GIT_DEFAULT_BRANCH_NAME: String = "main"
 }
