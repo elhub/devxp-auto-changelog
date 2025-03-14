@@ -24,7 +24,6 @@
     - [CLI Application](#cli-application)
     - [CLI](#cli)
   - [Configuration](#configuration)
-  - [API](#api)
   - [Testing](#testing)
   - [Contributing](#contributing)
   - [Owners](#owners)
@@ -33,7 +32,7 @@
 
 ### Running in TeamCity pipeline
 
-This application integrates with the `devxp-deploy-orchestrator`. To enable changelog generation, place a .changelog file in the .devxp directory (`repo/.devxp/.changelog`). Changelogs will be included and updated in the docs page the next time the Publish Docs job runs(~every 3 hours).
+This application integrates with the `docs`. To enable changelog generation, place a .changelog file in the .devxp directory (`repo/.devxp/.changelog`). Changelogs will be included and updated in the docs page the next time the Publish Docs job runs(~every 3 hours).
 
 ## Manual usage
 
@@ -72,24 +71,6 @@ version: 1.0
 changelog:
   output: CHANGELOG.md
   template: default
-```
-
-## API
-
-Add the library to dependencies.
-
-Gradle:
-```kotlin
-implementation("no.elhub.devxp:auto-changelog-core:$version")
-```
-
-Maven:
-```xml
-<dependency>
-  <groupId>no.elhub.devxp</groupId>
-  <artifactId>auto-changelog-core</artifactId>
-  <version>${version}</version>
-</dependency>
 ```
 
 ## Testing
