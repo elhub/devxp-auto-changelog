@@ -8,7 +8,6 @@ group = "no.elhub.devxp"
 
 subprojects {
     val subproject = this@subprojects
-    val subprojectName = subproject.name
 
     apply {
         plugin("no.elhub.devxp.kotlin-core")
@@ -25,7 +24,7 @@ subprojects {
 
     publishing {
         publications {
-            create<MavenPublication>(subprojectName) {
+            create<MavenPublication>(rootProject.name) {
                 groupId = rootProject.group.toString()
                 artifactId = rootProject.name
                 version = subproject.version.toString()

@@ -5,19 +5,13 @@ plugins {
     id("com.gradleup.shadow") version "8.3.6"
 }
 
-application {
-    mainClass = "no/elhub/devxp/autochangelog/cli/AutoChangelog.kt"
-}
-
 dependencies {
     implementation(project(":core"))
     implementation(libs.cli.picocli)
 }
 
-val applicationMainClass: String by project
-
 application {
-    mainClass.set(applicationMainClass)
+    mainClass = "no.elhub.devxp.autochangelog.cli.AutoChangelog"
 }
 
 tasks.jar { enabled = false }
@@ -31,7 +25,7 @@ val shadowJar by tasks.getting(com.github.jengelman.gradle.plugins.shadow.tasks.
             mapOf(
                 "Implementation-Title" to project.name,
                 "Implementation-Version" to project.version,
-                "Main-Class" to applicationMainClass
+                "Main-Class" to "no.elhub.devxp.autochangelog.cli.AutoChangelog"
             )
         )
     }
@@ -39,6 +33,18 @@ val shadowJar by tasks.getting(com.github.jengelman.gradle.plugins.shadow.tasks.
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
     mergeServiceFiles("META-INF/cxf/bus-extensions.txt")
     with(tasks.jar.get() as CopySpec)
+}
+
+publishing {
+    publications {
+        all {
+            this as MavenPublication
+            if (name == rootProject.name) {
+                artifacts.clear()
+                artifact(shadowJar)
+            }
+        }
+    }
 }
 
 tasks.artifactoryPublish {
