@@ -35,6 +35,13 @@ object AutoChangelog : Callable<Int> {
     private var remotePath: String = ""
 
     @CommandLine.Option(
+        names = ["-j", "--json"],
+        required = false,
+        description = ["Whether to write the changelog as json", "Defaults to 'false'"]
+    )
+    private var asJson: Boolean = false
+
+    @CommandLine.Option(
         names = ["-d", "--dir-path"],
         required = false,
         description = ["Path to directory with git repository.", "Defaults to '.'"]
@@ -66,18 +73,27 @@ object AutoChangelog : Callable<Int> {
         if (remotePath.isNotBlank()) {
             bareClone(remotePath, repoPath)
         }
+        if (asJson) {
+            outputFileName = outputFileName.replace(".md", ".json")
+        }
+
         val repoDir = File(repoPath)
         val git = Git.open(repoDir)
         val repo = GitRepo(git)
         val changelogFile = repoDir.resolve(inputFileName)
-        val content = if (changelogFile.exists() && changelogFile.isFile) {
+
+        val changeList = if (changelogFile.exists() && changelogFile.isFile) {
             val lastRelease = ChangelogReader(changelogFile.toPath()).getLastRelease()
             val end = lastRelease?.let { repo.findCommitId(it) }
-            val changelist = repo.createChangelist(repo.getLog(end = end))
-            ChangelogWriter(changelogFile.toPath()).writeToString(changelist)
+            repo.createChangelist(repo.getLog(end = end))
         } else {
-            val changelist = repo.createChangelist(repo.getLog())
-            ChangelogWriter().writeToString(changelist)
+            repo.createChangelist(repo.getLog())
+        }
+
+        val content = if (asJson) {
+            ChangelogWriter().writeToJson(changeList)
+        } else {
+            ChangelogWriter().writeToString(changeList)
         }
 
         File(outputDir)

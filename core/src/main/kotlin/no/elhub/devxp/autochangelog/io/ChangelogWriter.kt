@@ -12,6 +12,7 @@ import java.io.StringWriter
 import java.io.Writer
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
+import kotlinx.serialization.json.Json
 
 class ChangelogWriter {
     private val start: () -> Sequence<String>
@@ -39,6 +40,14 @@ class ChangelogWriter {
      * and returns the new changelog as String value.
      */
     fun writeToString(changelist: Changelist): String = write(changelist).toString().trim()
+
+    fun writeToJson(changelist: Changelist): String {
+        val json = Json {
+            prettyPrint = true
+            allowStructuredMapKeys = true
+        }
+        return json.encodeToString(changelist)
+    }
 
     private fun write(changelist: Changelist): Writer {
         return start()

@@ -10,8 +10,9 @@ dependencies {
     implementation(libs.cli.picocli)
 }
 
+val applicationMainClass: String by project
 application {
-    mainClass = "no.elhub.devxp.autochangelog.cli.AutoChangelog"
+    mainClass.set(applicationMainClass)
 }
 
 tasks.jar { enabled = false }
@@ -25,7 +26,7 @@ val shadowJar by tasks.getting(com.github.jengelman.gradle.plugins.shadow.tasks.
             mapOf(
                 "Implementation-Title" to project.name,
                 "Implementation-Version" to project.version,
-                "Main-Class" to "no.elhub.devxp.autochangelog.cli.AutoChangelog"
+                "Main-Class" to "no/elhub/devxp/autochangelog/cli/AutoChangelog.kt"
             )
         )
     }

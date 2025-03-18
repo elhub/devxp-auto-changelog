@@ -1,5 +1,17 @@
 group = "no.elhub.devxp"
 
+plugins {
+    kotlin("plugin.serialization") version "2.1.10"
+}
+
+kotlin {
+    sourceSets {
+        all {
+            languageSettings.optIn("kotlinx.serialization.ExperimentalSerializationApi")
+        }
+    }
+}
+
 dependencies {
     val implementation by configurations
     val testImplementation by configurations
