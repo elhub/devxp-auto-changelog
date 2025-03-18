@@ -1,11 +1,14 @@
 package no.elhub.devxp.autochangelog.project
 
 import java.util.regex.Pattern
+import kotlinx.serialization.Serializable
 
 val versionPattern: Pattern = Pattern.compile("""^(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z]+).(\d+))?""")
 
-interface Version
+@Serializable
+sealed interface Version
 
+@Serializable
 class SemanticVersion : Comparable<SemanticVersion>, Version {
     val major: Int
     val minor: Int
@@ -77,6 +80,7 @@ class SemanticVersion : Comparable<SemanticVersion>, Version {
     }
 }
 
+@Serializable
 object Unreleased : Version {
     override fun toString() = "UNRELEASED"
 }
