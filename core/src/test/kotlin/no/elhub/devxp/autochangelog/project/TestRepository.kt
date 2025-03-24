@@ -2,6 +2,7 @@ package no.elhub.devxp.autochangelog.project
 
 import no.elhub.devxp.autochangelog.extensions.delete
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.api.ResetCommand
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -11,10 +12,21 @@ object TestRepository {
     }
 
     val git: Git by lazy {
-        Git.cloneRepository()
-            .setDirectory(tempFolderPath.toFile())
-            .setURI("https://code.elhub.cloud/scm/ext/ext-keep-a-changelog.git")
-            .call()
+        val gitDir = tempFolderPath.toFile()
+        gitDir.mkdirs()
+
+        ProcessBuilder("git", "clone", "https://github.com/elhub/devxp-auto-changelog.git", gitDir.absolutePath)
+            .inheritIO()
+            .start()
+            .waitFor()
+
+        ProcessBuilder("git", "reset", "--hard", "4b898e6")
+            .directory(gitDir)
+            .inheritIO()
+            .start()
+            .waitFor()
+
+        Git.open(gitDir)
     }
 
     val changelogPath: Path = tempFolderPath.resolve("CHANGELOG.md")
