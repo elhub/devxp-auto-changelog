@@ -12,15 +12,21 @@ object TestRepository {
     }
 
     val git: Git by lazy {
-        Git.cloneRepository()
-            .setDirectory(tempFolderPath.toFile())
-            .setURI("https://github.com/elhub/devxp-auto-changelog.git")
-            .call().apply {
-                reset()
-                    .setMode(ResetCommand.ResetType.HARD)
-                    .setRef("4b898e6")
-                    .call()
-            }
+        val gitDir = tempFolderPath.toFile()
+        gitDir.mkdirs()
+
+        ProcessBuilder("git", "clone", "https://github.com/elhub/devxp-auto-changelog.git", gitDir.absolutePath)
+            .inheritIO()
+            .start()
+            .waitFor()
+
+        ProcessBuilder("git", "reset", "--hard", "4b898e6")
+            .directory(gitDir)
+            .inheritIO()
+            .start()
+            .waitFor()
+
+        Git.open(gitDir)
     }
 
     val changelogPath: Path = tempFolderPath.resolve("CHANGELOG.md")
