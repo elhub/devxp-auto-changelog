@@ -7,7 +7,10 @@ import no.elhub.devxp.autochangelog.git.GitMessage
 import no.elhub.devxp.autochangelog.git.TitleKeyword
 import no.elhub.devxp.autochangelog.git.titleKeyword
 import java.time.LocalDate
+import kotlinx.serialization.Serializable
+import no.elhub.devxp.autochangelog.serializers.LocalDateSerializer
 
+@Serializable
 data class ChangelogEntry(
     val release: Release?,
     val added: List<String> = emptyList(),
@@ -16,8 +19,10 @@ data class ChangelogEntry(
     val breakingChange: List<String> = emptyList(),
     val other: List<String> = emptyList()
 ) {
+    @Serializable
     data class Release(
         val version: Version,
+        @Serializable(with = LocalDateSerializer::class)
         val date: LocalDate
     )
 
