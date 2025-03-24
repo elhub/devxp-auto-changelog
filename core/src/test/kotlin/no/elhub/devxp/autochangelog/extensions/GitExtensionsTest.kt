@@ -10,30 +10,22 @@ class GitExtensionsTest : FunSpec({
     val git = GitRepo(TestRepository.git)
 
     test("should return the title of the commit") {
-        val commit = git.findCommit(ObjectId.fromString("a40cacb9c7d2f8996789498494583e78d611b174"))
-        commit?.title shouldBe "Bump middleman from 4.3.11 to 4.4.0 (#401)"
+        val commit = git.findCommit(ObjectId.fromString("f13fe0137c9c239cfc66da4fc1a238a2dabf586b"))
+        commit?.title shouldBe "Bump devxp-build-config version for tc upgrade"
     }
 
     test("should return the detailed description of the commit") {
-        val commit = git.findCommit(ObjectId.fromString("a40cacb9c7d2f8996789498494583e78d611b174"))
+        val commit = git.findCommit(ObjectId.fromString("f13fe0137c9c239cfc66da4fc1a238a2dabf586b"))
         commit?.description shouldBe """
-            Bumps [middleman](https://github.com/middleman/middleman) from 4.3.11 to 4.4.0.
-            - [Release notes](https://github.com/middleman/middleman/releases)
-            - [Changelog](https://github.com/middleman/middleman/blob/v4.4.0/CHANGELOG.md)
-            - [Commits](https://github.com/middleman/middleman/compare/v4.3.11...v4.4.0)
-            ---
-            updated-dependencies:
-            - dependency-name: middleman
-                dependency-type: direct:production
-                update-type: version-update:semver-minor
-            ...
-            Signed-off-by: dependabot[bot] <support@github.com>
-            Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+            ## 🔗 Issue ID(s): TDX-811
+            ## 📋 Checklist
+            * ✅ Lint checks passed on local machine.
+            * ✅ Unit tests passed on local machine.
         """.trimIndent().split("\n").map { it.trim() }
     }
 
     test("should return an empty list for commits that only have titles") {
-        val commit = git.findCommit(ObjectId.fromString("2ea214c6f40eb002b086475910a0948fbf2e5dac"))
+        val commit = git.findCommit(ObjectId.fromString("aa711042e58828bd4259eee9edde42d0d539272f"))
         commit?.description shouldBe emptyList()
     }
 })

@@ -17,8 +17,8 @@ class ChangelogReaderTest : FunSpec({
         test("should return latest released version from the changelog file") {
             val version: SemanticVersion? = changelog.lastRelease
             assertSoftly {
-                version?.major shouldBe 1
-                version?.minor shouldBe 1
+                version?.major shouldBe 0
+                version?.minor shouldBe 5
                 version?.patch shouldBe 0
             }
         }
