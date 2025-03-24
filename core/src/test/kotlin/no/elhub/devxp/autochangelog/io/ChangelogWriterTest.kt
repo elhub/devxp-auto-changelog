@@ -1,6 +1,6 @@
 package no.elhub.devxp.autochangelog.io
 
-import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import no.elhub.devxp.autochangelog.project.Changelist
 import no.elhub.devxp.autochangelog.project.ChangelogEntry
@@ -8,13 +8,13 @@ import no.elhub.devxp.autochangelog.project.SemanticVersion
 import no.elhub.devxp.autochangelog.project.defaultContent
 import java.time.LocalDate
 
-class ChangelogWriterTest : DescribeSpec({
-    describe("ChangelogWriter") {
+class ChangelogWriterTest : FunSpec({
+    context("ChangelogWriter") {
 
         context("write with non-empty original changelog contents") {
             val writer = ChangelogWriter(start = existingDescription, end = existingContent)
 
-            it("should append new content after default description") {
+            test("should append new content after default description") {
                 val s = writer.writeToString(changelist)
                 s shouldBe """
                     |$existingDescription
@@ -29,7 +29,7 @@ class ChangelogWriterTest : DescribeSpec({
         context("write with empty original changelog contents") {
             val writer = ChangelogWriter()
 
-            it("should append new content to default description") {
+            test("should append new content to default description") {
                 val s = writer.writeToString(changelist)
                 s shouldBe """
                     |${defaultContent.joinToString("\n")}
@@ -40,7 +40,6 @@ class ChangelogWriterTest : DescribeSpec({
         }
 
         context("write using existing changelog file") {
-
         }
     }
 })

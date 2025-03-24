@@ -1,7 +1,7 @@
 package no.elhub.devxp.autochangelog.io
 
 import io.kotest.assertions.assertSoftly
-import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.sequences.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import no.elhub.devxp.autochangelog.project.SemanticVersion
@@ -10,11 +10,11 @@ import java.io.StringReader
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
-class ChangelogReaderTest : DescribeSpec({
-    describe("Changelog instance") {
+class ChangelogReaderTest : FunSpec({
+    context("Changelog instance") {
         val changelog = ChangelogReader(TestRepository.changelogPath).read()
 
-        it("should return latest released version from the changelog file") {
+        test("should return latest released version from the changelog file") {
             val version: SemanticVersion? = changelog.lastRelease
             assertSoftly {
                 version?.major shouldBe 1
@@ -23,17 +23,17 @@ class ChangelogReaderTest : DescribeSpec({
             }
         }
 
-        it("should return null version if changelog file does not have releases") {
+        test("should return null version if changelog file does not have releases") {
             val reader = ChangelogReader(StringReader(changelogContent))
             reader.read().lastRelease shouldBe null
         }
 
-        it("should return null version for an empty changelog file") {
+        test("should return null version for an empty changelog file") {
             val reader = ChangelogReader(StringReader(""))
             reader.read().lastRelease shouldBe null
         }
 
-        it("should return contents of a changelog") {
+        test("should return contents of a changelog") {
             val cl = """
                 # Changelog
 
@@ -48,7 +48,7 @@ class ChangelogReaderTest : DescribeSpec({
             lines shouldContainExactly cl.splitToSequence("\n")
         }
 
-        it("should trim contents of a changelog after the last release header") {
+        test("should trim contents of a changelog after the last release header") {
             val cl = """
                 # Changelog
 
@@ -67,14 +67,14 @@ class ChangelogReaderTest : DescribeSpec({
             lines shouldContainExactly cl.splitToSequence("\n").take(7)
         }
 
-        it("should return empty lines sequence for empty changelog contents") {
+        test("should return empty lines sequence for empty changelog contents") {
             val lines = ChangelogReader(StringReader("")).read().lines
             lines shouldContainExactly emptySequence()
         }
     }
 
-    describe("Last release in existing changelog") {
-        it("should return last release version") {
+    context("Last release in existing changelog") {
+        test("should return last release version") {
             val cl = """
                 # Changelog
 
@@ -84,7 +84,7 @@ class ChangelogReaderTest : DescribeSpec({
             reader.getLastRelease() shouldBe SemanticVersion(1, 1, 0)
         }
 
-        it("should return null if version is not found") {
+        test("should return null if version is not found") {
             val cl = """
                 # Changelog
             """.trimIndent()
