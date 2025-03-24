@@ -49,7 +49,7 @@ class GitRepoTest : FunSpec({
             }
 
             test("should return entire log") {
-                repo.log().toList() shouldHaveSize 495
+                repo.log().toList() shouldHaveSize 493
             }
         }
 
@@ -161,7 +161,7 @@ class GitRepoTest : FunSpec({
             writer.generateCompareUrl(
                 changelist = cl,
                 repo = repo
-            ) shouldBe "https://code.elhub.cloud/scm/ext/ext-keep-a-changelog/compare/commits?targetBranch=refs%2Ftags%2Fv1.1.0"
+            ) shouldBe "https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...main"
         }
     }
 })

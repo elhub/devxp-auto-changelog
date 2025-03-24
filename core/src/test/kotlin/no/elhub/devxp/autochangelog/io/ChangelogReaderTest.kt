@@ -11,6 +11,25 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 class ChangelogReaderTest : FunSpec({
+    val changelogContent = """
+        # Changelog
+
+        All notable changes to this project will be documented in this file.
+
+        The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+        and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+        ## [Unreleased]
+
+        ### Added
+
+        - Added Dutch translation
+
+        ### Fixed
+
+        - Fixed foldouts in Dutch translation
+    """.trimIndent()
+
     context("Changelog instance") {
         val changelog = ChangelogReader(TestRepository.changelogPath).read()
 
@@ -94,22 +113,3 @@ class ChangelogReaderTest : FunSpec({
         }
     }
 })
-
-private val changelogContent = """
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
-
-### Added
-
-- Added Dutch translation
-
-### Fixed
-
-- Fixed foldouts in Dutch translation
-""".trimIndent()
