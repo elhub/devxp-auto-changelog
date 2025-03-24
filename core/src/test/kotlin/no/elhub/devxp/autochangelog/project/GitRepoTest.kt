@@ -1,7 +1,7 @@
 package no.elhub.devxp.autochangelog.project
 
 import io.github.serpro69.kfaker.Faker
-import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -18,37 +18,37 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDate
 
-class GitRepoTest : DescribeSpec({
-    describe("TestRepository") {
+class GitRepoTest : FunSpec({
+    context("TestRepository") {
         val repo = GitRepo(TestRepository.git)
         context("git log") {
 
-            it("should return git ref for a given version") {
+            test("should return git ref for a given version") {
                 repo.findTagRef(SemanticVersion(1, 1, 0))?.name shouldBe "refs/tags/v1.1.0"
             }
 
-            it("should find a commit for a given ref") {
+            test("should find a commit for a given ref") {
                 val c = repo.findCommitId(SemanticVersion(1, 1, 0))?.let {
                     repo.findCommit(it)
                 }
                 c?.shortMessage shouldStartWith "Merge pull request #197"
             }
 
-            it("should find a parent for a given ref") {
+            test("should find a parent for a given ref") {
                 val c = repo.findCommitId(SemanticVersion(1, 1, 0))?.let {
                     repo.findParent(it)
                 }
                 c?.shortMessage shouldBe "Bump Ruby version to 2.4"
             }
 
-            it("should return a log of commit ranges") {
+            test("should return a log of commit ranges") {
                 val end = ObjectId.fromString("5f06962bf9a484a35a3a37c24f3933a9168e90ff")
                 val start = ObjectId.fromString("c25aae9ec630c546999a5cd62740639746efbc13")
 
                 repo.log(start, end).toList() shouldHaveSize 7
             }
 
-            it("should return entire log") {
+            test("should return entire log") {
                 repo.log().toList() shouldHaveSize 495
             }
         }
@@ -84,11 +84,11 @@ class GitRepoTest : DescribeSpec({
 
             afterEach { path.delete() }
 
-            it("should return a constructed GitLog out of a sequence of commits") {
+            test("should return a constructed GitLog out of a sequence of commits") {
                 GitRepo(git).constructLog().commits shouldHaveSize 12
             }
 
-            it("should return a constructed log with the 'end' commit") {
+            test("should return a constructed log with the 'end' commit") {
                 val commit = git.addCommit(path, "Seventh commit")
                 git.tag().setAnnotated(true).setName("v0.4.0").setForceUpdate(true).call()
                 val lastCommit = git.addCommit(path, "Eighth commit\n\nRelease version 0.5.0")
@@ -103,7 +103,7 @@ class GitRepoTest : DescribeSpec({
                 )
             }
 
-            it("should return a constructed log with the 'start' commit") {
+            test("should return a constructed log with the 'start' commit") {
                 val commit = git.addCommit(path, "Seventh commit")
                 git.tag().setAnnotated(true).setName("v0.4.0").setForceUpdate(true).call()
                 git.addCommit(path, "Eighth commit\n\nRelease version 0.5.0")
@@ -111,20 +111,20 @@ class GitRepoTest : DescribeSpec({
                 GitRepo(git).constructLog(start = commit.id).commits shouldHaveSize 13
             }
 
-            it("should return a constructed log consisting of commits with linked JIRA Issues") {
-                val seventh = git.addCommit(path, "Seventh commit\n\nCommit description\n\n$jiraIssues")
+            test("should return a constructed log consisting of commits with linked JIRA Issues") {
+                val seventh = git.addCommit(path, "Seventh commit\n\nCommit description\n\n$JIRA_ISSUES")
                 git.tag().setAnnotated(false).setName("v0.4.0").setForceUpdate(true).call()
-                val eighth = git.addCommit(path, "Eighth commit\n\nRelease version 0.5.0\n\n$jiraIssues")
+                val eighth = git.addCommit(path, "Eighth commit\n\nRelease version 0.5.0\n\n$JIRA_ISSUES")
                 git.tag().setAnnotated(true).setName("v0.5.0").setForceUpdate(true).call()
-                GitRepo(git).constructLog { it.description.contains(jiraIssues) }.commits shouldContainExactly listOf(
+                GitRepo(git).constructLog { it.description.contains(JIRA_ISSUES) }.commits shouldContainExactly listOf(
                     GitCommit(
-                        GitMessage("Eighth commit", listOf("Release version 0.5.0", jiraIssues)),
+                        GitMessage("Eighth commit", listOf("Release version 0.5.0", JIRA_ISSUES)),
                         eighth.id,
                         LocalDate.now(),
                         SemanticVersion("0.5.0")
                     ),
                     GitCommit(
-                        GitMessage("Seventh commit", listOf("Commit description", jiraIssues)),
+                        GitMessage("Seventh commit", listOf("Commit description", JIRA_ISSUES)),
                         seventh.id,
                         LocalDate.now(),
                         SemanticVersion("0.4.0")
@@ -132,13 +132,13 @@ class GitRepoTest : DescribeSpec({
                 )
             }
 
-            it("should return a reversed changelist from the log of commits") {
+            test("should return a reversed changelist from the log of commits") {
                 val r = GitRepo(git)
                 val cl = r.createChangelist(r.constructLog())
                 cl.changes.values shouldContainExactly changelist.changes.values.reversed()
             }
 
-            it("should not have UNRELEASED section in the changelog if HEAD is at git tag with a preceding tag") {
+            test("should not have UNRELEASED section in the changelog if HEAD is at git tag with a preceding tag") {
                 git.tag().setAnnotated(false).setName("v0.4.0").setForceUpdate(true).call()
                 git.addCommit(path, "Test commit")
                 git.tag().setAnnotated(false).setName("v0.5.0").setForceUpdate(true).call()
@@ -147,7 +147,7 @@ class GitRepoTest : DescribeSpec({
                 cl.changes[Unreleased] shouldBe null
             }
 
-            it("should ignore non-semver compliant tags") {
+            test("should ignore non-semver compliant tags") {
                 git.tag().setAnnotated(false).setName("foobar").setForceUpdate(true).call()
                 val r = GitRepo(git)
                 val cl = r.createChangelist(r.constructLog())
@@ -155,10 +155,13 @@ class GitRepoTest : DescribeSpec({
             }
         }
 
-        it("should generate compare url") {
+        test("should generate compare url") {
             val cl = repo.createChangelist(repo.constructLog())
             val writer = ChangelogWriter()
-            writer.generateCompareUrl(cl, repo) shouldBe "https://code.elhub.cloud/scm/ext/ext-keep-a-changelog/compare/commits?targetBranch=refs%2Ftags%2Fv1.1.0"
+            writer.generateCompareUrl(
+                changelist = cl,
+                repo = repo
+            ) shouldBe "https://code.elhub.cloud/scm/ext/ext-keep-a-changelog/compare/commits?targetBranch=refs%2Ftags%2Fv1.1.0"
         }
     }
 })
@@ -171,7 +174,7 @@ private fun Git.addCommit(repoPath: Path, message: String): RevCommit {
 
 private val faker = Faker()
 
-private const val jiraIssues = "JIRA Issues: TD-1872"
+private const val JIRA_ISSUES = "JIRA Issues: TD-1872"
 
 private val changelist = Changelist(
     mapOf(

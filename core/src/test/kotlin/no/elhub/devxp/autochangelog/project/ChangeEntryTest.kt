@@ -1,17 +1,17 @@
 package no.elhub.devxp.autochangelog.project
 
-import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import no.elhub.devxp.autochangelog.config.Configuration.JIRA_ISSUES_URL
 import no.elhub.devxp.autochangelog.git.GitMessage
 import no.elhub.devxp.autochangelog.git.TitleKeyword
 
-class ChangeEntryTest : DescribeSpec({
-    describe("ChangeEntry.Builder") {
+class ChangeEntryTest : FunSpec({
+    context("ChangeEntry.Builder") {
         context("GitMessage") {
             TitleKeyword.values().forEach {
-                it("should add entry to correct collection $it title keyword") {
+                test("should add entry to correct collection $it title keyword") {
                     val builder = ChangelogEntry.Builder()
                     val msg = GitMessage(
                         title = "${it.keywords.ifEmpty { listOf("Unknown") }.first()} test commit",
@@ -30,7 +30,7 @@ class ChangeEntryTest : DescribeSpec({
                 }
             }
 
-            it("should add url for jira issues") {
+            test("should add url for jira issues") {
                 val builder = ChangelogEntry.Builder()
                 val msg = GitMessage(
                     "Add test commit",
@@ -41,7 +41,7 @@ class ChangeEntryTest : DescribeSpec({
                 builder.added.first() shouldBe "[ [TD-1]($JIRA_ISSUES_URL/TD-1) ] Add test commit"
             }
 
-            it("should add urls for jira issues") {
+            test("should add urls for jira issues") {
                 val builder = ChangelogEntry.Builder()
                 val msg = GitMessage(
                     "Add test commit",
