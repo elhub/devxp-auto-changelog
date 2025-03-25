@@ -1,6 +1,5 @@
 package no.elhub.devxp.autochangelog.project
 
-import java.time.ZoneId
 import no.elhub.devxp.autochangelog.extensions.description
 import no.elhub.devxp.autochangelog.extensions.title
 import no.elhub.devxp.autochangelog.git.GitCommit
@@ -10,6 +9,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.revwalk.RevCommit
+import java.time.ZoneId
 
 /**
  * Represents a generic git repository.
@@ -32,7 +32,9 @@ class GitRepo(val git: Git) {
         val log = git.log()
         if (start != null) {
             if (end != null) log.addRange(start, end) else log.add(start)
-        } else if (end != null) log.not(end)
+        } else if (end != null) {
+            log.not(end)
+        }
         return log.call().asSequence()
     }
 
@@ -57,15 +59,8 @@ class GitRepo(val git: Git) {
 
     /**
      * Constructs the log of [GitCommit]s for this [GitRepo] and returns as an instance of [GitLog]
-     *
-     * If both [start] and [end] are provided, uses the range `since..until` for the git log.
-     *
-     * @param start the commit to start git log graph traversal from
-     * @param end same as `--not start` or `start^`
      */
     fun constructLog(
-        start: ObjectId? = null,
-        end: ObjectId? = null,
         predicate: (RevCommit) -> Boolean = { true }
     ): GitLog {
         val versionedCommits: List<Pair<String, ObjectId>> = git.tagList().call()
@@ -76,7 +71,7 @@ class GitRepo(val git: Git) {
             }
             .filter { (v, _) -> v.matches(versionPattern.toRegex()) }
 
-        val commits = log(start = start, end = end).fold(mutableListOf<GitCommit>()) { acc, commit ->
+        val commits = log().fold(mutableListOf<GitCommit>()) { acc, commit ->
             if (predicate(commit)) {
                 val v = versionedCommits.firstOrNull { it.second == commit.id }?.first
                 val c = GitCommit(

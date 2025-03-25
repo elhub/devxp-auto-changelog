@@ -88,29 +88,6 @@ class GitRepoTest : FunSpec({
                 GitRepo(git).constructLog().commits shouldHaveSize 12
             }
 
-            test("should return a constructed log with the 'end' commit") {
-                val commit = git.addCommit(path, "Seventh commit")
-                git.tag().setAnnotated(true).setName("v0.4.0").setForceUpdate(true).call()
-                val lastCommit = git.addCommit(path, "Eighth commit\n\nRelease version 0.5.0")
-                git.tag().setAnnotated(true).setName("v0.5.0").setForceUpdate(true).call()
-                GitRepo(git).constructLog(end = commit.id).commits shouldContainExactly listOf(
-                    GitCommit(
-                        GitMessage("Eighth commit", listOf("Release version 0.5.0")),
-                        lastCommit.id,
-                        LocalDate.now(),
-                        SemanticVersion("0.5.0")
-                    )
-                )
-            }
-
-            test("should return a constructed log with the 'start' commit") {
-                val commit = git.addCommit(path, "Seventh commit")
-                git.tag().setAnnotated(true).setName("v0.4.0").setForceUpdate(true).call()
-                git.addCommit(path, "Eighth commit\n\nRelease version 0.5.0")
-                git.tag().setAnnotated(true).setName("v0.5.0").setForceUpdate(true).call()
-                GitRepo(git).constructLog(start = commit.id).commits shouldHaveSize 13
-            }
-
             test("should return a constructed log consisting of commits with linked JIRA Issues") {
                 val seventh = git.addCommit(path, "Seventh commit\n\nCommit description\n\n$JIRA_ISSUES")
                 git.tag().setAnnotated(false).setName("v0.4.0").setForceUpdate(true).call()
