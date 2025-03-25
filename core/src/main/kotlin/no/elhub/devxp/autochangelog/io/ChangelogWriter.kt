@@ -42,11 +42,12 @@ class ChangelogWriter {
     fun writeToString(changelist: Changelist): String = write(changelist).toString().trim()
 
     fun writeToJson(changelist: Changelist): String {
+        val newChangeList = changelist.changes.values.flatten()
         val json = Json {
             prettyPrint = true
             allowStructuredMapKeys = true
         }
-        return json.encodeToString(changelist)
+        return json.encodeToString(newChangeList)
     }
 
     private fun write(changelist: Changelist): Writer {

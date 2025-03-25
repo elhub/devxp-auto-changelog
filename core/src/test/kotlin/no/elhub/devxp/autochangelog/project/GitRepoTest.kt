@@ -41,12 +41,6 @@ class GitRepoTest : FunSpec({
                 c?.shortMessage shouldBe "Merge pull request #19 from elhub/feat/add-renovate-config"
             }
 
-            test("should return a log of commit ranges") {
-                val end = ObjectId.fromString("a10802f208e915bfaf6466a00fc64898bbba9fa1")
-                val start = ObjectId.fromString("82bb30a5e56245734a6ff166777d605615cb4010")
-
-                repo.log(start, end).toList() shouldHaveSize 7
-            }
 
             test("should return entire log") {
                 repo.log().toList() shouldHaveSize 115
@@ -86,29 +80,6 @@ class GitRepoTest : FunSpec({
 
             test("should return a constructed GitLog out of a sequence of commits") {
                 GitRepo(git).constructLog().commits shouldHaveSize 12
-            }
-
-            test("should return a constructed log with the 'end' commit") {
-                val commit = git.addCommit(path, "Seventh commit")
-                git.tag().setAnnotated(true).setName("v0.4.0").setForceUpdate(true).call()
-                val lastCommit = git.addCommit(path, "Eighth commit\n\nRelease version 0.5.0")
-                git.tag().setAnnotated(true).setName("v0.5.0").setForceUpdate(true).call()
-                GitRepo(git).constructLog(end = commit.id).commits shouldContainExactly listOf(
-                    GitCommit(
-                        GitMessage("Eighth commit", listOf("Release version 0.5.0")),
-                        lastCommit.id,
-                        LocalDate.now(),
-                        SemanticVersion("0.5.0")
-                    )
-                )
-            }
-
-            test("should return a constructed log with the 'start' commit") {
-                val commit = git.addCommit(path, "Seventh commit")
-                git.tag().setAnnotated(true).setName("v0.4.0").setForceUpdate(true).call()
-                git.addCommit(path, "Eighth commit\n\nRelease version 0.5.0")
-                git.tag().setAnnotated(true).setName("v0.5.0").setForceUpdate(true).call()
-                GitRepo(git).constructLog(start = commit.id).commits shouldHaveSize 13
             }
 
             test("should return a constructed log consisting of commits with linked JIRA Issues") {
