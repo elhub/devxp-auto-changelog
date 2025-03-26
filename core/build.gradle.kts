@@ -21,4 +21,5 @@ dependencies {
     testImplementation(libs.apache.commons.io)
     testImplementation(libs.test.kotlin.faker)
     testImplementation(libs.test.mockk)
+    testImplementation("io.kotest:kotest-assertions-json:5.9.1")
 }
