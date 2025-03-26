@@ -1,5 +1,6 @@
 package no.elhub.devxp.autochangelog.io
 
+import kotlinx.serialization.json.Json
 import no.elhub.devxp.autochangelog.config.Configuration
 import no.elhub.devxp.autochangelog.extensions.linesAfter
 import no.elhub.devxp.autochangelog.extensions.linesUntil
@@ -12,7 +13,6 @@ import java.io.StringWriter
 import java.io.Writer
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
-import kotlinx.serialization.json.Json
 
 class ChangelogWriter {
     private val start: () -> Sequence<String>
@@ -46,20 +46,18 @@ class ChangelogWriter {
             prettyPrint = true
             allowStructuredMapKeys = true
         }
-        return json.encodeToString(changelist)
+        return json.encodeToString(changelist.changes.values.flatten())
     }
 
-    private fun write(changelist: Changelist): Writer {
-        return start()
-            .ifEmpty { defaultContent }
-            .plus("")
-            .plus(changelist.toChangelogLines())
-            .plus(end())
-            .fold(StringWriter()) { acc, s ->
-                acc.appendLine(s)
-                acc
-            }
-    }
+    private fun write(changelist: Changelist): Writer = start()
+        .ifEmpty { defaultContent }
+        .plus("")
+        .plus(changelist.toChangelogLines())
+        .plus(end())
+        .fold(StringWriter()) { acc, s ->
+            acc.appendLine(s)
+            acc
+        }
 
     fun generateCompareUrl(changelist: Changelist, repo: GitRepo): String {
         val versions = changelist.changes.entries.drop(changelist.changes.size - 2).map { it.key }
@@ -76,7 +74,7 @@ class ChangelogWriter {
             .replaceBefore("github.com/", "")
             .replaceBefore("code.elhub.cloud/", "")
 
-        val end = if (last == Unreleased) Configuration.GIT_DEFAULT_BRANCH_NAME else "v${last}"
+        val end = if (last == Unreleased) Configuration.GIT_DEFAULT_BRANCH_NAME else "v$last"
         val compareString = if (s.startsWith("github.com")) {
             "https://$s/compare/v$first...$end"
         } else if (end == Configuration.GIT_DEFAULT_BRANCH_NAME) {

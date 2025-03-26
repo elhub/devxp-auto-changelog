@@ -1,99 +1,67 @@
 package no.elhub.devxp.autochangelog.io
 
+import io.kotest.assertions.json.shouldBeValidJson
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import no.elhub.devxp.autochangelog.project.Changelist
-import no.elhub.devxp.autochangelog.project.ChangelogEntry
-import no.elhub.devxp.autochangelog.project.SemanticVersion
 import no.elhub.devxp.autochangelog.project.defaultContent
-import java.time.LocalDate
 
 class ChangelogWriterTest : FunSpec({
+    context("write with non-empty original changelog contents") {
+        val defaultDescription = """
+                # Changelog
 
-    val existingDescription = """
-        # Changelog
+                All notable changes to this project will be documented in this file.
+            """.trimIndent()
 
-        All notable changes to this project will be documented in this file.
-    """.trimIndent()
+        val existingContent = """
+                ## [1.1.0] - 2024-02-15
 
-    val existingContent = """
-        ## [1.1.0] - 2019-02-15
+                ### Added
 
-        ### Added
+                - 15 new features
 
-        - Danish translation from [@frederikspang](https://github.com/frederikspang).
-        - Georgian translation from [@tatocaster](https://github.com/tatocaster).
-        - Changelog inconsistency section in Bad Practices
+                ### Changed
 
-        ### Changed
+                - All the code
+            """.trimIndent()
 
-        - Fixed typos in Italian translation from [@lorenzo-arena](https://github.com/lorenzo-arena).
-        - Fixed typos in Indonesian translation from [@ekojs](https://github.com/ekojs).
-    """.trimIndent()
+        val writer = ChangelogWriter(start = defaultDescription, end = existingContent)
 
-    val expectedChangelogContent = """
-        |## [42.0.0] - 2063-04-05
-        |
-        |### Added
-        |
-        |- First human warp flight
-        |
-        |### Breaking Change
-        |
-        |- First contact with Vulcans
-        |
-        |### Changed
-        |
-        |- Human interstellar travel
-    """.trimMargin()
-
-     val changelist = Changelist(
-        mapOf(
-            SemanticVersion(42, 0, 0) to listOf(
-                ChangelogEntry(
-                    release = ChangelogEntry.Release(
-                        SemanticVersion(42, 0, 0),
-                        LocalDate.parse("2063-04-05")
-                    ),
-                    added = listOf("First human warp flight"),
-                    changed = listOf("Human interstellar travel"),
-                    breakingChange = listOf("First contact with Vulcans")
-                )
-            )
-        )
-    )
-
-    context("ChangelogWriter") {
-
-        context("write with non-empty original changelog contents") {
-            val writer = ChangelogWriter(start = existingDescription, end = existingContent)
-
-            test("should append new content after default description") {
-                val s = writer.writeToString(changelist)
-                s shouldBe """
-                    |$existingDescription
+        test("should append new content after default description") {
+            val s = writer.writeToString(singleChangelist)
+            s shouldBe """
+                    |$defaultDescription
                     |
-                    |$expectedChangelogContent
+                    |$singleExpectedMd
                     |
                     |$existingContent
                 """.trimMargin()
-            }
         }
+    }
 
-        context("write with empty original changelog contents") {
-            val writer = ChangelogWriter()
+    context("write with empty original changelog contents") {
+        val writer = ChangelogWriter()
 
-            test("should append new content to default description") {
-                val s = writer.writeToString(changelist)
+        listOf(singleChangelogTestMd, doubleChangeLogTestMd).map {
+            test(it.name) {
+                val s = writer.writeToString(it.changelist)
                 s shouldBe """
-                    |${defaultContent.joinToString("\n")}
-                    |
-                    |$expectedChangelogContent
-                """.trimMargin()
+                        |${defaultContent.joinToString("\n")}
+                        |
+                        |${it.expected}
+                    """.trimMargin()
             }
         }
 
-        context("write using existing changelog file") {
+        test("writeToJson() should produce valid json") {
+            val s = writer.writeToJson(singleChangelist)
+            s.shouldBeValidJson()
+        }
+
+        listOf(singleChangelogTestJson, doubleChangeLogTestJson).map {
+            test(it.name) {
+                writer.writeToJson(it.changelist) shouldBe it.expected
+            }
         }
     }
 })
