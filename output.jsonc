@@ -1,0 +1,72 @@
+(Changelist(
+changes={
+    42.0.0=[ChangelogEntry(release=Release(version=42.0.0, date=2063-04-05), added=[First human warp flight], changed=[Human interstellar travel], fixed=[], breakingChange=[First contact with Vulcans], other=[])],
+43.0.0=[ChangelogEntry(release=Release(version=42.0.0, date=2064-04-05), added=[Second human warp flight], changed=[Dog interstellar travel], fixed=[], breakingChange=[First contact with Klingons], other=[])]}),
+{
+"changes": [
+{
+"type": "no.elhub.devxp.autochangelog.project.SemanticVersion",
+"major": 42,
+"minor": 0,
+"patch": 0,
+"preReleaseId": null,
+"preRelease": null
+},
+[
+{
+"release": {
+"version": {
+"type": "no.elhub.devxp.autochangelog.project.SemanticVersion",
+"major": 42,
+"minor": 0,
+"patch": 0,
+"preReleaseId": null,
+"preRelease": null
+},
+"date": "2063-04-05"
+},
+"added": [
+"First human warp flight"
+],
+"changed": [
+"Human interstellar travel"
+],
+"breakingChange": [
+"First contact with Vulcans"
+]
+}
+],
+{
+"type": "no.elhub.devxp.autochangelog.project.SemanticVersion",
+"major": 43,
+"minor": 0,
+"patch": 0,
+"preReleaseId": null,
+"preRelease": null
+},
+[
+{
+"release": {
+"version": {
+"type": "no.elhub.devxp.autochangelog.project.SemanticVersion",
+"major": 43,
+"minor": 0,
+"patch": 0,
+"preReleaseId": null,
+"preRelease": null
+},
+"date": "2064-04-05"
+},
+"added": [
+"Second human warp flight"
+],
+"changed": [
+"Dog interstellar travel"
+],
+"breakingChange": [
+"First contact with Klingons"
+]
+}
+]
+]
+})

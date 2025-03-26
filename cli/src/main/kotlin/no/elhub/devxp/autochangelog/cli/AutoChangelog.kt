@@ -87,16 +87,19 @@ object AutoChangelog : Callable<Int> {
         lateinit var content: String
 
         when {
+            // When JSON output is specified, we generate a changelog based on the entire git log
             asJson -> {
                 changeList = repo.createChangelist(repo.getLog())
                 content = ChangelogWriter().writeToJson(changeList)
             }
+            // When a CHANGELOG.md file already exists, we only need to fetch logs for commits not in that file
             changelogFile.exists() && changelogFile.isFile -> {
                 val lastRelease = ChangelogReader(changelogFile.toPath()).getLastRelease()
                 val end = lastRelease?.let { repo.findCommitId(it) }
                 changeList = repo.createChangelist(repo.getLog(end = end))
                 content = ChangelogWriter(changelogFile.toPath()).writeToString(changeList)
             }
+            // When there is no CHANGELOG.md file, we generate a changelog based on the entire git log
             else -> {
                 changeList = repo.createChangelist(repo.getLog())
                 content = ChangelogWriter().writeToString(changeList)
