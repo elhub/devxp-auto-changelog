@@ -7,6 +7,7 @@ import no.elhub.devxp.autochangelog.git.GitLog
 import no.elhub.devxp.autochangelog.git.bareClone
 import no.elhub.devxp.autochangelog.io.ChangelogReader
 import no.elhub.devxp.autochangelog.io.ChangelogWriter
+import no.elhub.devxp.autochangelog.project.Changelist
 import no.elhub.devxp.autochangelog.project.GitRepo
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
@@ -82,18 +83,27 @@ object AutoChangelog : Callable<Int> {
         val repo = GitRepo(git)
         val changelogFile = repoDir.resolve(inputFileName)
 
-        val changeList = if (changelogFile.exists() && changelogFile.isFile) {
-            val lastRelease = ChangelogReader(changelogFile.toPath()).getLastRelease()
-            val end = lastRelease?.let { repo.findCommitId(it) }
-            repo.createChangelist(repo.getLog(end = end))
-        } else {
-            repo.createChangelist(repo.getLog())
-        }
+        lateinit var changeList: Changelist
+        lateinit var content: String
 
-        val content = if (asJson) {
-            ChangelogWriter().writeToJson(changeList)
-        } else {
-            ChangelogWriter().writeToString(changeList)
+        when {
+            // When JSON output is specified, we generate a changelog based on the entire git log
+            asJson -> {
+                changeList = repo.createChangelist(repo.getLog())
+                content = ChangelogWriter().writeToJson(changeList)
+            }
+            // When a CHANGELOG.md file already exists, we only need to fetch logs for commits not in that file
+            changelogFile.exists() && changelogFile.isFile -> {
+                val lastRelease = ChangelogReader(changelogFile.toPath()).getLastRelease()
+                val end = lastRelease?.let { repo.findCommitId(it) }
+                changeList = repo.createChangelist(repo.getLog(end = end))
+                content = ChangelogWriter(changelogFile.toPath()).writeToString(changeList)
+            }
+            // When there is no CHANGELOG.md file, we generate a changelog based on the entire git log
+            else -> {
+                changeList = repo.createChangelist(repo.getLog())
+                content = ChangelogWriter().writeToString(changeList)
+            }
         }
 
         File(outputDir)
