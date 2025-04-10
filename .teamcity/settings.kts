@@ -1,6 +1,7 @@
 import jetbrains.buildServer.configs.kotlin.ArtifactRule
 import no.elhub.devxp.build.configuration.pipeline.constants.Group.DEVXP
 import no.elhub.devxp.build.configuration.pipeline.dsl.elhubProject
+import no.elhub.devxp.build.configuration.pipeline.jobs.dockerBuild
 import no.elhub.devxp.build.configuration.pipeline.jobs.gradleAutoRelease
 import no.elhub.devxp.build.configuration.pipeline.jobs.gradleVerify
 
@@ -15,8 +16,12 @@ elhubProject(DEVXP, "devxp-auto-changelog") {
                 buildArtifactRules = gradleModules.map { ArtifactRule.include("$it/build", "$it/build.zip") }
                 outputArtifactRules = gradleModules.map { ArtifactRule.include("$it/build.zip!**", "$it/build") }
             }
-            gradleAutoRelease(artifacts = listOf(artifacts)) {
-                gradleModule = "cli"
+
+            parallel {
+                dockerBuild()
+                gradleAutoRelease(artifacts = listOf(artifacts)) {
+                    gradleModule = "cli"
+                }
             }
         }
     }
