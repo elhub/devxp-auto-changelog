@@ -22,12 +22,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
 
-# Set environment variables for JFrog access
-ENV JFROG_URL="https://jfrog.elhub.cloud/artifactory"
-ENV CLI_TOOL_PATH="elhub-mvn-release-local/no/elhub/devxp/devxp-auto-changelog/0.5.0/devxp-auto-changelog-0.5.0.jar"
-
-# Download your CLI tool from JFrog Artifactory
-RUN curl -L ${JFROG_URL}/${CLI_TOOL_PATH} -o devxp-auto-changelog.jar
+COPY cli/build/libs/devxp-auto-changelog-0.0.0.jar devxp-auto-changelog.jar
 
 # Make the CLI tool executable
 RUN chmod +x devxp-auto-changelog.jar
