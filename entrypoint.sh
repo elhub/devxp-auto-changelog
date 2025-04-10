@@ -80,7 +80,7 @@ cp ../CHANGELOG.json ./CHANGELOG.json
 # Commit and push changes
 git config --global user.email "changelog-bot@notarealemail.com"
 git config --global user.name "changelog-bot"
-git add .
+git add CHANGELOG.json
 git commit -m "Update changelog"
 git push origin "$BRANCH_NAME"
 
