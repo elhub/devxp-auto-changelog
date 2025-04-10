@@ -29,7 +29,3 @@ RUN chmod +x devxp-auto-changelog.jar
 
 # Add the CLI tool to the PATH
 ENV PATH="/app:${PATH}"
-
-# Add a script to handle the changelog generation and PR creation
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
