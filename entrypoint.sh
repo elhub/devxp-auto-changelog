@@ -74,18 +74,18 @@ git config --global user.email "changelog-bot@notarealemail.com"
 git config --global user.name "changelog-bot"
 
 # Check if branch already exists locally
-if git show-ref --quiet refs/heads/$BRANCH_NAME; then
+if git show-ref --quiet refs/heads/"$BRANCH_NAME"; then
   echo "Branch $BRANCH_NAME already exists locally, checking it out..."
-  git checkout $BRANCH_NAME
+  git checkout "$BRANCH_NAME"
 else
   echo "Creating new branch $BRANCH_NAME..."
   git checkout -b "$BRANCH_NAME"
 fi
 
 # Check if branch exists on remote
-if git ls-remote --exit-code --heads origin $BRANCH_NAME; then
+if git ls-remote --exit-code --heads origin "$BRANCH_NAME"; then
   echo "Branch exists on remote"
-  git pull origin $BRANCH_NAME
+  git pull origin "$BRANCH_NAME"
 fi
 
 # Copy the generated changelog to the target repository
