@@ -22,10 +22,15 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
 
-COPY cli/build/libs/devxp-auto-changelog-0.0.0.jar devxp-auto-changelog.jar
+COPY cli/build/libs/devxp-auto-changelog-0.0.0.jar /app/devxp-auto-changelog.jar
 
 # Make the CLI tool executable
 RUN chmod +x devxp-auto-changelog.jar
 
 # Add the CLI tool to the PATH
 ENV PATH="/app:${PATH}"
+
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]
