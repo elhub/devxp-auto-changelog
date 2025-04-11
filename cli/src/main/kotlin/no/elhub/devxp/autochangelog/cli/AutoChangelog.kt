@@ -13,9 +13,15 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
 import picocli.CommandLine
 import java.io.File
+import java.time.LocalDate
 import java.util.concurrent.Callable
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.system.exitProcess
+import no.elhub.devxp.autochangelog.extensions.title
+import no.elhub.devxp.autochangelog.git.GitCommit
+import no.elhub.devxp.autochangelog.git.GitMessage
+import no.elhub.devxp.autochangelog.jira.JiraIssueExtractor
+import no.elhub.devxp.autochangelog.project.SemanticVersion
 
 @ExperimentalPathApi
 @CommandLine.Command(
@@ -117,9 +123,12 @@ object AutoChangelog : Callable<Int> {
         return 0
     }
 
-    private fun GitRepo.getLog(end: ObjectId? = null): GitLog = constructLog(end = end) {
+    private fun GitRepo.getLog(end: ObjectId? = null): GitLog = constructLog(end = end) { it ->
         if (INCLUDE_ONLY_WITH_JIRA) {
-            it.description.any { s -> s.startsWith(JIRA_ISSUES_PATTERN_STRING) } || tags().any { t ->
+            it.description.any { s -> s.startsWith(JIRA_ISSUES_PATTERN_STRING) }
+                    || it.title.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}"""))
+                    || it.description.any { line -> line.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}""")) }
+                    || tags().any { t ->
                 (git.repository.refDatabase.peel(t).peeledObjectId ?: t.objectId) == it.toObjectId()
             }
         } else {
