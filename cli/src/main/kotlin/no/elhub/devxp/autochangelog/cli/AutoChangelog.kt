@@ -118,7 +118,7 @@ object AutoChangelog : Callable<Int> {
         return 0
     }
 
-    private fun GitRepo.getLog(end: ObjectId? = null): GitLog = constructLog(end = end) { it ->
+    private fun GitRepo.getLog(end: ObjectId? = null): GitLog = constructLog(end = end) {
         if (INCLUDE_ONLY_WITH_JIRA) {
             it.description.any { s -> s.startsWith(JIRA_ISSUES_PATTERN_STRING) }
                     || it.title.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}"""))
