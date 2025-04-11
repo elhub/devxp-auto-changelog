@@ -1,8 +1,13 @@
 package no.elhub.devxp.autochangelog.cli
 
+import java.io.File
+import java.util.concurrent.Callable
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.system.exitProcess
 import no.elhub.devxp.autochangelog.config.Configuration.INCLUDE_ONLY_WITH_JIRA
 import no.elhub.devxp.autochangelog.config.Configuration.JIRA_ISSUES_PATTERN_STRING
 import no.elhub.devxp.autochangelog.extensions.description
+import no.elhub.devxp.autochangelog.extensions.title
 import no.elhub.devxp.autochangelog.git.GitLog
 import no.elhub.devxp.autochangelog.git.bareClone
 import no.elhub.devxp.autochangelog.io.ChangelogReader
@@ -12,16 +17,6 @@ import no.elhub.devxp.autochangelog.project.GitRepo
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
 import picocli.CommandLine
-import java.io.File
-import java.time.LocalDate
-import java.util.concurrent.Callable
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.system.exitProcess
-import no.elhub.devxp.autochangelog.extensions.title
-import no.elhub.devxp.autochangelog.git.GitCommit
-import no.elhub.devxp.autochangelog.git.GitMessage
-import no.elhub.devxp.autochangelog.jira.JiraIssueExtractor
-import no.elhub.devxp.autochangelog.project.SemanticVersion
 
 @ExperimentalPathApi
 @CommandLine.Command(
