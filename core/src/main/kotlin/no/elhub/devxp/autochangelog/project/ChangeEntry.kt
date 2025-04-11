@@ -1,8 +1,5 @@
 package no.elhub.devxp.autochangelog.project
 
-import no.elhub.devxp.autochangelog.config.Configuration.INCLUDE_JIRA_LINKS
-import no.elhub.devxp.autochangelog.config.Configuration.JIRA_ISSUES_PATTERN_STRING
-import no.elhub.devxp.autochangelog.config.Configuration.JIRA_ISSUES_URL
 import no.elhub.devxp.autochangelog.git.GitMessage
 import no.elhub.devxp.autochangelog.git.TitleKeyword
 import no.elhub.devxp.autochangelog.git.titleKeyword
@@ -39,13 +36,7 @@ data class ChangelogEntry(
         }
 
         fun withMessage(gitMessage: GitMessage): Builder {
-            val msg = gitMessage.description.firstOrNull { it.startsWith(JIRA_ISSUES_PATTERN_STRING) }?.let { jiraIds ->
-                val title = gitMessage.title
-                val jiraIssues = jiraIds.replace(JIRA_ISSUES_PATTERN_STRING, "")
-                    .split(", ")
-                    .joinToString(", ") { if (INCLUDE_JIRA_LINKS) "[$it]($JIRA_ISSUES_URL/$it)" else it }
-                "[ $jiraIssues ] $title"
-            } ?: gitMessage.title
+            val msg =  gitMessage.title
 
             when (gitMessage.titleKeyword) {
                 TitleKeyword.ADD -> this.added.add(msg)

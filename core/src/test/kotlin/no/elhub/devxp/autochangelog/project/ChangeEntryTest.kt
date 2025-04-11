@@ -2,8 +2,6 @@ package no.elhub.devxp.autochangelog.project
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.shouldBe
-import no.elhub.devxp.autochangelog.config.Configuration.JIRA_ISSUES_URL
 import no.elhub.devxp.autochangelog.git.GitMessage
 import no.elhub.devxp.autochangelog.git.TitleKeyword
 
@@ -28,30 +26,6 @@ class ChangeEntryTest : FunSpec({
                         TitleKeyword.OTHER -> builder.other shouldHaveSize 1
                     }
                 }
-            }
-
-            test("should add url for jira issues") {
-                val builder = ChangelogEntry.Builder()
-                val msg = GitMessage(
-                    "Add test commit",
-                    listOf("Issue ID(s): TD-1")
-                )
-                builder.withMessage(msg)
-                builder.added shouldHaveSize 1
-                builder.added.first() shouldBe "[ [TD-1]($JIRA_ISSUES_URL/TD-1) ] Add test commit"
-            }
-
-            test("should add urls for jira issues") {
-                val builder = ChangelogEntry.Builder()
-                val msg = GitMessage(
-                    "Add test commit",
-                    listOf("Issue ID(s): TD-1, TD-2, TD-3")
-                )
-                builder.withMessage(msg)
-                builder.added shouldHaveSize 1
-                builder.added.first() shouldBe """
-                    [ [TD-1]($JIRA_ISSUES_URL/TD-1), [TD-2]($JIRA_ISSUES_URL/TD-2), [TD-3]($JIRA_ISSUES_URL/TD-3) ] Add test commit
-                """.trimIndent()
             }
         }
     }

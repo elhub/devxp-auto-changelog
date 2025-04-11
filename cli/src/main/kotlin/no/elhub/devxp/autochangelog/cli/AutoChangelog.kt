@@ -5,7 +5,6 @@ import java.util.concurrent.Callable
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.system.exitProcess
 import no.elhub.devxp.autochangelog.config.Configuration.INCLUDE_ONLY_WITH_JIRA
-import no.elhub.devxp.autochangelog.config.Configuration.JIRA_ISSUES_PATTERN_STRING
 import no.elhub.devxp.autochangelog.extensions.description
 import no.elhub.devxp.autochangelog.extensions.title
 import no.elhub.devxp.autochangelog.git.GitLog
@@ -71,6 +70,7 @@ object AutoChangelog : Callable<Int> {
     )
     private var outputFileName: String = "CHANGELOG.md"
 
+
     override fun call(): Int {
         if (remotePath.isNotBlank()) {
             bareClone(remotePath, repoPath)
@@ -120,8 +120,7 @@ object AutoChangelog : Callable<Int> {
 
     private fun GitRepo.getLog(end: ObjectId? = null): GitLog = constructLog(end = end) {
         if (INCLUDE_ONLY_WITH_JIRA) {
-            it.description.any { s -> s.startsWith(JIRA_ISSUES_PATTERN_STRING) }
-                    || it.title.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}"""))
+            it.title.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}"""))
                     || it.description.any { line -> line.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}""")) }
                     || tags().any { t ->
                 (git.repository.refDatabase.peel(t).peeledObjectId ?: t.objectId) == it.toObjectId()
