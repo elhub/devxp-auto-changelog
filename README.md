@@ -83,7 +83,7 @@ The full suite of tests can be run using:
 
 ## Contributing
 
-Contributing, issues, and feature requests are welcome. See the [Contributing](https://github.com/elhub/devxp-auto-changelog/blob/main/.github/CONTRIBUTING) file.
+Contributing, issues and feature requests are welcome. See the [Contributing](https://github.com/elhub/devxp-auto-changelog/blob/main/.github/CONTRIBUTING) file.
 
 ## Owners
 
