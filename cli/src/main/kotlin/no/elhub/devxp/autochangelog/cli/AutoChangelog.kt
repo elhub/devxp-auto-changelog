@@ -16,6 +16,9 @@ import no.elhub.devxp.autochangelog.project.Changelist
 import no.elhub.devxp.autochangelog.project.GitRepo
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
+import org.eclipse.jgit.lib.Repository
+import org.eclipse.jgit.revwalk.RevCommit
+import org.eclipse.jgit.revwalk.RevWalk
 import picocli.CommandLine
 
 @ExperimentalPathApi
@@ -71,6 +74,19 @@ object AutoChangelog : Callable<Int> {
     )
     private var outputFileName: String = "CHANGELOG.md"
 
+    @CommandLine.Option(
+        names = ["--up-to"],
+        required = false,
+        description = ["Include commits up to and including the specified tag."]
+    )
+    private var upToTag: String? = null
+
+    @CommandLine.Option(
+        names = ["--after"],
+        required = false,
+        description = ["Include commits after the specified tag (excluding the tag itself)."]
+    )
+    private var afterTag: String? = null
 
     override fun call(): Int {
         var tempDir: File? = null
@@ -112,6 +128,30 @@ object AutoChangelog : Callable<Int> {
             println("Opening git repository in: ${repoDir.absolutePath}")
             val git = Git.open(repoDir)
             val repo = GitRepo(git)
+            
+            // Validate and resolve tags if specified
+            val resolvedUpToCommit = upToTag?.let { resolveTag(git.repository, it) }
+            val resolvedAfterCommit = afterTag?.let { resolveTag(git.repository, it) }
+            
+            // Check if afterTag is newer than upToTag when both are specified
+            if (resolvedUpToCommit != null && resolvedAfterCommit != null) {
+                val revWalk = RevWalk(git.repository)
+                try {
+                    val upToCommit = revWalk.parseCommit(resolvedUpToCommit)
+                    val afterCommit = revWalk.parseCommit(resolvedAfterCommit)
+                    
+                    // Check if afterCommit is an ancestor of upToCommit
+                    val isOlderOrEqual = revWalk.isMergedInto(afterCommit, upToCommit)
+                    if (!isOlderOrEqual) {
+                        System.err.println("Error: The --after tag '${afterTag}' is newer than the --up-to tag '${upToTag}'.")
+                        System.err.println("The --after tag must be older than the --up-to tag.")
+                        return 1
+                    }
+                } finally {
+                    revWalk.close()
+                }
+            }
+            
             val changelogFile = repoDir.resolve(inputFileName)
 
             lateinit var changeList: Changelist
@@ -120,20 +160,28 @@ object AutoChangelog : Callable<Int> {
             when {
                 // When JSON output is specified, we generate a changelog based on the entire git log
                 asJson -> {
-                    changeList = repo.createChangelist(repo.getLog())
+                    changeList = repo.createChangelist(repo.getLog(upToCommit = resolvedUpToCommit, afterCommit = resolvedAfterCommit))
                     content = ChangelogWriter().writeToJson(changeList)
                 }
                 // When a CHANGELOG.md file already exists, we only need to fetch logs for commits not in that file
-                changelogFile.exists() && changelogFile.isFile -> {
+                changelogFile.exists() && changelogFile.isFile && upToTag == null && afterTag == null -> {
                     val lastRelease = ChangelogReader(changelogFile.toPath()).getLastRelease()
                     val end = lastRelease?.let { repo.findCommitId(it) }
                     changeList = repo.createChangelist(repo.getLog(end = end))
                     content = ChangelogWriter(changelogFile.toPath()).writeToString(changeList)
                 }
-                // When there is no CHANGELOG.md file, we generate a changelog based on the entire git log
+                // When there is no CHANGELOG.md file or tag filters are specified, we generate a changelog based on filtered git log
                 else -> {
-                    changeList = repo.createChangelist(repo.getLog())
-                    content = ChangelogWriter().writeToString(changeList)
+                    changeList = repo.createChangelist(repo.getLog(upToCommit = resolvedUpToCommit, afterCommit = resolvedAfterCommit))
+                    
+                    // If changelog file exists and we're using tag filters, still use it for styling
+                    val writer = if (changelogFile.exists() && changelogFile.isFile) {
+                        ChangelogWriter(changelogFile.toPath())
+                    } else {
+                        ChangelogWriter()
+                    }
+                    
+                    content = writer.writeToString(changeList)
                 }
             }
 
@@ -154,15 +202,179 @@ object AutoChangelog : Callable<Int> {
         }
     }
 
-    private fun GitRepo.getLog(end: ObjectId? = null): GitLog = constructLog(end = end) {
-        if (INCLUDE_ONLY_WITH_JIRA) {
-            it.title.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}"""))
-                    || it.description.any { line -> line.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}""")) }
-                    || tags().any { t ->
-                (git.repository.refDatabase.peel(t).peeledObjectId ?: t.objectId) == it.toObjectId()
+    private fun GitRepo.getLog(
+        end: ObjectId? = null,
+        upToCommit: ObjectId? = null,
+        afterCommit: ObjectId? = null
+    ): GitLog {
+        println("Generating changelog with the following filters:")
+        if (upToCommit != null) {
+            println("  - Including commits up to: ${upToCommit.name}")
+        }
+        if (afterCommit != null) {
+            println("  - Including commits after: ${afterCommit.name}")
+        }
+        
+        // Get all commits in the repository
+        val allCommits = git.log().call().toList()
+        
+        // Filter commits based on the specified range
+        val filteredCommits = if (upToCommit != null && afterCommit != null) {
+            // Find the indices of the boundary commits
+            val upToIndex = allCommits.indexOfFirst { it.id == upToCommit }
+            val afterIndex = allCommits.indexOfFirst { it.id == afterCommit }
+            
+            if (upToIndex == -1) {
+                println("Warning: Could not find the 'up-to' commit in the repository.")
+                emptyList()
+            } else if (afterIndex == -1) {
+                println("Warning: Could not find the 'after' commit in the repository.")
+                emptyList()
+            } else {
+                // Take commits between afterIndex (exclusive) and upToIndex (inclusive)
+                // Note: Git log returns commits in reverse chronological order (newest first)
+                if (afterIndex < upToIndex) {
+                    // This means afterCommit is newer than upToCommit, which is reversed from what we want
+                    println("Warning: After tag is newer than up-to tag, swapping the order.")
+                    allCommits.subList(afterIndex + 1, upToIndex + 1)
+                } else {
+                    allCommits.subList(upToIndex, afterIndex)
+                }
             }
+        } else if (upToCommit != null) {
+            // Find the index of the upToCommit
+            val upToIndex = allCommits.indexOfFirst { it.id == upToCommit }
+            
+            if (upToIndex == -1) {
+                println("Warning: Could not find the 'up-to' commit in the repository.")
+                emptyList()
+            } else {
+                // Take all commits up to and including upToCommit
+                allCommits.subList(0, upToIndex + 1)
+            }
+        } else if (afterCommit != null) {
+            // Find the index of the afterCommit
+            val afterIndex = allCommits.indexOfFirst { it.id == afterCommit }
+            
+            if (afterIndex == -1) {
+                println("Warning: Could not find the 'after' commit in the repository.")
+                emptyList()
+            } else {
+                // Take all commits after afterCommit (excluding afterCommit itself)
+                allCommits.subList(0, afterIndex)
+            }
+        } else if (end != null) {
+            // Original case - use the end parameter
+            constructLog(end = end) {
+                isCommitIncluded(it)
+            }.commits.map { it.objectId }.map { objId ->
+                allCommits.find { it.id == objId }
+            }.filterNotNull()
         } else {
-            true
+            // No filters, include all commits
+            allCommits
+        }
+        
+        println("Found ${filteredCommits.size} commits matching the criteria.")
+        
+        // Apply additional filtering (JIRA tickets, etc.)
+        val finalFilteredCommits = filteredCommits.filter { isCommitIncluded(it) }
+        println("After applying JIRA filter: ${finalFilteredCommits.size} commits.")
+        
+        // Manually construct a GitLog using the filtered commits
+        return constructLog(predicate = { commit -> 
+            finalFilteredCommits.any { it.id == commit.id }
+        })
+    }
+
+    private fun GitRepo.isCommitIncluded(commit: RevCommit): Boolean {
+        if (INCLUDE_ONLY_WITH_JIRA) {
+            return commit.title.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}"""))
+                    || commit.description.any { line -> line.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}""")) }
+                    || tags().any { t ->
+                (git.repository.refDatabase.peel(t).peeledObjectId ?: t.objectId) == commit.id
+            }
+        }
+        return true
+    }
+
+    /**
+     * Resolves a tag name to a commit ObjectId
+     * @param repository The git repository
+     * @param tagName The tag name to resolve
+     * @return The ObjectId of the commit the tag points to
+     * @throws IllegalArgumentException if the tag cannot be resolved
+     */
+    private fun resolveTag(repository: Repository, tagName: String): ObjectId {
+        // Try potential tag name variations
+        val tagNames = listOf(
+            tagName,                          // Original form
+            if (tagName.startsWith("v")) tagName.substring(1) else "v$tagName" // Try with/without 'v'
+        ).distinct()
+        
+        var lastException: Exception? = null
+        
+        for (name in tagNames) {
+            try {
+                val tagObjectId = repository.resolve(name)
+                    ?: continue // Try next variation
+                
+                // Try to parse as a commit directly
+                val revWalk = RevWalk(repository)
+                try {
+                    return revWalk.parseCommit(tagObjectId).id
+                } catch (e: Exception) {
+                    // If we get here, the tag doesn't point directly to a commit
+                    // It might be pointing to an annotated tag object
+                    val refName = "refs/tags/$name"
+                    val tagRef = repository.findRef(refName)
+                    
+                    if (tagRef != null) {
+                        // Try to peel the tag to find the commit it points to
+                        val peeledTag = repository.refDatabase.peel(tagRef)
+                        val peeledObjectId = peeledTag.peeledObjectId ?: tagRef.objectId
+                        
+                        try {
+                            // Try to parse as a commit
+                            return revWalk.parseCommit(peeledObjectId).id
+                        } catch (e2: Exception) {
+                            lastException = IllegalArgumentException("Tag '$name' does not point to a commit. Please use a tag that points to a commit.")
+                            // Try next variation
+                        }
+                    } else {
+                        lastException = IllegalArgumentException("Failed to find tag reference for '$name'")
+                        // Try next variation
+                    }
+                } finally {
+                    revWalk.close()
+                }
+            } catch (e: Exception) {
+                if (e is IllegalArgumentException) {
+                    lastException = e
+                } else {
+                    lastException = IllegalArgumentException("Error resolving tag '$name': ${e.message}")
+                }
+                // Try next variation
+            }
+        }
+        
+        // If we get here, none of the tag variations worked
+        throw lastException ?: IllegalArgumentException("Tag '$tagName' not found. Available tags: ${listAvailableTags(repository)}")
+    }
+
+    /**
+     * Lists all available tags in the repository
+     * @param repository The git repository
+     * @return A comma-separated list of tag names
+     */
+    private fun listAvailableTags(repository: Repository): String {
+        val tags = repository.refDatabase.getRefsByPrefix("refs/tags/")
+            .map { it.name.removePrefix("refs/tags/") }
+        
+        return if (tags.isEmpty()) {
+            "No tags found in repository"
+        } else {
+            tags.joinToString(", ")
         }
     }
 
