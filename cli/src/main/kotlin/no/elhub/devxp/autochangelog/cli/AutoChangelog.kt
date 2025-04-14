@@ -1,6 +1,7 @@
 package no.elhub.devxp.autochangelog.cli
 
 import java.io.File
+import java.nio.file.Files
 import java.util.concurrent.Callable
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.system.exitProcess
@@ -72,50 +73,85 @@ object AutoChangelog : Callable<Int> {
 
 
     override fun call(): Int {
-        if (remotePath.isNotBlank()) {
-            bareClone(remotePath, repoPath)
+        var tempDir: File? = null
+        try {
+            // If using remote repository, create a temporary directory for the clone
+            val workingRepoPath = if (remotePath.isNotBlank()) {
+                println("Cloning remote repository: $remotePath this can take up to ~30 seconds")
+                tempDir = Files.createTempDirectory("auto-changelog-").toFile()
+                println("Using temporary directory for clone: ${tempDir.absolutePath}")
+                bareClone(remotePath, tempDir.absolutePath)
+                println("Repository cloned successfully")
+                tempDir.absolutePath
+            } else {
+                repoPath
+            }
+            
+            if (asJson) {
+                outputFileName = outputFileName.replace(".md", ".json")
+            }
+
+            val repoDir = File(workingRepoPath)
+            
+            // Check if the directory is a git repository
+            // For bare repositories, the directory itself is the git repo (no .git folder)
+            val isGitRepo = if (remotePath.isNotBlank()) {
+                // For remote repos we don't need to check, we just cloned it
+                true
+            } else {
+                val gitDir = File(repoDir, ".git")
+                gitDir.exists() || File(repoDir, "HEAD").exists() // Check for bare repo
+            }
+            
+            if (!isGitRepo && remotePath.isBlank()) {
+                System.err.println("Error: Directory '$repoPath' is not a git repository.")
+                System.err.println("Please use the -r/--remote-path option to specify a remote repository if you're not in a git repository.")
+                return 1
+            }
+            
+            println("Opening git repository in: ${repoDir.absolutePath}")
+            val git = Git.open(repoDir)
+            val repo = GitRepo(git)
+            val changelogFile = repoDir.resolve(inputFileName)
+
+            lateinit var changeList: Changelist
+            lateinit var content: String
+
+            when {
+                // When JSON output is specified, we generate a changelog based on the entire git log
+                asJson -> {
+                    changeList = repo.createChangelist(repo.getLog())
+                    content = ChangelogWriter().writeToJson(changeList)
+                }
+                // When a CHANGELOG.md file already exists, we only need to fetch logs for commits not in that file
+                changelogFile.exists() && changelogFile.isFile -> {
+                    val lastRelease = ChangelogReader(changelogFile.toPath()).getLastRelease()
+                    val end = lastRelease?.let { repo.findCommitId(it) }
+                    changeList = repo.createChangelist(repo.getLog(end = end))
+                    content = ChangelogWriter(changelogFile.toPath()).writeToString(changeList)
+                }
+                // When there is no CHANGELOG.md file, we generate a changelog based on the entire git log
+                else -> {
+                    changeList = repo.createChangelist(repo.getLog())
+                    content = ChangelogWriter().writeToString(changeList)
+                }
+            }
+
+            File(outputDir)
+                .apply { createDirIfNotExists() ?: return 1 }
+                .resolve(outputFileName)
+                .apply { createFileIfNotExists() ?: return 1 }
+                .writer().use {
+                    it.write(content)
+                    it.flush()
+                }
+            return 0
+        } catch (e: Exception) {
+            System.err.println("Error: Failed to process repository. ${e.message}")
+            return 1
+        } finally {
+            tempDir?.deleteRecursively()
         }
-        if (asJson) {
-            outputFileName = outputFileName.replace(".md", ".json")
-        }
-
-        val repoDir = File(repoPath)
-        val git = Git.open(repoDir)
-        val repo = GitRepo(git)
-        val changelogFile = repoDir.resolve(inputFileName)
-
-        lateinit var changeList: Changelist
-        lateinit var content: String
-
-        when {
-            // When JSON output is specified, we generate a changelog based on the entire git log
-            asJson -> {
-                changeList = repo.createChangelist(repo.getLog())
-                content = ChangelogWriter().writeToJson(changeList)
-            }
-            // When a CHANGELOG.md file already exists, we only need to fetch logs for commits not in that file
-            changelogFile.exists() && changelogFile.isFile -> {
-                val lastRelease = ChangelogReader(changelogFile.toPath()).getLastRelease()
-                val end = lastRelease?.let { repo.findCommitId(it) }
-                changeList = repo.createChangelist(repo.getLog(end = end))
-                content = ChangelogWriter(changelogFile.toPath()).writeToString(changeList)
-            }
-            // When there is no CHANGELOG.md file, we generate a changelog based on the entire git log
-            else -> {
-                changeList = repo.createChangelist(repo.getLog())
-                content = ChangelogWriter().writeToString(changeList)
-            }
-        }
-
-        File(outputDir)
-            .apply { createDirIfNotExists() ?: return 1 }
-            .resolve(outputFileName)
-            .apply { createFileIfNotExists() ?: return 1 }
-            .writer().use {
-                it.write(content)
-                it.flush()
-            }
-        return 0
     }
 
     private fun GitRepo.getLog(end: ObjectId? = null): GitLog = constructLog(end = end) {
