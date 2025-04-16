@@ -88,9 +88,26 @@ object AutoChangelog : Callable<Int> {
     )
     private var afterTag: String? = null
 
+    @CommandLine.Option(
+        names = ["--jira"],
+        required = false,
+        description = ["Filter commits to include only those with Jira issues and fetch Jira details."]
+    )
+    private var jiraEnabled: Boolean = false
+
     override fun call(): Int {
         var tempDir: File? = null
         try {
+            // Initialize Jira integration if enabled
+            if (jiraEnabled) {
+                println("Initializing Jira integration...")
+                val initialized = no.elhub.devxp.autochangelog.jira.JiraIssueExtractor.initialize()
+                if (!initialized) {
+                    System.err.println("Failed to initialize Jira integration. JIRA_USERNAME and JIRA_TOKEN environment variables must be set.")
+                    return 1
+                }
+            }
+            
             // If using remote repository, create a temporary directory for the clone
             val workingRepoPath = if (remotePath.isNotBlank()) {
                 println("Cloning remote repository: $remotePath this can take up to ~30 seconds")
@@ -161,14 +178,14 @@ object AutoChangelog : Callable<Int> {
                 // When JSON output is specified, we generate a changelog based on the entire git log
                 asJson -> {
                     changeList = repo.createChangelist(repo.getLog(upToCommit = resolvedUpToCommit, afterCommit = resolvedAfterCommit))
-                    content = ChangelogWriter().writeToJson(changeList)
+                    content = ChangelogWriter(includeJiraDetails = jiraEnabled).writeToJson(changeList)
                 }
                 // When a CHANGELOG.md file already exists, we only need to fetch logs for commits not in that file
                 changelogFile.exists() && changelogFile.isFile && upToTag == null && afterTag == null -> {
                     val lastRelease = ChangelogReader(changelogFile.toPath()).getLastRelease()
                     val end = lastRelease?.let { repo.findCommitId(it) }
                     changeList = repo.createChangelist(repo.getLog(end = end))
-                    content = ChangelogWriter(changelogFile.toPath()).writeToString(changeList)
+                    content = ChangelogWriter(changelogFile.toPath(), includeJiraDetails = jiraEnabled).writeToString(changeList)
                 }
                 // When there is no CHANGELOG.md file or tag filters are specified, we generate a changelog based on filtered git log
                 else -> {
@@ -176,9 +193,9 @@ object AutoChangelog : Callable<Int> {
                     
                     // If changelog file exists and we're using tag filters, still use it for styling
                     val writer = if (changelogFile.exists() && changelogFile.isFile) {
-                        ChangelogWriter(changelogFile.toPath())
+                        ChangelogWriter(changelogFile.toPath(), includeJiraDetails = jiraEnabled)
                     } else {
-                        ChangelogWriter()
+                        ChangelogWriter(includeJiraDetails = jiraEnabled)
                     }
                     
                     content = writer.writeToString(changeList)
@@ -213,6 +230,9 @@ object AutoChangelog : Callable<Int> {
         }
         if (afterCommit != null) {
             println("  - Including commits after: ${afterCommit.name}")
+        }
+        if (jiraEnabled) {
+            println("  - Filtering commits to only include those with Jira issues")
         }
         
         // Get all commits in the repository
@@ -278,8 +298,30 @@ object AutoChangelog : Callable<Int> {
         println("Found ${filteredCommits.size} commits matching the criteria.")
         
         // Apply additional filtering (JIRA tickets, etc.)
-        val finalFilteredCommits = filteredCommits.filter { isCommitIncluded(it) }
-        println("After applying JIRA filter: ${finalFilteredCommits.size} commits.")
+        val finalFilteredCommits = filteredCommits.filter { commit ->
+            // If jiraEnabled is true, only include commits with Jira issues
+            val includeBasedOnJira = if (jiraEnabled) {
+                val jiraIssues = no.elhub.devxp.autochangelog.jira.JiraIssueExtractor.extractJiraIssuesFromCommit(commit)
+                val hasJiraIssues = jiraIssues.isNotEmpty()
+                
+                if (hasJiraIssues) {
+                    // Fetch Jira issues data if there are issues in the commit
+                    no.elhub.devxp.autochangelog.jira.JiraIssueExtractor.fetchJiraIssues(jiraIssues)
+                }
+                
+                hasJiraIssues
+            } else {
+                true
+            }
+            
+            includeBasedOnJira && isCommitIncluded(commit)
+        }
+        
+        if (jiraEnabled) {
+            println("After applying Jira filter: ${finalFilteredCommits.size} commits with Jira issues.")
+        } else {
+            println("After applying JIRA filter: ${finalFilteredCommits.size} commits.")
+        }
         
         // Manually construct a GitLog using the filtered commits
         return constructLog(predicate = { commit -> 

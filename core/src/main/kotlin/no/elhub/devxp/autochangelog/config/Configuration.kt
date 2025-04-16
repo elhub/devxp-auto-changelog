@@ -12,4 +12,9 @@ object Configuration {
 
     // TODO this needs to be configurable
     const val GIT_DEFAULT_BRANCH_NAME: String = "main"
+    
+    // Jira related configuration
+    const val JIRA_BASE_URL: String = "https://elhub.atlassian.net"
+    const val JIRA_ISSUES_URL: String = "$JIRA_BASE_URL/browse"
+    const val JIRA_API_PATH: String = "/rest/api/3"
 }
