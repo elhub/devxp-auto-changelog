@@ -62,6 +62,22 @@ To publish the executable jar to artifactory, run:
 java -jar auto-changelog-cli.jar --help
 ```
 
+The following options are available for the CLI:
+
+| Option                        | Description                                                                 | Default          |
+|-------------------------------|-----------------------------------------------------------------------------|------------------|
+| `-r, --remote-path=<remotePath>` | URL to remote repository.                                                  | `.`              |
+| `-j, --json`                  | Whether to write the changelog as JSON.                                     | `false`          |
+| `-d, --dir-path=<repoPath>`   | Path to directory with git repository.                                      | `.`              |
+| `-n, --changelog-name=<inputFileName>` | Input changelog file name.                                              | `CHANGELOG.md`   |
+| `-o, --output-dir=<outputDir>`| Output directory path to which changelog file will be written.              | `.`              |
+| `-f, --file-name=<outputFileName>` | Output file name.                                                         | `CHANGELOG.md`   |
+| `--up-to=<upToTag>`           | Include commits up to and including the specified tag.                      |                  |
+| `--after=<afterTag>`          | Include commits after the specified tag (excluding the tag itself).         |                  |
+| `--jira`                      | Filter commits to include only those with Jira issues and fetch Jira details. |                  |
+| `-h, --help`                  | Show this help message and exit.                                            |                  |
+| `-V, --version`               | Print version information and exit.                                         |                  |
+
 ## Configuration
 
 The application can be configured using a `config.yml` file placed in the root directory of the project. The following is an example configuration:
