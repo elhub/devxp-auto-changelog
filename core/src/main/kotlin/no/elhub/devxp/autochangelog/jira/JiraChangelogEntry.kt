@@ -2,9 +2,9 @@ package no.elhub.devxp.autochangelog.jira
 
 import kotlinx.serialization.Serializable
 import no.elhub.devxp.autochangelog.project.ChangelogEntry
-import java.time.LocalDate
-import no.elhub.devxp.autochangelog.serializers.LocalDateSerializer
 import no.elhub.devxp.autochangelog.project.Version
+import no.elhub.devxp.autochangelog.serializers.LocalDateSerializer
+import java.time.LocalDate
 
 /**
  * Extends the ChangelogEntry to include Jira issue details.
@@ -25,13 +25,13 @@ data class JiraChangelogEntry(
         @Serializable(with = LocalDateSerializer::class)
         val date: LocalDate
     )
-    
+
     @Serializable
     data class JiraEntry(
         val text: String,
         val jira_issues: List<JiraIssueInfo> = emptyList()
     )
-    
+
     @Serializable
     data class JiraIssueInfo(
         val key: String,
@@ -39,7 +39,7 @@ data class JiraChangelogEntry(
         val description: String?,
         val url: String
     )
-    
+
     companion object {
         /**
          * Convert a standard ChangelogEntry to a JiraChangelogEntry with associated Jira issues.
@@ -48,8 +48,8 @@ data class JiraChangelogEntry(
             if (!jiraEnabled || !JiraIssueExtractor.isInitialized()) {
                 // If Jira is not enabled, create a simple JiraChangelogEntry without issue details
                 return JiraChangelogEntry(
-                    release = entry.release?.let { 
-                        Release(it.version, it.date) 
+                    release = entry.release?.let {
+                        Release(it.version, it.date)
                     },
                     added = entry.added.map { JiraEntry(it) },
                     changed = entry.changed.map { JiraEntry(it) },
@@ -65,13 +65,13 @@ data class JiraChangelogEntry(
                 val issueKeys = jiraRegex.findAll(this).map { it.value }.distinct().toList()
                 val jiraIssues = issueKeys.mapNotNull { JiraIssueExtractor.fetchJiraIssue(it) }
                     .map { JiraIssueInfo(it.key, it.title, it.description, it.url) }
-                
+
                 return JiraEntry(this, jiraIssues)
             }
 
             return JiraChangelogEntry(
-                release = entry.release?.let { 
-                    Release(it.version, it.date) 
+                release = entry.release?.let {
+                    Release(it.version, it.date)
                 },
                 added = entry.added.map { it.withJiraIssues() },
                 changed = entry.changed.map { it.withJiraIssues() },
@@ -81,4 +81,4 @@ data class JiraChangelogEntry(
             )
         }
     }
-} 
+}

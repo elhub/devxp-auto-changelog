@@ -11,7 +11,7 @@ class ChangelogWriterTest : FunSpec({
                 # Changelog
 
                 All notable changes to this project will be documented in this file.
-            """.trimIndent()
+        """.trimIndent()
 
         val existingContent = """
                 ## [1.1.0] - 2024-02-15
@@ -23,7 +23,7 @@ class ChangelogWriterTest : FunSpec({
                 ### Changed
 
                 - All the code
-            """.trimIndent()
+        """.trimIndent()
 
         val writer = ChangelogWriter(start = defaultDescription, end = existingContent)
 
@@ -35,7 +35,7 @@ class ChangelogWriterTest : FunSpec({
                     |$singleExpectedMd
                     |
                     |$existingContent
-                """.trimMargin()
+            """.trimMargin()
         }
     }
 
@@ -49,7 +49,7 @@ class ChangelogWriterTest : FunSpec({
                         |${defaultContent.joinToString("\n")}
                         |
                         |${it.expected}
-                    """.trimMargin()
+                """.trimMargin()
             }
         }
 

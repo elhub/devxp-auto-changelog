@@ -30,7 +30,6 @@ class ChangelogReaderTest : FunSpec({
         - Fixed foldouts in Dutch translation
     """.trimIndent()
 
-
     context("Changelog instance") {
         val changelog = ChangelogReader(TestRepository.changelogPath).read()
 

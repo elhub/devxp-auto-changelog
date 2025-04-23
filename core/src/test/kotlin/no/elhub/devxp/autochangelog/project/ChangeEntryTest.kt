@@ -1,10 +1,9 @@
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.shouldBe
-// import no.elhub.devxp.autochangelog.config.Configuration.JIRA_ISSUES_URL
 import no.elhub.devxp.autochangelog.git.GitMessage
 import no.elhub.devxp.autochangelog.git.TitleKeyword
 import no.elhub.devxp.autochangelog.project.ChangelogEntry
+// import no.elhub.devxp.autochangelog.config.Configuration.JIRA_ISSUES_URL
 
 class ChangeEntryTest : FunSpec({
     context("ChangeEntry.Builder") {

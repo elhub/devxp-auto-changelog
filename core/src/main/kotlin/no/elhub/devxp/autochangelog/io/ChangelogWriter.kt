@@ -4,7 +4,7 @@ import kotlinx.serialization.json.Json
 import no.elhub.devxp.autochangelog.config.Configuration
 import no.elhub.devxp.autochangelog.extensions.linesAfter
 import no.elhub.devxp.autochangelog.extensions.linesUntil
-import no.elhub.devxp.autochangelog.jira.JiraIssue
+import no.elhub.devxp.autochangelog.jira.JiraChangelogEntry
 import no.elhub.devxp.autochangelog.jira.JiraIssueExtractor
 import no.elhub.devxp.autochangelog.project.Changelist
 import no.elhub.devxp.autochangelog.project.GitRepo
@@ -15,7 +15,6 @@ import java.io.StringWriter
 import java.io.Writer
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
-import no.elhub.devxp.autochangelog.jira.JiraChangelogEntry
 
 class ChangelogWriter {
     private val start: () -> Sequence<String>
@@ -61,7 +60,7 @@ class ChangelogWriter {
                     JiraChangelogEntry.fromChangelogEntry(entry, includeJiraDetails)
                 }
             }.flatten()
-            
+
             json.encodeToString(jiraChangelist)
         } else {
             json.encodeToString(changelist.changes.values.flatten())
@@ -113,14 +112,14 @@ class ChangelogWriter {
         // Extract Jira issue keys from the text
         val jiraRegex = JiraIssueExtractor.jiraRegex
         val issueKeys = jiraRegex.findAll(text).map { it.value }.distinct().toList()
-        
+
         if (issueKeys.isEmpty()) {
             return text
         }
 
         // Fetch Jira issues
         val issues = JiraIssueExtractor.fetchJiraIssues(issueKeys).values.toList()
-        
+
         if (issues.isEmpty()) {
             return text
         }

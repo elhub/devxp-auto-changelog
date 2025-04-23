@@ -24,16 +24,16 @@ fun Path.delete() {
                     return FileVisitResult.CONTINUE
                 }
 
-                override fun postVisitDirectory(dir: Path, e: IOException?): FileVisitResult {
-                    return if (e == null) {
-                        Files.delete(dir)
-                        FileVisitResult.CONTINUE
-                    } else {
-                        // directory iteration failed
-                        throw e
-                    }
+                override fun postVisitDirectory(dir: Path, e: IOException?): FileVisitResult = if (e == null) {
+                    Files.delete(dir)
+                    FileVisitResult.CONTINUE
+                } else {
+                    // directory iteration failed
+                    throw e
                 }
             }
         )
-    } else Files.delete(this)
+    } else {
+        Files.delete(this)
+    }
 }

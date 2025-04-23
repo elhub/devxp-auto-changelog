@@ -1,10 +1,5 @@
 package no.elhub.devxp.autochangelog.cli
 
-import java.io.File
-import java.nio.file.Files
-import java.util.concurrent.Callable
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.system.exitProcess
 import no.elhub.devxp.autochangelog.config.Configuration.INCLUDE_ONLY_WITH_JIRA
 import no.elhub.devxp.autochangelog.extensions.description
 import no.elhub.devxp.autochangelog.extensions.title
@@ -20,6 +15,11 @@ import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.revwalk.RevWalk
 import picocli.CommandLine
+import java.io.File
+import java.nio.file.Files
+import java.util.concurrent.Callable
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.system.exitProcess
 
 @ExperimentalPathApi
 @CommandLine.Command(
@@ -107,7 +107,7 @@ object AutoChangelog : Callable<Int> {
                     return 1
                 }
             }
-            
+
             // If using remote repository, create a temporary directory for the clone
             val workingRepoPath = if (remotePath.isNotBlank()) {
                 println("Cloning remote repository: $remotePath this can take up to ~30 seconds")
@@ -119,13 +119,13 @@ object AutoChangelog : Callable<Int> {
             } else {
                 repoPath
             }
-            
+
             if (asJson) {
                 outputFileName = outputFileName.replace(".md", ".json")
             }
 
             val repoDir = File(workingRepoPath)
-            
+
             // Check if the directory is a git repository
             // For bare repositories, the directory itself is the git repo (no .git folder)
             val isGitRepo = if (remotePath.isNotBlank()) {
@@ -135,32 +135,32 @@ object AutoChangelog : Callable<Int> {
                 val gitDir = File(repoDir, ".git")
                 gitDir.exists() || File(repoDir, "HEAD").exists() // Check for bare repo
             }
-            
+
             if (!isGitRepo && remotePath.isBlank()) {
                 System.err.println("Error: Directory '$repoPath' is not a git repository.")
                 System.err.println("Please use the -r/--remote-path option to specify a remote repository if you're not in a git repository.")
                 return 1
             }
-            
+
             println("Opening git repository in: ${repoDir.absolutePath}")
             val git = Git.open(repoDir)
             val repo = GitRepo(git)
-            
+
             // Validate and resolve tags if specified
             val resolvedUpToCommit = upToTag?.let { resolveTag(git.repository, it) }
             val resolvedAfterCommit = afterTag?.let { resolveTag(git.repository, it) }
-            
+
             // Check if afterTag is newer than upToTag when both are specified
             if (resolvedUpToCommit != null && resolvedAfterCommit != null) {
                 val revWalk = RevWalk(git.repository)
                 try {
                     val upToCommit = revWalk.parseCommit(resolvedUpToCommit)
                     val afterCommit = revWalk.parseCommit(resolvedAfterCommit)
-                    
+
                     // Check if afterCommit is an ancestor of upToCommit
                     val isOlderOrEqual = revWalk.isMergedInto(afterCommit, upToCommit)
                     if (!isOlderOrEqual) {
-                        System.err.println("Error: The --after tag '${afterTag}' is newer than the --up-to tag '${upToTag}'.")
+                        System.err.println("Error: The --after tag '$afterTag' is newer than the --up-to tag '$upToTag'.")
                         System.err.println("The --after tag must be older than the --up-to tag.")
                         return 1
                     }
@@ -168,7 +168,7 @@ object AutoChangelog : Callable<Int> {
                     revWalk.close()
                 }
             }
-            
+
             val changelogFile = repoDir.resolve(inputFileName)
 
             lateinit var changeList: Changelist
@@ -190,14 +190,14 @@ object AutoChangelog : Callable<Int> {
                 // When there is no CHANGELOG.md file or tag filters are specified, we generate a changelog based on filtered git log
                 else -> {
                     changeList = repo.createChangelist(repo.getLog(upToCommit = resolvedUpToCommit, afterCommit = resolvedAfterCommit))
-                    
+
                     // If changelog file exists and we're using tag filters, still use it for styling
                     val writer = if (changelogFile.exists() && changelogFile.isFile) {
                         ChangelogWriter(changelogFile.toPath(), includeJiraDetails = jiraEnabled)
                     } else {
                         ChangelogWriter(includeJiraDetails = jiraEnabled)
                     }
-                    
+
                     content = writer.writeToString(changeList)
                 }
             }
@@ -234,16 +234,16 @@ object AutoChangelog : Callable<Int> {
         if (jiraEnabled) {
             println("  - Filtering commits to only include those with Jira issues")
         }
-        
+
         // Get all commits in the repository
         val allCommits = git.log().call().toList()
-        
+
         // Filter commits based on the specified range
         val filteredCommits = if (upToCommit != null && afterCommit != null) {
             // Find the indices of the boundary commits
             val upToIndex = allCommits.indexOfFirst { it.id == upToCommit }
             val afterIndex = allCommits.indexOfFirst { it.id == afterCommit }
-            
+
             if (upToIndex == -1) {
                 println("Warning: Could not find the 'up-to' commit in the repository.")
                 emptyList()
@@ -264,7 +264,7 @@ object AutoChangelog : Callable<Int> {
         } else if (upToCommit != null) {
             // Find the index of the upToCommit
             val upToIndex = allCommits.indexOfFirst { it.id == upToCommit }
-            
+
             if (upToIndex == -1) {
                 println("Warning: Could not find the 'up-to' commit in the repository.")
                 emptyList()
@@ -275,7 +275,7 @@ object AutoChangelog : Callable<Int> {
         } else if (afterCommit != null) {
             // Find the index of the afterCommit
             val afterIndex = allCommits.indexOfFirst { it.id == afterCommit }
-            
+
             if (afterIndex == -1) {
                 println("Warning: Could not find the 'after' commit in the repository.")
                 emptyList()
@@ -294,48 +294,48 @@ object AutoChangelog : Callable<Int> {
             // No filters, include all commits
             allCommits
         }
-        
+
         println("Found ${filteredCommits.size} commits matching the criteria.")
-        
+
         // Apply additional filtering (JIRA tickets, etc.)
         val finalFilteredCommits = filteredCommits.filter { commit ->
             // If jiraEnabled is true, only include commits with Jira issues
             val includeBasedOnJira = if (jiraEnabled) {
                 val jiraIssues = no.elhub.devxp.autochangelog.jira.JiraIssueExtractor.extractJiraIssuesFromCommit(commit)
                 val hasJiraIssues = jiraIssues.isNotEmpty()
-                
+
                 if (hasJiraIssues) {
                     // Fetch Jira issues data if there are issues in the commit
                     no.elhub.devxp.autochangelog.jira.JiraIssueExtractor.fetchJiraIssues(jiraIssues)
                 }
-                
+
                 hasJiraIssues
             } else {
                 true
             }
-            
+
             includeBasedOnJira && isCommitIncluded(commit)
         }
-        
+
         if (jiraEnabled) {
             println("After applying Jira filter: ${finalFilteredCommits.size} commits with Jira issues.")
         } else {
             println("After applying JIRA filter: ${finalFilteredCommits.size} commits.")
         }
-        
+
         // Manually construct a GitLog using the filtered commits
-        return constructLog(predicate = { commit -> 
+        return constructLog(predicate = { commit ->
             finalFilteredCommits.any { it.id == commit.id }
         })
     }
 
     private fun GitRepo.isCommitIncluded(commit: RevCommit): Boolean {
         if (INCLUDE_ONLY_WITH_JIRA) {
-            return commit.title.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}"""))
-                    || commit.description.any { line -> line.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}""")) }
-                    || tags().any { t ->
-                (git.repository.refDatabase.peel(t).peeledObjectId ?: t.objectId) == commit.id
-            }
+            return commit.title.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}""")) ||
+                commit.description.any { line -> line.matches(Regex("""^.*[A-Z][A-Z0-9]+-\d+.*${'$'}""")) } ||
+                tags().any { t ->
+                    (git.repository.refDatabase.peel(t).peeledObjectId ?: t.objectId) == commit.id
+                }
         }
         return true
     }
@@ -350,17 +350,17 @@ object AutoChangelog : Callable<Int> {
     private fun resolveTag(repository: Repository, tagName: String): ObjectId {
         // Try potential tag name variations
         val tagNames = listOf(
-            tagName,                          // Original form
+            tagName, // Original form
             if (tagName.startsWith("v")) tagName.substring(1) else "v$tagName" // Try with/without 'v'
         ).distinct()
-        
+
         var lastException: Exception? = null
-        
+
         for (name in tagNames) {
             try {
                 val tagObjectId = repository.resolve(name)
                     ?: continue // Try next variation
-                
+
                 // Try to parse as a commit directly
                 val revWalk = RevWalk(repository)
                 try {
@@ -370,12 +370,12 @@ object AutoChangelog : Callable<Int> {
                     // It might be pointing to an annotated tag object
                     val refName = "refs/tags/$name"
                     val tagRef = repository.findRef(refName)
-                    
+
                     if (tagRef != null) {
                         // Try to peel the tag to find the commit it points to
                         val peeledTag = repository.refDatabase.peel(tagRef)
                         val peeledObjectId = peeledTag.peeledObjectId ?: tagRef.objectId
-                        
+
                         try {
                             // Try to parse as a commit
                             return revWalk.parseCommit(peeledObjectId).id
@@ -399,7 +399,7 @@ object AutoChangelog : Callable<Int> {
                 // Try next variation
             }
         }
-        
+
         // If we get here, none of the tag variations worked
         throw lastException ?: IllegalArgumentException("Tag '$tagName' not found. Available tags: ${listAvailableTags(repository)}")
     }
@@ -412,7 +412,7 @@ object AutoChangelog : Callable<Int> {
     private fun listAvailableTags(repository: Repository): String {
         val tags = repository.refDatabase.getRefsByPrefix("refs/tags/")
             .map { it.name.removePrefix("refs/tags/") }
-        
+
         return if (tags.isEmpty()) {
             "No tags found in repository"
         } else {

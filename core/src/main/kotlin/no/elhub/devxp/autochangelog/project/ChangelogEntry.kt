@@ -1,11 +1,11 @@
 package no.elhub.devxp.autochangelog.project
 
+import kotlinx.serialization.Serializable
 import no.elhub.devxp.autochangelog.git.GitMessage
 import no.elhub.devxp.autochangelog.git.TitleKeyword
 import no.elhub.devxp.autochangelog.git.titleKeyword
-import java.time.LocalDate
-import kotlinx.serialization.Serializable
 import no.elhub.devxp.autochangelog.serializers.LocalDateSerializer
+import java.time.LocalDate
 
 @Serializable
 data class ChangelogEntry(
@@ -31,12 +31,10 @@ data class ChangelogEntry(
         val breakingChange: MutableList<String> = mutableListOf()
         val other: MutableList<String> = mutableListOf()
 
-        fun withRelease(release: Release): Builder {
-            return apply { this.release = release }
-        }
+        fun withRelease(release: Release): Builder = apply { this.release = release }
 
         fun withMessage(gitMessage: GitMessage): Builder {
-            val msg =  gitMessage.title
+            val msg = gitMessage.title
 
             when (gitMessage.titleKeyword) {
                 TitleKeyword.ADD -> this.added.add(msg)
