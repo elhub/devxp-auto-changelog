@@ -78,6 +78,7 @@ The following options are available for the CLI:
 | `-f, --file-name=<outputFileName>` | Output file name.                                                         | `CHANGELOG.md`   |
 | `--up-to=<upToTag>`           | Include commits up to and including the specified tag.                      |                  |
 | `--after=<afterTag>`          | Include commits after the specified tag (excluding the tag itself).         |                  |
+| `--for-tag=<tagName>`         | Generate changelog for the specified tag by comparing with its previous tag.| |
 | `--jira`                      | Filter commits to include only those with Jira issues and fetch Jira details. |                  |
 | `-h, --help`                  | Show this help message and exit.                                            |                  |
 | `-V, --version`               | Print version information and exit.                                         |                  |

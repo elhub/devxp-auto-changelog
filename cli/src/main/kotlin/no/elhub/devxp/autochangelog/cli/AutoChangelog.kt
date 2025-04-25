@@ -89,6 +89,13 @@ object AutoChangelog : Callable<Int> {
     private var afterTag: String? = null
 
     @CommandLine.Option(
+        names = ["--for-tag"],
+        required = false,
+        description = ["Generate changelog for the specified tag comparing it with its previous tag."]
+    )
+    private var forTag: String? = null
+
+    @CommandLine.Option(
         names = ["--jira"],
         required = false,
         description = ["Filter commits to include only those with Jira issues and fetch Jira details."]
@@ -145,6 +152,21 @@ object AutoChangelog : Callable<Int> {
             println("Opening git repository in: ${repoDir.absolutePath}")
             val git = Git.open(repoDir)
             val repo = GitRepo(git)
+
+            // Handle the --for-tag option to find the previous tag
+            if (forTag != null && upToTag == null && afterTag == null) {
+                println("Finding previous tag for: $forTag")
+                val previousTag = findPreviousTag(git.repository, forTag!!)
+                if (previousTag != null) {
+                    println("Found previous tag: $previousTag")
+                    // Set the tags for the changelog range
+                    upToTag = forTag
+                    afterTag = previousTag
+                } else {
+                    System.err.println("Error: Could not find a previous tag for '$forTag'.")
+                    return 1
+                }
+            }
 
             // Validate and resolve tags if specified
             val resolvedUpToCommit = upToTag?.let { resolveTag(git.repository, it) }
@@ -436,6 +458,77 @@ object AutoChangelog : Callable<Int> {
             null
         }
         else -> false
+    }
+
+    /**
+     * Finds the previous tag for a given tag in the repository
+     * @param repository The git repository
+     * @param tagName The tag name to find the previous tag for
+     * @return The previous tag name or null if not found
+     */
+    private fun findPreviousTag(repository: Repository, tagName: String): String? {
+        // Data class to hold tag information
+        data class TagInfo(val name: String, val commitId: ObjectId, val commitTime: Int)
+
+        // Get all tags in the repository
+        val tags = repository.refDatabase.getRefsByPrefix("refs/tags/")
+            .mapNotNull { ref ->
+                try {
+                    // Extract the tag name without prefix
+                    val name = ref.name.removePrefix("refs/tags/")
+                    // Get the commit it points to
+                    val revWalk = RevWalk(repository)
+
+                    val tagCommitAndTime = try {
+                        val objectId = repository.resolve(name)
+                        if (objectId != null) {
+                            // Try to parse as a commit directly
+                            try {
+                                val commit = revWalk.parseCommit(objectId)
+                                Pair(commit.id, commit.commitTime)
+                            } catch (e: Exception) {
+                                // It might be an annotated tag
+                                val tagRef = repository.findRef("refs/tags/$name")
+                                if (tagRef != null) {
+                                    val peeledTag = repository.refDatabase.peel(tagRef)
+                                    val peeledObjectId = peeledTag.peeledObjectId ?: tagRef.objectId
+                                    val commit = revWalk.parseCommit(peeledObjectId)
+                                    Pair(commit.id, commit.commitTime)
+                                } else {
+                                    null
+                                }
+                            }
+                        } else {
+                            null
+                        }
+                    } finally {
+                        revWalk.close()
+                    }
+
+                    tagCommitAndTime?.let { (commitId, commitTime) ->
+                        TagInfo(name, commitId, commitTime)
+                    }
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            .sortedByDescending { it.commitTime } // Sort by commit time, newest first
+
+        // Normalize the input tag name (handle both with and without "v" prefix)
+        val normalizedTagName = if (tagName.startsWith("v")) tagName else "v$tagName"
+        val alternateTagName = if (tagName.startsWith("v")) tagName.substring(1) else tagName
+
+        // Find the current tag's index
+        val currentTagIndex = tags.indexOfFirst {
+            it.name == tagName || it.name == normalizedTagName || it.name == alternateTagName
+        }
+
+        // If tag found and it's not the last one, return the next tag (which is the previous in time)
+        return if (currentTagIndex >= 0 && currentTagIndex < tags.size - 1) {
+            tags[currentTagIndex + 1].name
+        } else {
+            null
+        }
     }
 }
 
