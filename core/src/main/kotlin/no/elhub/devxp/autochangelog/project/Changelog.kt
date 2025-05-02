@@ -26,9 +26,7 @@ data class Changelog(
          * Sets this [Builder.lastRelease] to [lastRelease]
          * and returns an instance of this [Builder]
          */
-        fun withLastRelease(lastRelease: SemanticVersion): Builder {
-            return this.also { it.lastRelease = lastRelease }
-        }
+        fun withLastRelease(lastRelease: SemanticVersion): Builder = this.also { it.lastRelease = lastRelease }
 
         /**
          * Builds the sequence lazily from the [block] function, yielding results one by one,
@@ -36,9 +34,7 @@ data class Changelog(
          * and returns an instance of this [Builder]
          */
         @OptIn(ExperimentalTypeInference::class)
-        fun withLines(block: suspend SequenceScope<String>.() -> Unit): Builder {
-            return this.also { it.lines = Sequence { iterator(block) } }
-        }
+        fun withLines(block: suspend SequenceScope<String>.() -> Unit): Builder = this.also { it.lines = Sequence { iterator(block) } }
 
         /**
          * Builds the [Changelog] from this [Builder]
@@ -47,9 +43,7 @@ data class Changelog(
             lastRelease = this.lastRelease,
             lines = lines
         )
-
     }
-
 }
 
 val releaseHeaderRegex: Pattern = Pattern.compile(
@@ -63,10 +57,10 @@ val defaultContent = sequence {
         "All notable changes to this project will be documented in this file.",
         "",
         "The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),",
-        lastDescriptionLine
+        LAST_DESCRIPTION_LINE
     )
     yieldAll(lines)
 }
 
-const val lastDescriptionLine =
+const val LAST_DESCRIPTION_LINE =
     "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."

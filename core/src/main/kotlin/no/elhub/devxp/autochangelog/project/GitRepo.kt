@@ -1,15 +1,17 @@
 package no.elhub.devxp.autochangelog.project
 
-import java.time.ZoneId
+import no.elhub.devxp.autochangelog.config.Configuration.INCLUDE_ONLY_WITH_JIRA
 import no.elhub.devxp.autochangelog.extensions.description
 import no.elhub.devxp.autochangelog.extensions.title
 import no.elhub.devxp.autochangelog.git.GitCommit
 import no.elhub.devxp.autochangelog.git.GitLog
 import no.elhub.devxp.autochangelog.git.GitMessage
+import no.elhub.devxp.autochangelog.jira.JiraIssueExtractor.extractJiraIssueFromCommit
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.revwalk.RevCommit
+import java.time.ZoneId
 
 /**
  * Represents a generic git repository.
@@ -32,7 +34,9 @@ class GitRepo(val git: Git) {
         val log = git.log()
         if (start != null) {
             if (end != null) log.addRange(start, end) else log.add(start)
-        } else if (end != null) log.not(end)
+        } else if (end != null) {
+            log.not(end)
+        }
         return log.call().asSequence()
     }
 
@@ -76,22 +80,25 @@ class GitRepo(val git: Git) {
             }
             .filter { (v, _) -> v.matches(versionPattern.toRegex()) }
 
-        val commits = log(start = start, end = end).fold(mutableListOf<GitCommit>()) { acc, commit ->
+        val commits = mutableListOf<GitCommit>()
+        for (commit in log(start = start, end = end)) {
             if (predicate(commit)) {
+                val jiraId = if (INCLUDE_ONLY_WITH_JIRA) extractJiraIssueFromCommit(commit) else null
                 val v = versionedCommits.firstOrNull { it.second == commit.id }?.first
-                val c = GitCommit(
-                    message = GitMessage(
-                        title = commit.title,
-                        description = commit.description
-                    ),
-                    objectId = commit.id,
-                    date = commit.authorIdent.`when`.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-                    version = v?.let { SemanticVersion(it) }
-                )
-                acc.add(c)
-            }
 
-            acc
+                if (!INCLUDE_ONLY_WITH_JIRA || commits.none { it.message.title == jiraId }) {
+                    val c = GitCommit(
+                        message = GitMessage(
+                            title = jiraId ?: commit.title,
+                            description = commit.description
+                        ),
+                        objectId = commit.id,
+                        date = commit.authorIdent.`when`.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                        version = v?.let { SemanticVersion(it) }
+                    )
+                    commits.add(c)
+                }
+            }
         }
 
         return GitLog(commits)

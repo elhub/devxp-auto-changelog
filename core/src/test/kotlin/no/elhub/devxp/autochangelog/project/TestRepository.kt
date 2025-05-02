@@ -2,7 +2,6 @@ package no.elhub.devxp.autochangelog.project
 
 import no.elhub.devxp.autochangelog.extensions.delete
 import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.api.ResetCommand
 import java.nio.file.Path
 import java.nio.file.Paths
 

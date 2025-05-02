@@ -4,6 +4,8 @@ import kotlinx.serialization.json.Json
 import no.elhub.devxp.autochangelog.config.Configuration
 import no.elhub.devxp.autochangelog.extensions.linesAfter
 import no.elhub.devxp.autochangelog.extensions.linesUntil
+import no.elhub.devxp.autochangelog.jira.JiraChangelogEntry
+import no.elhub.devxp.autochangelog.jira.JiraIssueExtractor
 import no.elhub.devxp.autochangelog.project.Changelist
 import no.elhub.devxp.autochangelog.project.GitRepo
 import no.elhub.devxp.autochangelog.project.Unreleased
@@ -17,9 +19,11 @@ import kotlin.io.path.ExperimentalPathApi
 class ChangelogWriter {
     private val start: () -> Sequence<String>
     private val end: () -> Sequence<String>
+    private var includeJiraDetails: Boolean = false
 
     @OptIn(ExperimentalPathApi::class)
-    constructor(changelogPath: Path) {
+    constructor(changelogPath: Path, includeJiraDetails: Boolean = false) {
+        this.includeJiraDetails = includeJiraDetails
         start = {
             changelogPath.toFile()
                 .linesUntil { it.matches(releaseHeaderRegex.toRegex()) }
@@ -30,7 +34,8 @@ class ChangelogWriter {
         }
     }
 
-    constructor(start: String = "", end: String = "") {
+    constructor(start: String = "", end: String = "", includeJiraDetails: Boolean = false) {
+        this.includeJiraDetails = includeJiraDetails
         this.start = { if (start != "") start.lineSequence() else emptySequence() }
         this.end = { if (end != "") end.lineSequence() else emptySequence() }
     }
@@ -46,7 +51,20 @@ class ChangelogWriter {
             prettyPrint = true
             allowStructuredMapKeys = true
         }
-        return json.encodeToString(changelist.changes.values.flatten())
+
+        // If Jira details are included, use JiraChangelogEntry for richer output
+        return if (includeJiraDetails) {
+            // Convert each ChangelogEntry to a JiraChangelogEntry with Jira details
+            val jiraChangelist = changelist.changes.entries.map { (version, entries) ->
+                entries.map { entry ->
+                    JiraChangelogEntry.fromChangelogEntry(entry, includeJiraDetails)
+                }
+            }.flatten()
+
+            json.encodeToString(jiraChangelist)
+        } else {
+            json.encodeToString(changelist.changes.values.flatten())
+        }
     }
 
     private fun write(changelist: Changelist): Writer = start()
@@ -86,12 +104,37 @@ class ChangelogWriter {
         return compareString
     }
 
+    private fun enhanceWithJiraDetails(text: String): String {
+        if (!includeJiraDetails || !JiraIssueExtractor.isInitialized()) {
+            return text
+        }
+
+        // Extract Jira issue keys from the text
+        val jiraRegex = JiraIssueExtractor.jiraRegex
+        val issueKeys = jiraRegex.findAll(text).map { it.value }.distinct().toList()
+
+        if (issueKeys.isEmpty()) {
+            return text
+        }
+
+        // Fetch Jira issues
+        val issues = JiraIssueExtractor.fetchJiraIssues(issueKeys).values.toList()
+
+        if (issues.isEmpty()) {
+            return text
+        }
+
+        // Format the issues as Markdown and append to the text
+        val jiraDetails = JiraIssueExtractor.formatJiraIssuesMarkdown(issues)
+        return "$text\n    $jiraDetails"
+    }
+
     private fun Changelist.toChangelogLines(): List<String> = this.changes.entries.reversed().map { (k, v) ->
-        val additions = v.flatMap { it.added.map { s -> s } }
-        val breakingChanges = v.flatMap { it.breakingChange.map { s -> s } }
-        val changes = v.flatMap { it.changed.map { s -> s } }
-        val fixes = v.flatMap { it.fixed.map { s -> s } }
-        val unknown = v.flatMap { it.other.map { s -> s } }
+        val additions = v.flatMap { it.added.map { s -> if (includeJiraDetails) enhanceWithJiraDetails(s) else s } }
+        val breakingChanges = v.flatMap { it.breakingChange.map { s -> if (includeJiraDetails) enhanceWithJiraDetails(s) else s } }
+        val changes = v.flatMap { it.changed.map { s -> if (includeJiraDetails) enhanceWithJiraDetails(s) else s } }
+        val fixes = v.flatMap { it.fixed.map { s -> if (includeJiraDetails) enhanceWithJiraDetails(s) else s } }
+        val unknown = v.flatMap { it.other.map { s -> if (includeJiraDetails) enhanceWithJiraDetails(s) else s } }
 
         val sb = StringBuilder()
 
