@@ -526,11 +526,16 @@ object AutoChangelog : Callable<Int> {
             return null
         }
 
+        // Sort tags by commitTime nad name
+        val sortedTags = tags.drop(currentTagIndex + 1)
+            .sortedWith(compareByDescending<TagInfo> { it.commitTime }.thenByDescending { it.name })
+
         // If a tagRegex is provided, return the previous tag that matches the regex
         if (tagRegex != null) {
-            return tags.drop(currentTagIndex + 1).first { it.name.matches(Regex(tagRegex!!)) }.name
+            return sortedTags.first { it.name.matches(Regex(tagRegex!!)) }.name
         }
 
+        // If no tagRegex is provided, just return the most recent previous tag
         return tags[currentTagIndex + 1].name
     }
 }
