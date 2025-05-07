@@ -53,7 +53,7 @@ class ChangelogWriter {
         }
 
         // If Jira details are included, use JiraChangelogEntry for richer output
-        return if (includeJiraDetails) {
+        val jsonString = if (includeJiraDetails) {
             // Convert each ChangelogEntry to a JiraChangelogEntry with Jira details
             val jiraChangelist = changelist.changes.entries.map { (version, entries) ->
                 entries.map { entry ->
@@ -65,6 +65,7 @@ class ChangelogWriter {
         } else {
             json.encodeToString(changelist.changes.values.flatten())
         }
+        return if (jsonString.endsWith("\n")) jsonString else "$jsonString\n"
     }
 
     private fun write(changelist: Changelist): Writer = start()

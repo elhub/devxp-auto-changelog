@@ -62,6 +62,7 @@ val singleExpectedJson = """
             ]
         }
     ]
+
 """.trimIndent()
 
 val doubleChangeList = Changelist(
@@ -168,6 +169,7 @@ val doubleExpectedJson = """
             ]
         }
     ]
+
 """.trimIndent()
 
 val singleChangelogTestMd = TestCase(
