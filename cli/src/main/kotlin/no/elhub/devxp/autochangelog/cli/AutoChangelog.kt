@@ -96,6 +96,13 @@ object AutoChangelog : Callable<Int> {
     private var forTag: String? = null
 
     @CommandLine.Option(
+        names = ["--tag-regex"],
+        required = false,
+        description = ["A regex for tags to compare against. Defaults comparing against all tags."]
+    )
+    private var tagRegex: String? = null
+
+    @CommandLine.Option(
         names = ["--jira"],
         required = false,
         description = ["Filter commits to include only those with Jira issues and fetch Jira details."]
@@ -479,7 +486,7 @@ object AutoChangelog : Callable<Int> {
                     // Get the commit it points to
                     val revWalk = RevWalk(repository)
 
-                    val tagCommitAndTime = try {
+                    val tagCommitAndTime = revWalk.use { revWalk ->
                         val objectId = repository.resolve(name)
                         if (objectId != null) {
                             // Try to parse as a commit directly
@@ -501,8 +508,6 @@ object AutoChangelog : Callable<Int> {
                         } else {
                             null
                         }
-                    } finally {
-                        revWalk.close()
                     }
 
                     tagCommitAndTime?.let { (commitId, commitTime) ->
@@ -523,12 +528,17 @@ object AutoChangelog : Callable<Int> {
             it.name == tagName || it.name == normalizedTagName || it.name == alternateTagName
         }
 
-        // If tag found and it's not the last one, return the next tag (which is the previous in time)
-        return if (currentTagIndex >= 0 && currentTagIndex < tags.size - 1) {
-            tags[currentTagIndex + 1].name
-        } else {
-            null
+        // Return null if tag not found or if it's the oldest tag
+        if (currentTagIndex < 0 || currentTagIndex >= tags.size - 1) {
+            return null
         }
+
+        // If a tagRegex is provided, return the previous tag that matches the regex
+        if (tagRegex != null) {
+            return tags.drop(currentTagIndex + 1).first { it.name.matches(Regex(tagRegex!!)) }.name
+        }
+
+        return tags[currentTagIndex + 1].name
     }
 }
 
