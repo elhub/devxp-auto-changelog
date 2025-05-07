@@ -58,7 +58,7 @@ object AutoChangelog : Callable<Int> {
         required = false,
         description = ["Input changelog file name.", "Defaults to 'CHANGELOG.md'"]
     )
-    private var inputFileName: String = "CHANGELOG.md"
+    private var changelogName: String = "CHANGELOG.md"
 
     @CommandLine.Option(
         names = ["-o", "--output-dir"],
@@ -66,13 +66,6 @@ object AutoChangelog : Callable<Int> {
         description = ["Output directory path to which changelog file will be written.", "Defaults to '.'"]
     )
     private var outputDir: String = "."
-
-    @CommandLine.Option(
-        names = ["-f", "--file-name"],
-        required = false,
-        description = ["Output file name.", "Defaults to 'CHANGELOG.md'"]
-    )
-    private var outputFileName: String = "CHANGELOG.md"
 
     @CommandLine.Option(
         names = ["--up-to"],
@@ -135,7 +128,7 @@ object AutoChangelog : Callable<Int> {
             }
 
             if (asJson) {
-                outputFileName = outputFileName.replace(".md", ".json")
+                changelogName = changelogName.replace(".md", ".json")
             }
 
             val repoDir = File(workingRepoPath)
@@ -198,7 +191,7 @@ object AutoChangelog : Callable<Int> {
                 }
             }
 
-            val changelogFile = repoDir.resolve(inputFileName)
+            val changelogFile = repoDir.resolve(changelogName)
 
             lateinit var changeList: Changelist
             lateinit var content: String
@@ -233,7 +226,7 @@ object AutoChangelog : Callable<Int> {
 
             File(outputDir)
                 .apply { createDirIfNotExists() ?: return 1 }
-                .resolve(outputFileName)
+                .resolve(changelogName)
                 .apply { createFileIfNotExists() ?: return 1 }
                 .writer().use {
                     it.write(content)
