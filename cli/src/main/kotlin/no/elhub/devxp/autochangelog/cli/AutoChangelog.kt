@@ -479,7 +479,7 @@ object AutoChangelog : Callable<Int> {
                     // Get the commit it points to
                     val revWalk = RevWalk(repository)
 
-                    val tagCommitAndTime = try {
+                    val tagCommitAndTime = revWalk.use { revWalk ->
                         val objectId = repository.resolve(name)
                         if (objectId != null) {
                             // Try to parse as a commit directly
@@ -501,8 +501,6 @@ object AutoChangelog : Callable<Int> {
                         } else {
                             null
                         }
-                    } finally {
-                        revWalk.close()
                     }
 
                     tagCommitAndTime?.let { (commitId, commitTime) ->
@@ -523,11 +521,26 @@ object AutoChangelog : Callable<Int> {
             it.name == tagName || it.name == normalizedTagName || it.name == alternateTagName
         }
 
-        // If tag found and it's not the last one, return the next tag (which is the previous in time)
-        return if (currentTagIndex >= 0 && currentTagIndex < tags.size - 1) {
-            tags[currentTagIndex + 1].name
-        } else {
-            null
+        // Return null if tag not found or if it's the oldest tag
+        if (currentTagIndex < 0 || currentTagIndex >= tags.size - 1) {
+            return null
+        }
+
+        fun TagInfo.isRegularTag() = this.name.matches("^v?\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?\$".toRegex())
+        fun TagInfo.isDeployTag() = this.name.matches("^deployed-.*$".toRegex())
+
+        return when {
+            tags[currentTagIndex].isRegularTag() -> {
+                tags.drop(currentTagIndex + 1).first { it.isRegularTag() }.name
+            }
+
+            tags[currentTagIndex].isDeployTag() -> {
+                tags.drop(currentTagIndex + 1).first { it.isDeployTag() }.name
+            }
+
+            else -> {
+                error("Tag does not match any known Regex")
+            }
         }
     }
 }
