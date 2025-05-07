@@ -96,6 +96,13 @@ object AutoChangelog : Callable<Int> {
     private var forTag: String? = null
 
     @CommandLine.Option(
+        names = ["--tag-regex"],
+        required = false,
+        description = ["A regex for tags to compare against. Defaults comparing against all tags."]
+    )
+    private var tagRegex: String? = null
+
+    @CommandLine.Option(
         names = ["--jira"],
         required = false,
         description = ["Filter commits to include only those with Jira issues and fetch Jira details."]
@@ -526,22 +533,12 @@ object AutoChangelog : Callable<Int> {
             return null
         }
 
-        fun TagInfo.isRegularTag() = this.name.matches("^v?\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?\$".toRegex())
-        fun TagInfo.isDeployTag() = this.name.matches("^deployed-.*$".toRegex())
-
-        return when {
-            tags[currentTagIndex].isRegularTag() -> {
-                tags.drop(currentTagIndex + 1).first { it.isRegularTag() }.name
-            }
-
-            tags[currentTagIndex].isDeployTag() -> {
-                tags.drop(currentTagIndex + 1).first { it.isDeployTag() }.name
-            }
-
-            else -> {
-                error("Tag does not match any known Regex")
-            }
+        // If a tagRegex is provided, return the previous tag that matches the regex
+        if (tagRegex != null) {
+            return tags.drop(currentTagIndex + 1).first { it.name.matches(Regex(tagRegex!!)) }.name
         }
+
+        return tags[currentTagIndex + 1].name
     }
 }
 
