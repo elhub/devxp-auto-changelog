@@ -18,7 +18,7 @@ subprojects {
     dependencies {
         implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
-        implementation("org.eclipse.jgit:org.eclipse.jgit:6.7.0.202309050840-r")
+        implementation("org.eclipse.jgit:org.eclipse.jgit:7.2.0.202503040940-r")
         implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:7.2.0.202503040940-r")
         implementation("io.kotest:kotest-runner-junit5:5.8.0")
     }
