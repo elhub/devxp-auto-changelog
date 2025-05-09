@@ -7,7 +7,7 @@ plugins {
 
 dependencies {
     implementation(project(":core"))
-    implementation("info.picocli:picocli:4.7.6")
+    implementation("info.picocli:picocli:4.7.7")
 }
 
 val applicationMainClass: String by project
