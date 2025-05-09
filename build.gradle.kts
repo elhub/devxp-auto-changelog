@@ -16,10 +16,11 @@ subprojects {
     }
 
     dependencies {
-        implementation(platform(rootProject.libs.kotlin.bom))
-        implementation(rootProject.libs.git.jgit)
-        implementation(rootProject.libs.git.jgit.ssh)
-        testImplementation(rootProject.libs.test.kotest.runner.junit5)
+        implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
+
+        implementation("org.eclipse.jgit:org.eclipse.jgit:6.7.0.202309050840-r")
+        implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:6.7.0.202309050840-r")
+        implementation("io.kotest:kotest-runner-junit5:5.8.0")
     }
 
     publishing {
