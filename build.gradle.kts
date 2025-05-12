@@ -1,5 +1,5 @@
 plugins {
-    id("no.elhub.devxp.kotlin-core") version "0.5.0"
+    id("no.elhub.devxp.kotlin-core") version "0.6.0"
     id("maven-publish")
     id("com.jfrog.artifactory") version "5.2.5"
 }
@@ -20,7 +20,7 @@ subprojects {
 
         implementation("org.eclipse.jgit:org.eclipse.jgit:7.2.0.202503040940-r")
         implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:7.2.0.202503040940-r")
-        implementation("io.kotest:kotest-runner-junit5:5.8.0")
+        implementation("io.kotest:kotest-runner-junit5:5.9.1")
     }
 
     publishing {
