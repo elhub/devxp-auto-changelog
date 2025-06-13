@@ -87,6 +87,60 @@ class ChangelogWriter {
         return if (jsonString.endsWith("\n")) jsonString else "$jsonString\n"
     }
 
+    fun writeToJsonWithDateTime(changelist: Changelist, dateTime: Pair<String, String>?): String {
+        val json = Json {
+            prettyPrint = true
+            allowStructuredMapKeys = true
+        }
+
+        return if (dateTime != null) {
+            // Handle case with dateTime - create wrapped response
+            if (includeJiraDetails) {
+                val jiraEntries = changelist.changes.entries.flatMap { (_, entries) ->
+                    entries.map { entry ->
+                        val jiraEntry = JiraChangelogEntry.fromChangelogEntry(entry, includeJiraDetails)
+                        JsonJiraChangelogEntry(
+                            added = jiraEntry.added,
+                            changed = jiraEntry.changed,
+                            fixed = jiraEntry.fixed,
+                            breakingChange = jiraEntry.breakingChange,
+                            other = jiraEntry.other
+                        )
+                    }
+                }
+                val response = JsonJiraResponseWithDateTime(
+                    date = dateTime.first,
+                    time = dateTime.second,
+                    entries = jiraEntries
+                )
+                val jsonString = json.encodeToString(response)
+                if (jsonString.endsWith("\n")) jsonString else "$jsonString\n"
+            } else {
+                val simpleEntries = changelist.changes.entries.flatMap { (_, entries) ->
+                    entries.map { entry ->
+                        JsonChangelogEntry(
+                            added = entry.added,
+                            changed = entry.changed,
+                            fixed = entry.fixed,
+                            breakingChange = entry.breakingChange,
+                            other = entry.other
+                        )
+                    }
+                }
+                val response = JsonResponseWithDateTime(
+                    date = dateTime.first,
+                    time = dateTime.second,
+                    entries = simpleEntries
+                )
+                val jsonString = json.encodeToString(response)
+                if (jsonString.endsWith("\n")) jsonString else "$jsonString\n"
+            }
+        } else {
+            // Handle case without dateTime - use existing method
+            writeToJson(changelist)
+        }
+    }
+
     private fun write(changelist: Changelist): Writer = start()
         .ifEmpty { defaultContent }
         .plus("")
@@ -214,4 +268,18 @@ private data class JsonJiraChangelogEntry(
     val fixed: List<JiraChangelogEntry.JiraEntry> = emptyList(),
     val breakingChange: List<JiraChangelogEntry.JiraEntry> = emptyList(),
     val other: List<JiraChangelogEntry.JiraEntry> = emptyList()
+)
+
+@Serializable
+private data class JsonResponseWithDateTime(
+    val date: String,
+    val time: String,
+    val entries: List<JsonChangelogEntry>
+)
+
+@Serializable
+private data class JsonJiraResponseWithDateTime(
+    val date: String,
+    val time: String,
+    val entries: List<JsonJiraChangelogEntry>
 )

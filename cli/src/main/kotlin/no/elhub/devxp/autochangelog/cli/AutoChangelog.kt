@@ -9,6 +9,7 @@ import no.elhub.devxp.autochangelog.io.ChangelogReader
 import no.elhub.devxp.autochangelog.io.ChangelogWriter
 import no.elhub.devxp.autochangelog.project.Changelist
 import no.elhub.devxp.autochangelog.project.GitRepo
+import no.elhub.devxp.autochangelog.project.SemanticVersion
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Repository
@@ -17,6 +18,8 @@ import org.eclipse.jgit.revwalk.RevWalk
 import picocli.CommandLine
 import java.io.File
 import java.nio.file.Files
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.Callable
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.system.exitProcess
@@ -200,7 +203,16 @@ object AutoChangelog : Callable<Int> {
                 // When JSON output is specified, we generate a changelog based on the entire git log
                 asJson -> {
                     changeList = repo.createChangelist(repo.getLog(upToCommit = resolvedUpToCommit, afterCommit = resolvedAfterCommit))
-                    content = ChangelogWriter(includeJiraDetails = jiraEnabled).writeToJson(changeList)
+                    
+                    // Check if we should include dateTime (when using --up-to, --for-tag, or --tag-regex with JSON)
+                    val shouldIncludeDateTime = upToTag != null || forTag != null || tagRegex != null
+                    
+                    content = if (shouldIncludeDateTime) {
+                        val newestTagDateTime = findNewestTagDateTime(repo, changeList, upToTag ?: forTag)
+                        ChangelogWriter(includeJiraDetails = jiraEnabled).writeToJsonWithDateTime(changeList, newestTagDateTime)
+                    } else {
+                        ChangelogWriter(includeJiraDetails = jiraEnabled).writeToJson(changeList)
+                    }
                 }
                 // When a CHANGELOG.md file already exists, we only need to fetch logs for commits not in that file
                 changelogFile.exists() && changelogFile.isFile && upToTag == null && afterTag == null -> {
@@ -537,6 +549,54 @@ object AutoChangelog : Callable<Int> {
 
         // If no tagRegex is provided, just return the most recent previous tag
         return tags[currentTagIndex + 1].name
+    }
+
+    /**
+     * Finds the newest tag date/time from the changelist or specified tag
+     * @param repo The GitRepo instance
+     * @param changelist The generated changelist
+     * @param specificTag The specific tag to look for (from --up-to or --for-tag)
+     * @return Pair of date and time strings in Oslo timezone, or null if not found
+     */
+    private fun findNewestTagDateTime(repo: GitRepo, changelist: Changelist, specificTag: String?): Pair<String, String>? {
+        try {
+            val osloZone = ZoneId.of("Europe/Oslo")
+            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+            
+            // If a specific tag is provided, get its date/time
+            if (specificTag != null) {
+                val tagCommitId = resolveTag(repo.git.repository, specificTag)
+                val revWalk = RevWalk(repo.git.repository)
+                return revWalk.use { revWalk ->
+                    val commit = revWalk.parseCommit(tagCommitId)
+                    val instant = commit.authorIdent.`when`.toInstant()
+                    val osloDateTime = instant.atZone(osloZone)
+                    Pair(osloDateTime.format(dateFormatter), osloDateTime.format(timeFormatter))
+                }
+            }
+
+            // Otherwise, find the newest tag from the changelist
+            val newestVersion = changelist.changes.keys
+                .filterIsInstance<SemanticVersion>() // Filter out Unreleased
+                .maxOrNull() 
+                
+            if (newestVersion != null) {
+                val tagCommitId = repo.findCommitId(newestVersion)
+                if (tagCommitId != null) {
+                    val commit = repo.findCommit(tagCommitId)
+                    if (commit != null) {
+                        val instant = commit.authorIdent.`when`.toInstant()
+                        val osloDateTime = instant.atZone(osloZone)
+                        return Pair(osloDateTime.format(dateFormatter), osloDateTime.format(timeFormatter))
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            println("Warning: Could not determine tag date/time: ${e.message}")
+        }
+        
+        return null
     }
 }
 
