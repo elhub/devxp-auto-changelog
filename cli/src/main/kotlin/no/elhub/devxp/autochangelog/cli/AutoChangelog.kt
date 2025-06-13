@@ -203,10 +203,10 @@ object AutoChangelog : Callable<Int> {
                 // When JSON output is specified, we generate a changelog based on the entire git log
                 asJson -> {
                     changeList = repo.createChangelist(repo.getLog(upToCommit = resolvedUpToCommit, afterCommit = resolvedAfterCommit))
-                    
+
                     // Check if we should include dateTime (when using --up-to, --for-tag, or --tag-regex with JSON)
                     val shouldIncludeDateTime = upToTag != null || forTag != null || tagRegex != null
-                    
+
                     content = if (shouldIncludeDateTime) {
                         val newestTagDateTime = findNewestTagDateTime(repo, changeList, upToTag ?: forTag)
                         ChangelogWriter(includeJiraDetails = jiraEnabled).writeToJsonWithDateTime(changeList, newestTagDateTime)
@@ -563,7 +563,7 @@ object AutoChangelog : Callable<Int> {
             val osloZone = ZoneId.of("Europe/Oslo")
             val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
             val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-            
+
             // If a specific tag is provided, get its date/time
             if (specificTag != null) {
                 val tagCommitId = resolveTag(repo.git.repository, specificTag)
@@ -579,8 +579,8 @@ object AutoChangelog : Callable<Int> {
             // Otherwise, find the newest tag from the changelist
             val newestVersion = changelist.changes.keys
                 .filterIsInstance<SemanticVersion>() // Filter out Unreleased
-                .maxOrNull() 
-                
+                .maxOrNull()
+
             if (newestVersion != null) {
                 val tagCommitId = repo.findCommitId(newestVersion)
                 if (tagCommitId != null) {
@@ -595,7 +595,7 @@ object AutoChangelog : Callable<Int> {
         } catch (e: Exception) {
             println("Warning: Could not determine tag date/time: ${e.message}")
         }
-        
+
         return null
     }
 }
