@@ -40,17 +40,6 @@ val singleExpectedMd = """
 val singleExpectedJson = """
     [
         {
-            "release": {
-                "version": {
-                    "type": "no.elhub.devxp.autochangelog.project.SemanticVersion",
-                    "major": 42,
-                    "minor": 0,
-                    "patch": 0,
-                    "preReleaseId": null,
-                    "preRelease": null
-                },
-                "date": "2063-04-05"
-            },
             "added": [
                 "Option to delete system32"
             ],
@@ -125,17 +114,6 @@ val doubleExpectedMd = """
 val doubleExpectedJson = """
     [
         {
-            "release": {
-                "version": {
-                    "type": "no.elhub.devxp.autochangelog.project.SemanticVersion",
-                    "major": 42,
-                    "minor": 0,
-                    "patch": 0,
-                    "preReleaseId": null,
-                    "preRelease": null
-                },
-                "date": "2063-04-05"
-            },
             "added": [
                 "Option to delete system32"
             ],
@@ -147,17 +125,6 @@ val doubleExpectedJson = """
             ]
         },
         {
-            "release": {
-                "version": {
-                    "type": "no.elhub.devxp.autochangelog.project.SemanticVersion",
-                    "major": 43,
-                    "minor": 0,
-                    "patch": 0,
-                    "preReleaseId": null,
-                    "preRelease": null
-                },
-                "date": "2064-04-05"
-            },
             "added": [
                 "More and better vulnerabilities"
             ],
