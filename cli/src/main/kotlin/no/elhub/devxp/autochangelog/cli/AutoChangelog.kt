@@ -200,7 +200,6 @@ object AutoChangelog : Callable<Int> {
             lateinit var content: String
 
             when {
-                // When JSON output is specified, we generate a changelog based on the entire git log
                 asJson -> {
                     changeList = repo.createChangelist(repo.getLog(upToCommit = resolvedUpToCommit, afterCommit = resolvedAfterCommit))
 
