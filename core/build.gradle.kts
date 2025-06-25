@@ -21,6 +21,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.8.1")
     implementation("commons-io:commons-io:2.19.0")
     implementation("io.github.serpro69:kotlin-faker:1.16.0")
-    implementation("io.mockk:mockk:1.14.2")
+    implementation("io.mockk:mockk:1.14.3")
     testImplementation("io.kotest:kotest-assertions-json:5.9.1")
 }
