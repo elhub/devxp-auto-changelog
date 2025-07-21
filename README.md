@@ -12,7 +12,7 @@ https://teamcity.elhub.cloud/project/DevXp_DevXpAutoChangelog?mode=builds#all-pr
 
 * Determines the version number based on the git tags in the repository
 * Parses the commit log from the last version to determine the commit/release range to generate change logs for
-* Generates the changelog from those commits
+* Generates the changelog from those commits.
 
 ## Table of Contents
 
