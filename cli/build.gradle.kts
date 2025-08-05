@@ -36,12 +36,16 @@ val shadowJar by tasks.getting(com.github.jengelman.gradle.plugins.shadow.tasks.
     with(tasks.jar.get() as CopySpec)
 }
 
-publishing {
-    publications {
-        all {
-            this as MavenPublication
-            if (name == rootProject.name) {
-                artifact(shadowJar)
+afterEvaluate {
+    publishing {
+        publications {
+            all {
+                this as MavenPublication
+                if (name == rootProject.name) {
+                    artifacts.clear()
+                    artifact(shadowJar)
+
+                }
             }
         }
     }
