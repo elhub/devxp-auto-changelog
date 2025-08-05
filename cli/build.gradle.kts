@@ -41,7 +41,6 @@ publishing {
         all {
             this as MavenPublication
             if (name == rootProject.name) {
-                artifacts.clear()
                 artifact(shadowJar)
             }
         }
