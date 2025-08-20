@@ -1,5 +1,5 @@
 plugins {
-    id("no.elhub.devxp.kotlin-core") version "0.7.10"
+    id("no.elhub.devxp.kotlin-core") version "0.7.11"
     id("maven-publish")
     id("com.jfrog.artifactory") version "6.0.0"
 }
