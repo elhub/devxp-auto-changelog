@@ -22,5 +22,5 @@ dependencies {
     implementation("commons-io:commons-io:2.20.0")
     implementation("io.github.serpro69:kotlin-faker:1.16.0")
     implementation("io.mockk:mockk:1.14.5")
-    testImplementation("io.kotest:kotest-assertions-json:5.9.1")
+    testImplementation("io.kotest:kotest-assertions-json:6.0.0")
 }
