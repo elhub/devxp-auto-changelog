@@ -20,7 +20,7 @@ subprojects {
 
         implementation("org.eclipse.jgit:org.eclipse.jgit:7.3.0.202506031305-r")
         implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:7.3.0.202506031305-r")
-        implementation("io.kotest:kotest-runner-junit5:5.9.1")
+        implementation("io.kotest:kotest-runner-junit5:6.0.0")
     }
 
     publishing {
