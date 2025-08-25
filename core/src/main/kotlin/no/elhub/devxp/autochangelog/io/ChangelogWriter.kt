@@ -40,17 +40,15 @@ class ChangelogWriter {
      */
     fun writeToString(changelist: Changelist): String = write(changelist).toString().trim()
 
-    private fun write(changelist: Changelist): Writer {
-        return start()
-            .ifEmpty { defaultContent }
-            .plus("")
-            .plus(changelist.toChangelogLines())
-            .plus(end())
-            .fold(StringWriter()) { acc, s ->
-                acc.appendLine(s)
-                acc
-            }
-    }
+    private fun write(changelist: Changelist): Writer = start()
+        .ifEmpty { defaultContent }
+        .plus("")
+        .plus(changelist.toChangelogLines())
+        .plus(end())
+        .fold(StringWriter()) { acc, s ->
+            acc.appendLine(s)
+            acc
+        }
 
     fun generateCompareUrl(changelist: Changelist, repo: GitRepo): String {
         val versions = changelist.changes.entries.drop(changelist.changes.size - 2).map { it.key }
@@ -58,7 +56,7 @@ class ChangelogWriter {
         val last = versions.last()
 
         val remoteUri = repo.git.remoteList().call()
-            .firstOrNull { it.name == Configuration.gitRemoteName }
+            .firstOrNull { it.name == Configuration.GIT_REMOTE_NAME }
             ?.urIs
             ?.first()
 
@@ -67,10 +65,10 @@ class ChangelogWriter {
             .replaceBefore("github.com/", "")
             .replaceBefore("code.elhub.cloud/", "")
 
-        val end = if (last == Unreleased) Configuration.gitDefaultBranchName else "v${last}"
+        val end = if (last == Unreleased) Configuration.GIT_DEFAULT_BRANCH_NAME else "v$last"
         val compareString = if (s.startsWith("github.com")) {
             "https://$s/compare/v$first...$end"
-        } else if (end == Configuration.gitDefaultBranchName) {
+        } else if (end == Configuration.GIT_DEFAULT_BRANCH_NAME) {
             "https://$s/compare/commits?targetBranch=refs%2Ftags%2Fv$first"
         } else {
             "https://$s/compare/commits?targetBranch=refs%2Ftags%2Fv$first&sourceBranch=refs%2Ftags%2F$end"

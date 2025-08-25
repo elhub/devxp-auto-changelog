@@ -1,6 +1,5 @@
 package no.elhub.devxp.autochangelog.project
 
-import java.time.ZoneId
 import no.elhub.devxp.autochangelog.extensions.description
 import no.elhub.devxp.autochangelog.extensions.title
 import no.elhub.devxp.autochangelog.git.GitCommit
@@ -10,6 +9,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.revwalk.RevCommit
+import java.time.ZoneId
 
 /**
  * Represents a generic git repository.
@@ -32,7 +32,9 @@ class GitRepo(val git: Git) {
         val log = git.log()
         if (start != null) {
             if (end != null) log.addRange(start, end) else log.add(start)
-        } else if (end != null) log.not(end)
+        } else if (end != null) {
+            log.not(end)
+        }
         return log.call().asSequence()
     }
 

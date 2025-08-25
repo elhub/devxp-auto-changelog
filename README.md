@@ -1,25 +1,5 @@
 # auto-changelog
 
-[<img src="https://img.shields.io/badge/repo-github-blue" alt="">](https://github.com/elhub/devxp-auto-changelog)
-[<img src="https://img.shields.io/badge/issues-jira-orange" alt="">](https://jira.elhub.cloud/issues/?jql=project%20%3D%20%22Team%20Dev%22%20AND%20component%20%3D%20devxp-auto-changelog%20AND%20status%20!%3D%20Done)
-[<img src="https://teamcity.elhub.cloud/app/rest/builds/buildType:(id:DevXp_DevXpAutoChangelog_PublishDocs)/statusIcon" alt="">](https://teamcity.elhub.cloud/project/DevXp_DevXpAutoChangelog?mode=builds#all-projects)
-
-## Table of Contents
-
-- [auto-changelog](#auto-changelog)
-  - [Table of Contents](#table-of-contents)
-  - [About](#about)
-  - [Getting Started](#getting-started)
-    - [Prerequisites](#prerequisites)
-    - [Installation](#installation)
-      - [CLI Application](#cli-application)
-      - [API](#api)
-  - [Usage](#usage)
-    - [CLI](#cli)
-  - [Testing](#testing)
-  - [Contributing](#contributing)
-  - [Owners](#owners)
-
 ## About
 
 **auto-changelog** is a small application that automates creation of changelogs for software projects based on git commits. It:
@@ -85,7 +65,6 @@ The full suite of tests can be run using:
 ```sh
 ./gradlew test
 ```
-
 
 ## Contributing
 

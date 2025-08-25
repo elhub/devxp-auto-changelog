@@ -35,30 +35,28 @@ class ChangelogReader {
     /**
      * Returns last release from the existing changelog or null if release header is not found.
      */
-    fun getLastRelease(): SemanticVersion? {
-        return changelogContent.useLines {
-            val version = it.fold(StringBuilder()) { acc, s ->
-                val matcher = releaseHeaderRegex.matcher(s)
-                if (matcher.matches() && acc.isEmpty()) acc.append(matcher.group(1).toString())
-                acc
-            }
-            if (version.isNotEmpty()) SemanticVersion(version.toString()) else null
+    fun getLastRelease(): SemanticVersion? = changelogContent.useLines {
+        val version = it.fold(StringBuilder()) { acc, s ->
+            val matcher = releaseHeaderRegex.matcher(s)
+            if (matcher.matches() && acc.isEmpty()) acc.append(matcher.group(1).toString())
+            acc
         }
+        if (version.isNotEmpty()) SemanticVersion(version.toString()) else null
     }
 
-    fun read(): Changelog {
-        return with(Changelog.Builder()) {
-            val lines = changelogContent.useLines {
-                it.takeWhile { s ->
-                    val matcher = releaseHeaderRegex.matcher(s)
-                    if (matcher.matches() && lastRelease == null) {
-                        withLastRelease(SemanticVersion(matcher.group(1).toString()))
-                        false
-                    } else true
-                }.toList()
-            }
-            withLines { yieldAll(lines) }
-            build()
+    fun read(): Changelog = with(Changelog.Builder()) {
+        val lines = changelogContent.useLines {
+            it.takeWhile { s ->
+                val matcher = releaseHeaderRegex.matcher(s)
+                if (matcher.matches() && lastRelease == null) {
+                    withLastRelease(SemanticVersion(matcher.group(1).toString()))
+                    false
+                } else {
+                    true
+                }
+            }.toList()
         }
+        withLines { yieldAll(lines) }
+        build()
     }
 }

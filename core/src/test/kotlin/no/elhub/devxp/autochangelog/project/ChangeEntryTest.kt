@@ -3,7 +3,7 @@ package no.elhub.devxp.autochangelog.project
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import no.elhub.devxp.autochangelog.config.Configuration.jiraIssuesUrl
+import no.elhub.devxp.autochangelog.config.Configuration.JIRA_ISSUE_URL
 import no.elhub.devxp.autochangelog.git.GitMessage
 import no.elhub.devxp.autochangelog.git.TitleKeyword
 
@@ -38,7 +38,7 @@ class ChangeEntryTest : DescribeSpec({
                 )
                 builder.withMessage(msg)
                 builder.added shouldHaveSize 1
-                builder.added.first() shouldBe "[ [TD-1]($jiraIssuesUrl/TD-1) ] Add test commit"
+                builder.added.first() shouldBe "[ [TD-1]($JIRA_ISSUE_URL/TD-1) ] Add test commit"
             }
 
             it("should add urls for jira issues") {
@@ -50,7 +50,7 @@ class ChangeEntryTest : DescribeSpec({
                 builder.withMessage(msg)
                 builder.added shouldHaveSize 1
                 builder.added.first() shouldBe """
-                    [ [TD-1]($jiraIssuesUrl/TD-1), [TD-2]($jiraIssuesUrl/TD-2), [TD-3]($jiraIssuesUrl/TD-3) ] Add test commit
+                    [ [TD-1]($JIRA_ISSUE_URL/TD-1), [TD-2]($JIRA_ISSUE_URL/TD-2), [TD-3]($JIRA_ISSUE_URL/TD-3) ] Add test commit
                 """.trimIndent()
             }
         }

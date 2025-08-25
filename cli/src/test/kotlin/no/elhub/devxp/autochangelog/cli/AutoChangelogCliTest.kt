@@ -3,12 +3,12 @@ package no.elhub.devxp.autochangelog.cli
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import no.elhub.devxp.autochangelog.cli.AutoChangelog
 import picocli.CommandLine
 import kotlin.io.path.ExperimentalPathApi
-import no.elhub.devxp.autochangelog.cli.AutoChangelog
 
 @OptIn(ExperimentalPathApi::class)
-class AutoChangelogCliTest: DescribeSpec({
+class AutoChangelogCliTest : DescribeSpec({
     val cmd = CommandLine(AutoChangelog)
 
     describe("AutoChangelog application") {
@@ -22,5 +22,4 @@ class AutoChangelogCliTest: DescribeSpec({
             cmd.execute("--help") shouldBe 0
         }
     }
-
 })

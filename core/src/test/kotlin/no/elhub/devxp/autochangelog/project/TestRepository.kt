@@ -6,14 +6,14 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 object TestRepository {
-    private val tempFolderPath = Paths.get("build/keep-a-changelog/").also {
+    private val tempFolderPath = Paths.get("build/devxp-elhub-gradle/").also {
         if (it.toFile().exists()) it.delete()
     }
 
     val git: Git by lazy {
         Git.cloneRepository()
             .setDirectory(tempFolderPath.toFile())
-            .setURI("https://code.elhub.cloud/scm/ext/ext-keep-a-changelog.git")
+            .setURI("https://github.com/elhub/devxp-elhub-gradle")
             .call()
     }
 

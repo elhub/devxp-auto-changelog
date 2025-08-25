@@ -44,7 +44,6 @@ class VersionTest : DescribeSpec({
                 SemanticVersion("1.B.3")
             }
         }
-
     }
 
     describe("Two list of versions") {
@@ -55,10 +54,8 @@ class VersionTest : DescribeSpec({
         val v5 = SemanticVersion("1.2.4")
         val v6 = SemanticVersion("2.1.0")
 
-        it ("should sort into the correct semantic order") {
-            listOf(v4,v2,v1,v5,v3,v6).sorted() shouldBe listOf(v1,v2,v3,v4,v5,v6)
+        it("should sort into the correct semantic order") {
+            listOf(v4, v2, v1, v5, v3, v6).sorted() shouldBe listOf(v1, v2, v3, v4, v5, v6)
         }
-
     }
-
 })

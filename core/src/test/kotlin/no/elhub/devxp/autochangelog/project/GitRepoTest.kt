@@ -24,32 +24,32 @@ class GitRepoTest : DescribeSpec({
         context("git log") {
 
             it("should return git ref for a given version") {
-                repo.findTagRef(SemanticVersion(1, 1, 0))?.name shouldBe "refs/tags/v1.1.0"
+                repo.findTagRef(SemanticVersion(0, 2, 1))?.name shouldBe "refs/tags/v0.2.1"
             }
 
             it("should find a commit for a given ref") {
-                val c = repo.findCommitId(SemanticVersion(1, 1, 0))?.let {
+                val c = repo.findCommitId(SemanticVersion(0, 2, 1))?.let {
                     repo.findCommit(it)
                 }
-                c?.shortMessage shouldStartWith "Merge pull request #197"
+                c?.shortMessage shouldStartWith "Disable jacoco temporarily"
             }
 
             it("should find a parent for a given ref") {
-                val c = repo.findCommitId(SemanticVersion(1, 1, 0))?.let {
+                val c = repo.findCommitId(SemanticVersion(0, 2, 1))?.let {
                     repo.findParent(it)
                 }
-                c?.shortMessage shouldBe "Bump Ruby version to 2.4"
+                c?.shortMessage shouldBe "Update kotlin plugin and allure versions"
             }
 
             it("should return a log of commit ranges") {
-                val end = ObjectId.fromString("5f06962bf9a484a35a3a37c24f3933a9168e90ff")
-                val start = ObjectId.fromString("c25aae9ec630c546999a5cd62740639746efbc13")
+                val end = ObjectId.fromString("2f89e1740eb74f30773266e800779ba36778fa7f")
+                val start = ObjectId.fromString("59ac064ddec5ed2e5da1a7d8c8eafe969072fcdc")
 
                 repo.log(start, end).toList() shouldHaveSize 7
             }
 
             it("should return entire log") {
-                repo.log().toList() shouldHaveSize 495
+                repo.log().toList() shouldHaveSize 55
             }
         }
 
@@ -112,19 +112,19 @@ class GitRepoTest : DescribeSpec({
             }
 
             it("should return a constructed log consisting of commits with linked JIRA Issues") {
-                val seventh = git.addCommit(path, "Seventh commit\n\nCommit description\n\n$jiraIssues")
+                val seventh = git.addCommit(path, "Seventh commit\n\nCommit description\n\n$JIRA_ISSUES")
                 git.tag().setAnnotated(false).setName("v0.4.0").setForceUpdate(true).call()
-                val eighth = git.addCommit(path, "Eighth commit\n\nRelease version 0.5.0\n\n$jiraIssues")
+                val eighth = git.addCommit(path, "Eighth commit\n\nRelease version 0.5.0\n\n$JIRA_ISSUES")
                 git.tag().setAnnotated(true).setName("v0.5.0").setForceUpdate(true).call()
-                GitRepo(git).constructLog { it.description.contains(jiraIssues) }.commits shouldContainExactly listOf(
+                GitRepo(git).constructLog { it.description.contains(JIRA_ISSUES) }.commits shouldContainExactly listOf(
                     GitCommit(
-                        GitMessage("Eighth commit", listOf("Release version 0.5.0", jiraIssues)),
+                        GitMessage("Eighth commit", listOf("Release version 0.5.0", JIRA_ISSUES)),
                         eighth.id,
                         LocalDate.now(),
                         SemanticVersion("0.5.0")
                     ),
                     GitCommit(
-                        GitMessage("Seventh commit", listOf("Commit description", jiraIssues)),
+                        GitMessage("Seventh commit", listOf("Commit description", JIRA_ISSUES)),
                         seventh.id,
                         LocalDate.now(),
                         SemanticVersion("0.4.0")
@@ -158,7 +158,7 @@ class GitRepoTest : DescribeSpec({
         it("should generate compare url") {
             val cl = repo.createChangelist(repo.constructLog())
             val writer = ChangelogWriter()
-            writer.generateCompareUrl(cl, repo) shouldBe "https://code.elhub.cloud/scm/ext/ext-keep-a-changelog/compare/commits?targetBranch=refs%2Ftags%2Fv1.1.0"
+            writer.generateCompareUrl(cl, repo) shouldBe "https://github.com/elhub/devxp-elhub-gradle/compare/v0.5.0...master"
         }
     }
 })
@@ -171,7 +171,7 @@ private fun Git.addCommit(repoPath: Path, message: String): RevCommit {
 
 private val faker = Faker()
 
-private const val jiraIssues = "JIRA Issues: TD-1872"
+private const val JIRA_ISSUES = "JIRA Issues: TD-1872"
 
 private val changelist = Changelist(
     mapOf(

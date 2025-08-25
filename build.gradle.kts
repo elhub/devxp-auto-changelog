@@ -1,7 +1,7 @@
 plugins {
-    id("no.elhub.devxp.kotlin-core") version "0.2.3"
+    id("no.elhub.devxp.kotlin-core") version "0.7.10"
     id("maven-publish")
-    id("com.jfrog.artifactory") version "5.2.5"
+    id("com.jfrog.artifactory") version "6.0.0"
 }
 
 subprojects {
@@ -46,7 +46,6 @@ subprojects {
             defaults {
                 publications("ALL_PUBLICATIONS")
                 setPublishArtifacts(true)
-                setPublishPom(true) // Publish generated POM files to Artifactory (true by default)
                 setPublishIvy(false) // Publish generated Ivy descriptor files to Artifactory (true by default)
             }
         }

@@ -34,10 +34,10 @@ class SemanticVersion : Comparable<SemanticVersion>, Version {
     override fun equals(other: Any?): Boolean {
         if (other !is SemanticVersion) return false
         return major == other.major &&
-                minor == other.minor &&
-                patch == other.patch &&
-                preReleaseId == other.preReleaseId &&
-                preRelease == other.preRelease
+            minor == other.minor &&
+            patch == other.patch &&
+            preReleaseId == other.preReleaseId &&
+            preRelease == other.preRelease
     }
 
     // Always override hashcode when changing equals
@@ -69,11 +69,10 @@ class SemanticVersion : Comparable<SemanticVersion>, Version {
         }
     }
 
-    override fun toString(): String {
-        return if (preReleaseId == null)
-            "$major.$minor.$patch"
-        else
-            "$major.$minor.$patch-$preReleaseId.$preRelease"
+    override fun toString(): String = if (preReleaseId == null) {
+        "$major.$minor.$patch"
+    } else {
+        "$major.$minor.$patch-$preReleaseId.$preRelease"
     }
 }
 

@@ -40,7 +40,6 @@ class ChangelogWriterTest : DescribeSpec({
         }
 
         context("write using existing changelog file") {
-
         }
     }
 })
