@@ -2,12 +2,32 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("application")
-    id("com.gradleup.shadow")
+}
+
+application {
+    mainClass = "no/elhub/devxp/autochangelog/cli/AutoChangelog.kt"
 }
 
 dependencies {
     implementation(project(":core"))
-    implementation("info.picocli:picocli:4.7.7")
+    implementation(libs.cli.picocli)
+}
+
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
+        javaParameters = true
+    }
+}
+
+/*
+   implementation("info.picocli:picocli:4.7.7")
 }
 
 val applicationMainClass: String by project
@@ -54,15 +74,4 @@ afterEvaluate {
 tasks.artifactoryPublish {
     dependsOn(shadowJar)
 }
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget = JvmTarget.JVM_17
-        javaParameters = true
-    }
-}
+ */
