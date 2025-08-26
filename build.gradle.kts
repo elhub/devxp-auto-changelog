@@ -1,7 +1,7 @@
 plugins {
-    id("no.elhub.devxp.kotlin-core") version "0.7.10"
+    id("no.elhub.devxp.kotlin-core") version libs.versions.elhub.gradle.get()
     id("maven-publish")
-    id("com.jfrog.artifactory") version "6.0.0"
+    id("com.jfrog.artifactory") version libs.versions.artifactory.get()
 }
 
 group = "no.elhub.devxp"
@@ -16,11 +16,10 @@ subprojects {
     }
 
     dependencies {
-        implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-
-        implementation("org.eclipse.jgit:org.eclipse.jgit:7.3.0.202506031305-r")
-        implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:7.3.0.202506031305-r")
-        implementation("io.kotest:kotest-runner-junit5:5.9.1")
+        implementation(platform(rootProject.libs.kotlin.bom))
+        implementation(rootProject.libs.git.jgit)
+        implementation(rootProject.libs.git.jgit.ssh)
+        implementation(rootProject.libs.test.kotest.runner.junit5)
     }
 
     publishing {

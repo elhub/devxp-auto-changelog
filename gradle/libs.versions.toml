@@ -1,0 +1,40 @@
+[metadata]
+format.version = "1.1"
+
+[versions]
+artifactory = "6.0.0"
+commons-io = "2.19.0"
+elhub-gradle = "0.7.10"
+jgit = "7.3.0.202506031305-r"
+kotlin-serialization-plugin = "2.1.10"
+kotlinx-serialization = "1.9.0"
+kotest = "5.9.1"
+kotlinfaker = "1.16.0"
+mockk = "1.14.5"
+picocli = "4.7.6"
+slf4j = "2.0.17"
+teamcity = "2023.11"
+teamcity-dsl = "1.0-SNAPSHOT"
+testcontainers = "1.19.1"
+
+[plugins]
+application = { id = "application" }
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-serialization-plugin" }
+shadow = { id = "com.gradleup.shadow" }
+
+[libraries]
+apache-commons-io = { group = "commons-io", name = "commons-io", version.ref = "commons-io" }
+cli-picocli = { group = "info.picocli", name = "picocli", version.ref = "picocli" }
+kotlin-bom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version = "" }
+git-jgit = { group = "org.eclipse.jgit", name = "org.eclipse.jgit", version.ref = "jgit" }
+git-jgit-ssh = { group = "org.eclipse.jgit", name = "org.eclipse.jgit.ssh.jsch", version.ref = "jgit" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json-jvm", version.ref = "kotlinx-serialization" }
+logging-slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+logging-slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
+test-kotest-runner-junit5 = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
+test-kotest-assertions-json = { group = "io.kotest", name = "kotest-assertions-json", version.ref = "kotest" }
+test-kotlin-faker = { group = "io.github.serpro69", name = "kotlin-faker", version.ref = "kotlinfaker" }
+test-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+
+[bundles]
+logging = ["logging-slf4j-api", "logging-slf4j-simple"]

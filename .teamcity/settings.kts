@@ -14,6 +14,7 @@ elhubProject(DEVXP, "devxp-auto-changelog") {
                 modules = gradleModules
                 buildArtifactRules = gradleModules.map { ArtifactRule.include("$it/build", "$it/build.zip") }
                 outputArtifactRules = gradleModules.map { ArtifactRule.include("$it/build.zip!**", "$it/build") }
+                enablePublishMetrics = true
             }
             gradleAutoRelease(artifacts = listOf(artifacts)) {
                 gradleModule = "cli"

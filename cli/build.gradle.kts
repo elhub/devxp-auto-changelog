@@ -1,16 +1,17 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("application")
-    id("com.gradleup.shadow")
+    alias(libs.plugins.application)
+    alias(libs.plugins.shadow)
 }
 
 dependencies {
     implementation(project(":core"))
-    implementation("info.picocli:picocli:4.7.7")
+    implementation(libs.cli.picocli)
 }
 
 val applicationMainClass: String by project
+
 application {
     mainClass.set(applicationMainClass)
 }
@@ -44,7 +45,6 @@ afterEvaluate {
                 if (name == rootProject.name) {
                     artifacts.clear()
                     artifact(shadowJar)
-
                 }
             }
         }

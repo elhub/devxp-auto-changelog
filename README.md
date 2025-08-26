@@ -1,11 +1,5 @@
 # devxp-auto-changelog
 
-[<img src="https://img.shields.io/badge/repo-github-blue" alt="">](https://github.com/elhub/devxp-auto-changelog)
-[<img src="https://img.shields.io/badge/issues-jira-orange" alt="">](
-https://jira.elhub.cloud/issues/?jql=project%20%3D%20%22Team%20Dev%22%20AND%20component%20%3D%20devxp-auto-changelog%20AND%20status%20!%3D%20Done)
-[<img src="https://teamcity.elhub.cloud/app/rest/builds/buildType:(id:DevXp_DevXpAutoChangelog_PublishDocs)/statusIcon" alt="">](
-https://teamcity.elhub.cloud/project/DevXp_DevXpAutoChangelog?mode=builds#all-projects)
-
 ## About
 
 **devxp-auto-changelog** is a small application that automates creation of changelogs for software projects based on git commits. It:
@@ -13,22 +7,6 @@ https://teamcity.elhub.cloud/project/DevXp_DevXpAutoChangelog?mode=builds#all-pr
 * Determines the version number based on the git tags in the repository
 * Parses the commit log from the last version to determine the commit/release range to generate change logs for
 * Generates the changelog from those commits
-
-## Table of Contents
-
-- [auto-changelog](#auto-changelog)
-  - [About](#about)
-  - [Table of Contents](#table-of-contents)
-  - [Automated usage](#automated-usage)
-    - [Running in TeamCity pipeline](#running-in-teamcity-pipeline)
-  - [Manual usage](#manual-usage)
-    - [Prerequisites](#prerequisites)
-    - [CLI Application](#cli-application)
-    - [CLI](#cli)
-  - [Configuration](#configuration)
-  - [Testing](#testing)
-  - [Contributing](#contributing)
-  - [Owners](#owners)
 
 ## Automated usage
 
