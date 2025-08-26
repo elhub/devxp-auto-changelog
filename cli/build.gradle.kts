@@ -45,7 +45,6 @@ afterEvaluate {
                 if (name == rootProject.name) {
                     artifacts.clear()
                     artifact(shadowJar)
-
                 }
             }
         }
