@@ -1,7 +1,7 @@
 import jetbrains.buildServer.configs.kotlin.ArtifactRule
 import no.elhub.devxp.build.configuration.pipeline.constants.Group.DEVXP
 import no.elhub.devxp.build.configuration.pipeline.dsl.elhubProject
-import no.elhub.devxp.build.configuration.pipeline.jobs.gradleAutoRelease
+import no.elhub.devxp.build.configuration.pipeline.jobs.gradlePublish
 import no.elhub.devxp.build.configuration.pipeline.jobs.gradleVerify
 
 elhubProject(DEVXP, "devxp-auto-changelog") {
@@ -16,8 +16,9 @@ elhubProject(DEVXP, "devxp-auto-changelog") {
                 outputArtifactRules = gradleModules.map { ArtifactRule.include("$it/build.zip!**", "$it/build") }
                 enablePublishMetrics = true
             }
-            gradleAutoRelease(artifacts = listOf(artifacts)) {
-                gradleModule = "cli"
+
+            gradlePublish(artifacts = listOf(artifacts)) {
+                workingDir = "cli"
             }
         }
     }
