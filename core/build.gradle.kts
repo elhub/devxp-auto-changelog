@@ -23,3 +23,7 @@ dependencies {
     implementation(libs.test.mockk)
     testImplementation(libs.test.kotest.assertions.json)
 }
+
+tasks.artifactoryPublish {
+    skip = true
+}
