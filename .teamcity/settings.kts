@@ -17,9 +17,7 @@ elhubProject(DEVXP, "devxp-auto-changelog") {
                 enablePublishMetrics = true
             }
 
-            gradlePublish(artifacts = listOf(artifacts)) {
-                workingDir = "cli"
-            }
+            gradlePublish(artifacts = listOf(artifacts))
         }
     }
 }
