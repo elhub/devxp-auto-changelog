@@ -14,7 +14,7 @@
 
 This application integrates with the `docs`. To enable changelog generation, place a .changelog file in the .devxp directory
 (`repo/.devxp/.changelog`). Changelogs will be included and updated in the docs page the next time the Publish Docs job
-runs (~every 3 hours).
+runs (~ every 3 hours).
 
 ## Manual usage
 
