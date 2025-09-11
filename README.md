@@ -32,7 +32,7 @@ To build the current version, run:
 ./gradlew assemble
 ```
 
-To publish the executable jar to artifactory, run:
+To publish the executable jar to jfrog, run:
 
 ```sh
 ./gradlew publish
