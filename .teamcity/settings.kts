@@ -15,7 +15,7 @@ elhubProject(DEVXP, "devxp-auto-changelog") {
                 buildArtifactRules = gradleModules.map { ArtifactRule.include("$it/build", "$it/build.zip") }
                 outputArtifactRules = gradleModules.map { ArtifactRule.include("$it/build.zip!**", "$it/build") }
                 sonarScanSettings = {
-                    sonarProjectSources = "build.gradle.kts,settings.gradle.kts,cli/src/main,cli/src/build.gradle.kts,core/src/main,core/src/build.gradle.kts"
+                    sonarProjectSources = "build.gradle.kts,settings.gradle.kts,cli/src/main,cli/build.gradle.kts,core/src/main,core/build.gradle.kts"
                     sonarProjectTests = "cli/src/test,core/src/test"
                 }
                 enablePublishMetrics = true
