@@ -27,11 +27,15 @@ val shadowJar by tasks.getting(com.github.jengelman.gradle.plugins.shadow.tasks.
             mapOf(
                 "Implementation-Title" to project.name,
                 "Implementation-Version" to project.version,
-                "Main-Class" to "no/elhub/devxp/autochangelog/cli/AutoChangelog.kt"
-            )
+                "Main-Class" to "no/elhub/devxp/autochangelog/cli/AutoChangelog.kt",
+            ),
         )
     }
-    from(project.configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    from(
+        project.configurations.runtimeClasspath
+            .get()
+            .map { if (it.isDirectory) it else zipTree(it) },
+    )
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
     mergeServiceFiles("META-INF/cxf/bus-extensions.txt")
     with(tasks.jar.get() as CopySpec)

@@ -1,5 +1,7 @@
 plugins {
-    id("no.elhub.devxp.kotlin-core") version libs.versions.elhub.gradle.get()
+    id("no.elhub.devxp.kotlin-core") version
+        libs.versions.elhub.gradle
+            .get()
     id("maven-publish")
     id("com.jfrog.artifactory") version libs.versions.artifactory.get()
 }
@@ -40,7 +42,8 @@ subprojects {
             contextUrl = project.findProperty("artifactoryUri")?.toString() ?: "https://jfrog.elhub.cloud/artifactory"
             repository {
                 repoKey = project.findProperty("artifactoryRepository")?.toString() ?: "elhub-mvn-dev-local"
-                username = project.findProperty("artifactoryUsername")?.toString() ?: "nouser" // The publisher user name
+                username =
+                    project.findProperty("artifactoryUsername")?.toString() ?: "nouser" // The publisher user name
                 password = project.findProperty("artifactoryPassword")?.toString() ?: "nopass" // The publisher password
             }
 
