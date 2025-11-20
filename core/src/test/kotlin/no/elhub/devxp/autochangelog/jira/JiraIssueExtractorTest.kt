@@ -6,11 +6,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
-import no.elhub.devxp.autochangelog.config.appModule
 import no.elhub.devxp.autochangelog.extensions.description
 import no.elhub.devxp.autochangelog.extensions.title
 import org.eclipse.jgit.revwalk.RevCommit
-import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
@@ -27,7 +25,7 @@ class JiraIssueExtractorTest : FunSpec({
                     mockk<HttpClient>().apply {
                         val mockResponse = mockk<HttpResponse<String>>()
                         every { mockResponse.statusCode() } returns 200
-                        every { mockResponse.body() } returns """{"key":"PROJ-1","fields":{"summary":"Title","description":"Desc"}}"""
+                        every { mockResponse.body() } returns """{"key":"PROJ-1","fields":{"summary":"Title","description":"This is a description."}}"""
                         every { send(any<HttpRequest>(), any<HttpResponse.BodyHandler<String>>()) } returns mockResponse
                     }
                 }
@@ -44,24 +42,6 @@ class JiraIssueExtractorTest : FunSpec({
         val matches = regex.findAll("Fixed PROJ-123 and TEST_2-456").map { it.value }.toList()
         matches shouldBe listOf("PROJ-123", "TEST_2-456")
     }
-
-    /*
-    test("extractJiraIssuesFromCommit extracts issues from title and description") {
-        val commit = mockk<RevCommit>()
-        every { commit.title } returns "PROJ-1"
-        every { commit.description } returns listOf("Some text", "Another PROJ-2 line")
-        val issues = JiraIssueExtractor.extractJiraIssuesFromCommit(commit)
-        issues shouldBe listOf("PROJ-1", "PROJ-2")
-    }
-
-    test("extractJiraIssueFromCommit returns first found issue") {
-        val commit = mockk<RevCommit>()
-        every { commit.title } returns "No issue"
-        every { commit.description } returns listOf("Some text", "PROJ-3 in description")
-        val issue = JiraIssueExtractor.extractJiraIssueFromCommit(commit)
-        issue shouldBe "PROJ-3"
-    }
-     */
 
     test("fetchJiraIssue returns null if not initialized") {
         JiraIssueExtractor.reset()
@@ -110,36 +90,19 @@ class JiraIssueExtractorTest : FunSpec({
         unmockkObject(JiraIssueExtractor)
     }
 
-//    test("extractJiraIssuesFromCommit extracts all unique Jira keys from title and description") {
-//        val commit = mockk<RevCommit>()
-//        every { commit.title } returns "PROJ-1 and TEST_2-2"
-//        every { commit.description } returns mutableListOf("Some text", "Another PROJ-1 line", "TEST_2-2 again")
-//        val issues = JiraIssueExtractor.extractJiraIssuesFromCommit(commit)
-//        issues.sorted() shouldBe listOf("PROJ-1", "TEST_2-2")
-//    }
-
     test("fetchJiraIssue returns null if not initialized") {
         JiraIssueExtractor.reset()
         JiraIssueExtractor.fetchJiraIssue("PROJ-1") shouldBe null
     }
 
     test("fetchJiraIssue returns JiraIssue for valid key when initialized") {
-        // Mock the HTTP client
-        // Override the module with mock client
-        loadKoinModules(module {
-            single<HttpClient> {
-                mockk<HttpClient>().apply {
-                    val mockResponse = mockk<HttpResponse<String>>()
-                    every { mockResponse.statusCode() } returns 200
-                    every { mockResponse.body() } returns """{"key":"PROJ-1","fields":{"summary":"Title","description":"Desc"}}"""
-                    every { send(any<HttpRequest>(), any<HttpResponse.BodyHandler<String>>()) } returns mockResponse
-                }
-            }
-        })
-
-        // Run the test
         JiraIssueExtractor.initialize("user", "token")
-        JiraIssueExtractor.fetchJiraIssue("PROJ-1") shouldBe JiraIssue("PROJ-1", "Title", "Desc", "url")
+        JiraIssueExtractor.fetchJiraIssue("PROJ-1") shouldBe JiraIssue(
+            "PROJ-1",
+            "Title",
+            "Desc",
+            "https://elhub.atlassian.net/browse/PROJ-1"
+        )
         unmockkObject(JiraIssueExtractor)
     }
 

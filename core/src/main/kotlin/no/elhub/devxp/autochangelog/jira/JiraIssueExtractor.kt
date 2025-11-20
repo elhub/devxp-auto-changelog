@@ -7,6 +7,7 @@ import no.elhub.devxp.autochangelog.config.Configuration
 import no.elhub.devxp.autochangelog.extensions.description
 import no.elhub.devxp.autochangelog.extensions.title
 import org.eclipse.jgit.revwalk.RevCommit
+import org.koin.java.KoinJavaComponent.inject
 import java.io.Console
 import java.net.URI
 import java.net.http.HttpClient
@@ -39,9 +40,7 @@ object JiraIssueExtractor {
     val jiraRegex = "([A-Z][A-Z0-9_]+-[0-9]+)".toRegex()
 
     // HTTP client for JIRA API requests with timeout
-    private val httpClient = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(10))
-        .build()
+    private val httpClient by inject<HttpClient>(HttpClient::class.java)
 
     private var credentials: Pair<String, String>? = null
 
@@ -236,14 +235,17 @@ object JiraIssueExtractor {
                         issue
                     }
                 }
+
                 401, 403 -> {
                     System.err.println("Error: Authentication failed for Jira API (HTTP ${response.statusCode()})")
                     null
                 }
+
                 404 -> {
                     System.err.println("Warning: Jira issue $issueKey not found")
                     null
                 }
+
                 else -> {
                     System.err.println("Error: Failed to fetch Jira issue $issueKey (HTTP ${response.statusCode()})")
                     null
@@ -258,7 +260,8 @@ object JiraIssueExtractor {
     /**
      * Fetch details for a batch of Jira issues.
      */
-    fun fetchJiraIssues(issueKeys: List<String>): Map<String, JiraIssue> = issueKeys.mapNotNull { key -> fetchJiraIssue(key)?.let { key to it } }.toMap()
+    fun fetchJiraIssues(issueKeys: List<String>): Map<String, JiraIssue> =
+        issueKeys.mapNotNull { key -> fetchJiraIssue(key)?.let { key to it } }.toMap()
 
     /**
      * Get the Jira issue URL for a given issue key.
@@ -273,7 +276,8 @@ object JiraIssueExtractor {
 
         return issues.joinToString("\n") { issue ->
             "**[${issue.key}](${issue.url})**: ${issue.title}" +
-                (issue.description?.let { "\n  *Description*: ${it.take(100)}${if (it.length > 100) "..." else ""}" } ?: "")
+                    (issue.description?.let { "\n  *Description*: ${it.take(100)}${if (it.length > 100) "..." else ""}" }
+                        ?: "")
         }
     }
 
