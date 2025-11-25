@@ -1,19 +1,19 @@
 package no.elhub.devxp.autochangelog.jira
 
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import no.elhub.devxp.autochangelog.config.Configuration
 import no.elhub.devxp.autochangelog.extensions.description
 import no.elhub.devxp.autochangelog.extensions.title
+import no.elhub.devxp.autochangelog.util.EnvironmentProvider
 import org.eclipse.jgit.revwalk.RevCommit
-import org.koin.java.KoinJavaComponent.inject
 import java.io.Console
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.time.Duration
 import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 
@@ -28,10 +28,9 @@ class JiraConnectionException(message: String, cause: Throwable? = null) : Excep
 class JiraAuthenticationException(message: String) : Exception(message)
 class JiraIssueNotFoundException(message: String) : Exception(message)
 
-object JiraIssueExtractor {
-    private val JIRA_BASE_URL = Configuration.JIRA_BASE_URL
-    private val JIRA_ISSUES_URL = Configuration.JIRA_ISSUES_URL
-    private val JIRA_API_PATH = Configuration.JIRA_API_PATH
+class JiraIssueExtractor(private val httpClient: HttpClient, private val environmentProvider: EnvironmentProvider) {
+    private val jiraBaseUrl = Configuration.JIRA_BASE_URL
+    private val jiraIssuesUrl = Configuration.JIRA_ISSUES_URL
 
     // Cache to avoid fetching the same issue multiple times
     private val issueCache = ConcurrentHashMap<String, JiraIssue>()
@@ -40,7 +39,8 @@ object JiraIssueExtractor {
     val jiraRegex = "([A-Z][A-Z0-9_]+-[0-9]+)".toRegex()
 
     // HTTP client for JIRA API requests with timeout
-    private val httpClient by inject<HttpClient>(HttpClient::class.java)
+    // val httpClient by inject<HttpClient>(HttpClient::class.java)
+    // val environmentProvider by inject<EnvironmentProvider>(EnvironmentProvider::class.java)
 
     private var credentials: Pair<String, String>? = null
 
@@ -50,8 +50,8 @@ object JiraIssueExtractor {
      * If environment variables are not set, returns false.
      */
     fun initialize(username: String? = null, token: String? = null): Boolean {
-        val envUsername = System.getenv("JIRA_USERNAME") ?: System.getenv("JIRA_EMAIL")
-        val envToken = System.getenv("JIRA_TOKEN") ?: System.getenv("JIRA_API_TOKEN")
+        val envUsername = environmentProvider.getEnv("JIRA_USERNAME") ?: environmentProvider.getEnv("JIRA_EMAIL")
+        val envToken = environmentProvider.getEnv("JIRA_TOKEN") ?: environmentProvider.getEnv("JIRA_API_TOKEN")
 
         // Log if environment variables are found
         if (envUsername != null) {
@@ -103,7 +103,7 @@ object JiraIssueExtractor {
         val encodedAuth = Base64.getEncoder().encodeToString("$username:$token".toByteArray())
 
         val request = HttpRequest.newBuilder()
-            .uri(URI.create("$JIRA_BASE_URL/rest/api/3/myself"))
+            .uri(URI.create("$jiraBaseUrl/rest/api/3/myself"))
             .header("Authorization", "Basic $encodedAuth")
             .header("Accept", "application/json")
             .GET()
@@ -117,7 +117,7 @@ object JiraIssueExtractor {
                     System.err.println("Please check the following:")
                     System.err.println(" - Ensure your token is valid and not expired")
                     System.err.println(" - Check that your username is correct")
-                    System.err.println(" - Verify the Jira instance URL ($JIRA_BASE_URL) is correct")
+                    System.err.println(" - Verify the Jira instance URL ($jiraBaseUrl) is correct")
                     throw JiraAuthenticationException("Failed to authenticate with Jira (HTTP 401 Unauthorized)")
                 } else {
                     throw JiraAuthenticationException("Failed to authenticate with Jira (HTTP ${response.statusCode()})")
@@ -204,7 +204,7 @@ object JiraIssueExtractor {
         val encodedAuth = Base64.getEncoder().encodeToString("$username:$token".toByteArray())
 
         val request = HttpRequest.newBuilder()
-            .uri(URI.create("$JIRA_BASE_URL/rest/api/3/issue/$issueKey?fields=summary,description"))
+            .uri(URI.create("$jiraBaseUrl/rest/api/3/issue/$issueKey?fields=summary,description"))
             .header("Authorization", "Basic $encodedAuth")
             .header("Accept", "application/json")
             .GET()
@@ -219,7 +219,7 @@ object JiraIssueExtractor {
                     val jsonObject = jsonParser.parseToJsonElement(response.body()).jsonObject
                     val fields = jsonObject["fields"]?.jsonObject
                     val summary = fields?.get("summary")?.jsonPrimitive?.content
-                    val description = fields?.get("description")?.toString()
+                    val description = fields?.get("description")?.jsonPrimitive?.contentOrNull
 
                     if (summary == null) {
                         println("Warning: Could not parse title for Jira issue $issueKey")
@@ -229,7 +229,7 @@ object JiraIssueExtractor {
                             key = issueKey,
                             title = summary,
                             description = description,
-                            url = "$JIRA_ISSUES_URL/$issueKey"
+                            url = "$jiraIssuesUrl/$issueKey"
                         )
                         issueCache[issueKey] = issue
                         issue
@@ -266,7 +266,7 @@ object JiraIssueExtractor {
     /**
      * Get the Jira issue URL for a given issue key.
      */
-    fun getJiraIssueUrl(issueKey: String): String = "$JIRA_ISSUES_URL/$issueKey"
+    fun getJiraIssueUrl(issueKey: String): String = "$jiraIssuesUrl/$issueKey"
 
     /**
      * Format Jira issues as a Markdown string.
@@ -276,8 +276,10 @@ object JiraIssueExtractor {
 
         return issues.joinToString("\n") { issue ->
             "**[${issue.key}](${issue.url})**: ${issue.title}" +
-                    (issue.description?.let { "\n  *Description*: ${it.take(100)}${if (it.length > 100) "..." else ""}" }
-                        ?: "")
+                (
+                    issue.description?.let { "\n  *Description*: ${it.take(100)}${if (it.length > 100) "..." else ""}" }
+                        ?: ""
+                    )
         }
     }
 

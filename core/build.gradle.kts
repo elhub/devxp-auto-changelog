@@ -25,11 +25,10 @@ tasks.artifactoryPublish {
 }
 
 testlogger {
-    //theme = ThemeType.STANDARD
+    // theme = ThemeType.STANDARD
     showSimpleNames = true
-    showStandardStreams = false
+    showStandardStreams = true
     showPassedStandardStreams = false
     showSkippedStandardStreams = false
-    showFailedStandardStreams = false
+    showFailedStandardStreams = true
 }
-

@@ -4,6 +4,9 @@ import kotlinx.serialization.Serializable
 import no.elhub.devxp.autochangelog.project.ChangelogEntry
 import no.elhub.devxp.autochangelog.project.Version
 import no.elhub.devxp.autochangelog.serializers.LocalDateSerializer
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.java.KoinJavaComponent.inject
 import java.time.LocalDate
 
 /**
@@ -40,12 +43,14 @@ data class JiraChangelogEntry(
         val url: String
     )
 
-    companion object {
+    companion object : KoinComponent {
+        val jiraIssueExtractor: JiraIssueExtractor by inject()
+
         /**
          * Convert a standard ChangelogEntry to a JiraChangelogEntry with associated Jira issues.
          */
         fun fromChangelogEntry(entry: ChangelogEntry, jiraEnabled: Boolean): JiraChangelogEntry {
-            if (!jiraEnabled || !JiraIssueExtractor.isInitialized()) {
+            if (!jiraEnabled || !jiraIssueExtractor.isInitialized()) {
                 // If Jira is not enabled, create a simple JiraChangelogEntry without issue details
                 return JiraChangelogEntry(
                     release = entry.release?.let {
@@ -61,9 +66,9 @@ data class JiraChangelogEntry(
 
             // Helper function to extract and add Jira issues
             fun String.withJiraIssues(): JiraEntry {
-                val jiraRegex = JiraIssueExtractor.jiraRegex
+                val jiraRegex = jiraIssueExtractor.jiraRegex
                 val issueKeys = jiraRegex.findAll(this).map { it.value }.distinct().toList()
-                val jiraIssues = issueKeys.mapNotNull { JiraIssueExtractor.fetchJiraIssue(it) }
+                val jiraIssues = issueKeys.mapNotNull { jiraIssueExtractor.fetchJiraIssue(it) }
                     .map { JiraIssueInfo(it.key, it.title, it.description, it.url) }
 
                 return JiraEntry(this, jiraIssues)

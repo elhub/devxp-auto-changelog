@@ -7,6 +7,7 @@ import no.elhub.devxp.autochangelog.git.GitLog
 import no.elhub.devxp.autochangelog.git.bareClone
 import no.elhub.devxp.autochangelog.io.ChangelogReader
 import no.elhub.devxp.autochangelog.io.ChangelogWriter
+import no.elhub.devxp.autochangelog.jira.JiraIssueExtractor
 import no.elhub.devxp.autochangelog.project.Changelist
 import no.elhub.devxp.autochangelog.project.GitRepo
 import no.elhub.devxp.autochangelog.project.SemanticVersion
@@ -15,6 +16,8 @@ import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.revwalk.RevWalk
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import picocli.CommandLine
 import java.io.File
 import java.nio.file.Files
@@ -33,7 +36,9 @@ import kotlin.system.exitProcess
     versionProvider = ManifestVersionProvider::class,
     sortOptions = false,
 )
-object AutoChangelog : Callable<Int> {
+object AutoChangelog : Callable<Int>, KoinComponent {
+    val jiraIssueExtractor: JiraIssueExtractor by inject()
+
     @CommandLine.Option(
         names = ["-r", "--remote-path"],
         required = false,
@@ -110,9 +115,7 @@ object AutoChangelog : Callable<Int> {
             // Initialize Jira integration if enabled
             if (jiraEnabled) {
                 println("Initializing Jira integration...")
-                val initialized =
-                    no.elhub.devxp.autochangelog.jira.JiraIssueExtractor
-                        .initialize()
+                val initialized = jiraIssueExtractor.initialize()
                 if (!initialized) {
                     System.err.println("Failed to initialize Jira integration. JIRA_USERNAME and JIRA_TOKEN environment variables must be set.")
                     return 1
@@ -345,15 +348,12 @@ object AutoChangelog : Callable<Int> {
                 // If jiraEnabled is true, only include commits with Jira issues
                 val includeBasedOnJira =
                     if (jiraEnabled) {
-                        val jiraIssues =
-                            no.elhub.devxp.autochangelog.jira.JiraIssueExtractor
-                                .extractJiraIssuesFromCommit(commit)
+                        val jiraIssues = jiraIssueExtractor.extractJiraIssuesFromCommit(commit)
                         val hasJiraIssues = jiraIssues.isNotEmpty()
 
                         if (hasJiraIssues) {
                             // Fetch Jira issues data if there are issues in the commit
-                            no.elhub.devxp.autochangelog.jira.JiraIssueExtractor
-                                .fetchJiraIssues(jiraIssues)
+                            jiraIssueExtractor.fetchJiraIssues(jiraIssues)
                         }
 
                         hasJiraIssues
@@ -485,6 +485,7 @@ object AutoChangelog : Callable<Int> {
                 println("'${this.path}' is not a directory")
                 null
             }
+
             else -> false
         }
 
@@ -495,6 +496,7 @@ object AutoChangelog : Callable<Int> {
                 println("'${this.path}' is not a regular file")
                 null
             }
+
             else -> false
         }
 

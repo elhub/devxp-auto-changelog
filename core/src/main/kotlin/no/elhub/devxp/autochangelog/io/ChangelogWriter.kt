@@ -12,6 +12,7 @@ import no.elhub.devxp.autochangelog.project.GitRepo
 import no.elhub.devxp.autochangelog.project.Unreleased
 import no.elhub.devxp.autochangelog.project.defaultContent
 import no.elhub.devxp.autochangelog.project.releaseHeaderRegex
+import org.koin.java.KoinJavaComponent.inject
 import java.io.StringWriter
 import java.io.Writer
 import java.nio.file.Path
@@ -21,6 +22,7 @@ class ChangelogWriter {
     private val start: () -> Sequence<String>
     private val end: () -> Sequence<String>
     private var includeJiraDetails: Boolean = false
+    private val jiraIssueExtractor: JiraIssueExtractor by inject(JiraIssueExtractor::class.java)
 
     @OptIn(ExperimentalPathApi::class)
     constructor(changelogPath: Path, includeJiraDetails: Boolean = false) {
@@ -179,12 +181,12 @@ class ChangelogWriter {
     }
 
     private fun enhanceWithJiraDetails(text: String): String {
-        if (!includeJiraDetails || !JiraIssueExtractor.isInitialized()) {
+        if (!includeJiraDetails || !jiraIssueExtractor.isInitialized()) {
             return text
         }
 
         // Extract Jira issue keys from the text
-        val jiraRegex = JiraIssueExtractor.jiraRegex
+        val jiraRegex = jiraIssueExtractor.jiraRegex
         val issueKeys = jiraRegex.findAll(text).map { it.value }.distinct().toList()
 
         if (issueKeys.isEmpty()) {
@@ -192,14 +194,14 @@ class ChangelogWriter {
         }
 
         // Fetch Jira issues
-        val issues = JiraIssueExtractor.fetchJiraIssues(issueKeys).values.toList()
+        val issues = jiraIssueExtractor.fetchJiraIssues(issueKeys).values.toList()
 
         if (issues.isEmpty()) {
             return text
         }
 
         // Format the issues as Markdown and append to the text
-        val jiraDetails = JiraIssueExtractor.formatJiraIssuesMarkdown(issues)
+        val jiraDetails = jiraIssueExtractor.formatJiraIssuesMarkdown(issues)
         return "$text\n    $jiraDetails"
     }
 
