@@ -39,8 +39,6 @@ class JiraIssueExtractor(private val httpClient: HttpClient, private val environ
     val jiraRegex = "([A-Z][A-Z0-9_]+-[0-9]+)".toRegex()
 
     // HTTP client for JIRA API requests with timeout
-    // val httpClient by inject<HttpClient>(HttpClient::class.java)
-    // val environmentProvider by inject<EnvironmentProvider>(EnvironmentProvider::class.java)
 
     private var credentials: Pair<String, String>? = null
 
