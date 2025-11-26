@@ -25,7 +25,6 @@ tasks.artifactoryPublish {
 }
 
 testlogger {
-    // theme = ThemeType.STANDARD
     showSimpleNames = true
     showStandardStreams = true
     showPassedStandardStreams = false
