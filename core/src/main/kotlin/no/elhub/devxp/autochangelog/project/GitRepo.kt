@@ -6,11 +6,13 @@ import no.elhub.devxp.autochangelog.extensions.title
 import no.elhub.devxp.autochangelog.git.GitCommit
 import no.elhub.devxp.autochangelog.git.GitLog
 import no.elhub.devxp.autochangelog.git.GitMessage
-import no.elhub.devxp.autochangelog.jira.JiraIssueExtractor.extractJiraIssueFromCommit
+import no.elhub.devxp.autochangelog.jira.JiraIssueExtractor
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.revwalk.RevCommit
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.time.ZoneId
 
 /**
@@ -18,7 +20,8 @@ import java.time.ZoneId
  *
  * Serves mainly as a wrapper around [git] functionality.
  */
-class GitRepo(val git: Git) {
+class GitRepo(val git: Git) : KoinComponent {
+    val jiraIssueExtractor: JiraIssueExtractor by inject()
 
     val tags: () -> List<Ref> = { git.tagList().call() }
 
@@ -83,7 +86,11 @@ class GitRepo(val git: Git) {
         val commits = mutableListOf<GitCommit>()
         for (commit in log(start = start, end = end)) {
             if (predicate(commit)) {
-                val jiraId = if (INCLUDE_ONLY_WITH_JIRA) extractJiraIssueFromCommit(commit) else null
+                val jiraId = if (INCLUDE_ONLY_WITH_JIRA) {
+                    jiraIssueExtractor.extractJiraIssueFromCommit(commit)
+                } else {
+                    null
+                }
                 val v = versionedCommits.firstOrNull { it.second == commit.id }?.first
 
                 if (!INCLUDE_ONLY_WITH_JIRA || commits.none { it.message.title == jiraId }) {

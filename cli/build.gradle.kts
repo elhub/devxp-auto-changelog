@@ -6,5 +6,6 @@ plugins {
 dependencies {
     implementation(project(":core"))
     implementation(libs.cli.picocli)
+    implementation(libs.di.koin.core)
     testImplementation(libs.test.kotest.runner.junit5)
 }
