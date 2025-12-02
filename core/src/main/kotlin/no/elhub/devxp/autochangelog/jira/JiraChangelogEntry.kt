@@ -6,7 +6,6 @@ import no.elhub.devxp.autochangelog.project.Version
 import no.elhub.devxp.autochangelog.serializers.LocalDateSerializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.java.KoinJavaComponent.inject
 import java.time.LocalDate
 
 /**
@@ -44,7 +43,7 @@ data class JiraChangelogEntry(
     )
 
     companion object : KoinComponent {
-        val jiraIssueExtractor: JiraIssueExtractor by inject()
+        private val jiraIssueExtractor: JiraIssueExtractor by inject()
 
         /**
          * Convert a standard ChangelogEntry to a JiraChangelogEntry with associated Jira issues.

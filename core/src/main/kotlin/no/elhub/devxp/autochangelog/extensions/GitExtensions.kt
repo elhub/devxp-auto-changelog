@@ -14,6 +14,6 @@ val RevCommit.title: String
  * The returned list only contains non-empty lines from the full commit message minus the title (first line of the commit)
  */
 val RevCommit.description: List<String>
-    get() = this.fullMessage.split("\n").tail().mapNotNull {
+    get() = this.fullMessage.split("\n").drop(1).mapNotNull {
         it.trim().ifEmpty { null }
     }

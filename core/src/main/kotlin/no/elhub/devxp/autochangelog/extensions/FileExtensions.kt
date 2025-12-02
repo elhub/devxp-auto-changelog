@@ -9,10 +9,9 @@ import java.io.FileInputStream
  *
  * @throws IllegalArgumentException if this file is not a *normal* file
  */
-fun File.linesAfter(predicate: (String) -> Boolean): Sequence<String> = if (!this.isFile) {
-    throw IllegalArgumentException("File '${this.path}' is not a regular file")
-} else {
-    sequence {
+fun File.linesAfter(predicate: (String) -> Boolean): Sequence<String> {
+    require(isFile) { "File '${this.path}' is not a regular file" }
+    return sequence {
         FileInputStream(this@linesAfter).use { fis ->
             fis.bufferedReader().useLines {
                 var add = false
@@ -31,10 +30,9 @@ fun File.linesAfter(predicate: (String) -> Boolean): Sequence<String> = if (!thi
  *
  * @throws IllegalArgumentException if this file is not a *normal* file
  */
-fun File.linesUntil(predicate: (String) -> Boolean): List<String> = if (!this.isFile) {
-    throw IllegalArgumentException("File '${this.path}' is not a regular file")
-} else {
-    FileInputStream(this@linesUntil).use { fis ->
+fun File.linesUntil(predicate: (String) -> Boolean): List<String> {
+    require(isFile) { "File '${this.path}' is not a regular file" }
+    return FileInputStream(this@linesUntil).use { fis ->
         fis.bufferedReader().useLines {
             it.takeWhile { s -> !predicate(s) }.toList()
         }

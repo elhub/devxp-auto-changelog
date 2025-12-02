@@ -112,7 +112,7 @@ class ChangelogWriterTest : FunSpec({
             """.trimIndent() + "\n"
         }
 
-        xtest("should fallback to writeToJson when dateTime is null") {
+        test("should fallback to writeToJson when dateTime is null") {
             val json = writer.writeToJsonWithDateTime(singleChangelist, null)
             json.shouldBeValidJson()
             json shouldBe writer.writeToJson(singleChangelist)

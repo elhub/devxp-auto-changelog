@@ -9,7 +9,6 @@ import no.elhub.devxp.autochangelog.extensions.description
 import no.elhub.devxp.autochangelog.extensions.title
 import no.elhub.devxp.autochangelog.util.EnvironmentProvider
 import org.eclipse.jgit.revwalk.RevCommit
-import java.io.Console
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -26,7 +25,6 @@ data class JiraIssue(
 
 class JiraConnectionException(message: String, cause: Throwable? = null) : Exception(message, cause)
 class JiraAuthenticationException(message: String) : Exception(message)
-class JiraIssueNotFoundException(message: String) : Exception(message)
 
 class JiraIssueExtractor(private val httpClient: HttpClient, private val environmentProvider: EnvironmentProvider) {
     private val jiraBaseUrl = Configuration.JIRA_BASE_URL
@@ -128,26 +126,6 @@ class JiraIssueExtractor(private val httpClient: HttpClient, private val environ
     }
 
     /**
-     * Prompt the user for Jira credentials.
-     */
-    private fun promptCredentials(): Pair<String, String> {
-        print("Jira Username: ")
-        val username = readLine() ?: throw IllegalArgumentException("Username required")
-
-        // Try to use System.console() for password masking if available
-        val console: Console? = System.console()
-        val token = if (console != null) {
-            print("Jira Token (input hidden): ")
-            String(console.readPassword() ?: CharArray(0))
-        } else {
-            print("Jira Token (input visible): ")
-            readLine()
-        } ?: throw IllegalArgumentException("Token required")
-
-        return username to token
-    }
-
-    /**
      * Extract all Jira issues from a commit message.
      */
     fun extractJiraIssuesFromCommit(commit: RevCommit): List<String> {
@@ -175,14 +153,6 @@ class JiraIssueExtractor(private val httpClient: HttpClient, private val environ
             .firstOrNull { it != null }
 
         return jiraIssue?.value
-    }
-
-    /**
-     * Fetch details for all Jira issues in a commit.
-     */
-    fun fetchJiraIssuesForCommit(commit: RevCommit): List<JiraIssue> {
-        val issueKeys = extractJiraIssuesFromCommit(commit)
-        return issueKeys.mapNotNull { fetchJiraIssue(it) }
     }
 
     /**
@@ -262,11 +232,6 @@ class JiraIssueExtractor(private val httpClient: HttpClient, private val environ
         issueKeys.mapNotNull { key -> fetchJiraIssue(key)?.let { key to it } }.toMap()
 
     /**
-     * Get the Jira issue URL for a given issue key.
-     */
-    fun getJiraIssueUrl(issueKey: String): String = "$jiraIssuesUrl/$issueKey"
-
-    /**
      * Format Jira issues as a Markdown string.
      */
     fun formatJiraIssuesMarkdown(issues: List<JiraIssue>): String {
@@ -279,14 +244,6 @@ class JiraIssueExtractor(private val httpClient: HttpClient, private val environ
                         ?: ""
                     )
         }
-    }
-
-    /**
-     * Reset the extractor state, clearing credentials and cache.
-     */
-    fun reset() {
-        credentials = null
-        issueCache.clear()
     }
 
     /**

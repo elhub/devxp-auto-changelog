@@ -24,7 +24,6 @@ class ChangelogWriter {
     private var includeJiraDetails: Boolean = false
     private val jiraIssueExtractor: JiraIssueExtractor by inject(JiraIssueExtractor::class.java)
 
-    @OptIn(ExperimentalPathApi::class)
     constructor(changelogPath: Path, includeJiraDetails: Boolean = false) {
         this.includeJiraDetails = includeJiraDetails
         start = {
