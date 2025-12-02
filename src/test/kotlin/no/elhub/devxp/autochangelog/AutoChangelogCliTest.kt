@@ -109,8 +109,16 @@ class AutoChangelogCliTest : FunSpec({
 
     context("AutoChangelog application") {
 
+        test("should fail when run in a non-git directory") {
+            val nonGitDir = createNonGitDirectory()
+            val exitCode = cmd.execute("-j", nonGitDir.toString())
+            exitCode shouldNotBe 0
+            outputChangelogFile.exists() shouldBe false
+        }
+
         test("should have a help option on -h") {
             cmd.execute("-h") shouldBe 0
         }
+
     }
 })

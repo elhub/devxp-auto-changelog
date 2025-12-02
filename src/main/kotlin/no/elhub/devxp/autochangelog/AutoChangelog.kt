@@ -5,6 +5,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import kotlin.system.exitProcess
+import no.elhub.devxp.autochangelog.toGitTags
 
 @Command(
     name = "auto-changelog",
@@ -25,9 +26,10 @@ object AutoChangelog : Runnable {
 
         val git = Git(repo)
 
-        val tags = git.tagList().call().toList()
+        val rawTags = git.tagList().call().toList()
+        val tags = toGitTags(rawTags)
 
-        val rawCommits = git.log().call().toList()
+        val rawCommits = git.log().call().toList().reversed()
         val commits = toGitCommits(rawCommits, tags)
 
         commits
