@@ -1,11 +1,10 @@
-package no.elhub.devxp.autochangelog
+package no.elhub.devxp.autochangelog.features.jira
 
 import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.maps.shouldHaveKeys
 import io.kotest.matchers.shouldBe
 import no.elhub.devxp.autochangelog.features.git.GitCommit
-import no.elhub.devxp.autochangelog.features.jira.extractJiraIssuesIdsFromCommits
 import java.time.LocalDate
 
 class JiraIssueTest : FunSpec({

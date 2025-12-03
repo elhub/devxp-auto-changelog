@@ -1,4 +1,4 @@
-package no.elhub.devxp.autochangelog
+package no.elhub.devxp.autochangelog.features.jira
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.maps.shouldContainExactly
@@ -13,9 +13,8 @@ import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import java.time.LocalDate
 import kotlinx.serialization.json.Json
+import no.elhub.devxp.autochangelog.createMockResponse
 import no.elhub.devxp.autochangelog.features.git.GitCommit
-import no.elhub.devxp.autochangelog.features.jira.JiraClient
-import no.elhub.devxp.autochangelog.features.jira.JiraIssue
 
 class JiraClientTest : FunSpec({
     val json = Json {

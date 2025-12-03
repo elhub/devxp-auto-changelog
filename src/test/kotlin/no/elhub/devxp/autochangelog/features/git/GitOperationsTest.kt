@@ -1,4 +1,4 @@
-package no.elhub.devxp.autochangelog
+package no.elhub.devxp.autochangelog.features.git
 
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
@@ -7,9 +7,6 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
-import no.elhub.devxp.autochangelog.features.git.getCommitsBetweenTags
-import no.elhub.devxp.autochangelog.features.git.toGitCommits
-import no.elhub.devxp.autochangelog.features.git.toGitTags
 import org.eclipse.jgit.internal.storage.dfs.DfsRepositoryDescription
 import org.eclipse.jgit.internal.storage.dfs.InMemoryRepository
 import org.eclipse.jgit.lib.Constants
