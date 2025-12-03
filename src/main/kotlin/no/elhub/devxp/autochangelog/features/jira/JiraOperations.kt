@@ -1,7 +1,6 @@
-package no.elhub.devxp.autochangelog
+package no.elhub.devxp.autochangelog.features.jira
 
-import no.elhub.devxp.autochangelog.model.GitCommit
-import no.elhub.devxp.autochangelog.model.JiraIssue
+import no.elhub.devxp.autochangelog.features.git.GitCommit
 
 fun extractJiraIssuesIdsFromCommits(commits: List<GitCommit>): Map<String, List<GitCommit>> {
     val jiraIdToCommitMap = mutableMapOf<String, MutableList<GitCommit>>()
@@ -11,7 +10,6 @@ fun extractJiraIssuesIdsFromCommits(commits: List<GitCommit>): Map<String, List<
                 jiraIdToCommitMap
                     .getOrPut(jiraIssue) { mutableListOf() }
                     .add(it)
-
             }
         } else {
             jiraIdToCommitMap.getOrPut("NO-JIRA") { mutableListOf() }
@@ -20,7 +18,6 @@ fun extractJiraIssuesIdsFromCommits(commits: List<GitCommit>): Map<String, List<
     }
     return jiraIdToCommitMap.toMap()
 }
-
 
 // Temporary function for local testing
 fun printJiraIssues(jiraIssues: Map<JiraIssue, List<GitCommit>>) {

@@ -1,19 +1,15 @@
-package no.elhub.devxp.autochangelog
+package no.elhub.devxp.autochangelog.features.git
 
-import no.elhub.devxp.autochangelog.model.GitCommit
-import no.elhub.devxp.autochangelog.model.GitTag
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.revwalk.RevCommit
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-fun toGitTags(tags: List<Ref>): List<GitTag> {
-    return tags.map {
-        GitTag(
-            name = it.name,
-            commitHash = it.objectId.name,
-        )
-    }
+fun toGitTags(tags: List<Ref>): List<GitTag> = tags.map {
+    GitTag(
+        name = it.name,
+        commitHash = it.objectId.name,
+    )
 }
 
 fun toGitCommits(rawCommits: List<RevCommit>, tags: List<GitTag>): List<GitCommit> {

@@ -1,4 +1,4 @@
-package no.elhub.devxp.autochangelog
+package no.elhub.devxp.autochangelog.features.jira
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -8,12 +8,9 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.serialization.kotlinx.json.json
-import java.util.Base64
 import kotlinx.serialization.json.Json
-import no.elhub.devxp.autochangelog.model.GitCommit
-import no.elhub.devxp.autochangelog.model.JiraApiResponse
-import no.elhub.devxp.autochangelog.model.JiraIssue
-import no.elhub.devxp.autochangelog.model.toJiraIssue
+import no.elhub.devxp.autochangelog.features.git.GitCommit
+import java.util.Base64
 
 class JiraClient(
     client: HttpClient? = null,
@@ -42,16 +39,18 @@ class JiraClient(
         }
     }
 
-    suspend fun populateJiraMap(jiraMap: Map<String, List<GitCommit>>, client: JiraClient): Map<JiraIssue, List<GitCommit>> {
-        return jiraMap.mapKeys { (jiraIssueId, _) ->
-            if (jiraIssueId == "NO-JIRA") {
-                JiraIssue(
-                    key = "NO-JIRA",
-                    title = "Commits not associated with any JIRA issues",
-                    body = ""
-                )
-            } else
-                client.getIssueById(jiraIssueId)
+    suspend fun populateJiraMap(
+        jiraMap: Map<String, List<GitCommit>>,
+        client: JiraClient
+    ): Map<JiraIssue, List<GitCommit>> = jiraMap.mapKeys { (jiraIssueId, _) ->
+        if (jiraIssueId == "NO-JIRA") {
+            JiraIssue(
+                key = "NO-JIRA",
+                title = "Commits not associated with any JIRA issues",
+                body = ""
+            )
+        } else {
+            client.getIssueById(jiraIssueId)
         }
     }
 

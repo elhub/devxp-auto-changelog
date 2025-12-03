@@ -1,4 +1,4 @@
-package no.elhub.devxp.autochangelog.model
+package no.elhub.devxp.autochangelog.features.jira
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -21,13 +21,11 @@ data class JiraFields(
     val description: AdfDocument? = null
 )
 
-fun JiraApiResponse.toJiraIssue(): JiraIssue {
-    return JiraIssue(
-        key = key,
-        title = fields.summary,
-        body = fields.description.toPlainText()
-    )
-}
+fun JiraApiResponse.toJiraIssue(): JiraIssue = JiraIssue(
+    key = key,
+    title = fields.summary,
+    body = fields.description.toPlainText()
+)
 
 // Atlassian returns their description in Atlassian Document Format (ADF)
 // See https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/

@@ -1,4 +1,4 @@
-package no.elhub.devxp.autochangelog.model
+package no.elhub.devxp.autochangelog.features.git
 
 import java.time.LocalDateTime
 
