@@ -10,7 +10,6 @@ import no.elhub.devxp.autochangelog.JiraClient
 import no.elhub.devxp.autochangelog.extractJiraIssuesIdsFromCommits
 import no.elhub.devxp.autochangelog.model.GitCommit
 import no.elhub.devxp.autochangelog.model.JiraIssue
-import no.elhub.devxp.autochangelog.populateJiraMap
 import no.elhub.devxp.autochangelog.printJiraIssues
 import no.elhub.devxp.autochangelog.toGitTags
 
@@ -46,7 +45,7 @@ object AutoChangelog : Runnable {
         val jiraMap: Map<JiraIssue, List<GitCommit>>
 
         runBlocking {
-            jiraMap = populateJiraMap(jiraIssueIds, client)
+            jiraMap = client.populateJiraMap(jiraIssueIds, client)
         }
         printJiraIssues(jiraMap)
     }

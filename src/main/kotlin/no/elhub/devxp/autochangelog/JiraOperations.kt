@@ -14,24 +14,11 @@ fun extractJiraIssuesIdsFromCommits(commits: List<GitCommit>): Map<String, List<
 
             }
         } else {
-            jiraIdToCommitMap.getOrPut("No Issue") { mutableListOf() }
+            jiraIdToCommitMap.getOrPut("NO-JIRA") { mutableListOf() }
                 .add(it)
         }
     }
     return jiraIdToCommitMap.toMap()
-}
-
-suspend fun populateJiraMap(jiraMap: Map<String, List<GitCommit>>, client: JiraClient): Map<JiraIssue, List<GitCommit>> {
-    return jiraMap.mapKeys { (jiraIssueId, _) ->
-        if (jiraIssueId == "No Issue") {
-            JiraIssue(
-                key = "NO-JIRA",
-                title = "Commits not associated with any JIRA issues",
-                body = ""
-            )
-        } else
-            client.getIssueById(jiraIssueId)
-    }
 }
 
 
