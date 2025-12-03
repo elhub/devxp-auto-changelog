@@ -1,6 +1,7 @@
 package no.elhub.devxp.autochangelog
 
 import io.kotest.assertions.assertSoftly
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -69,9 +70,23 @@ class GitOperationsTest : FunSpec({
         val docCommit = gitCommits.first()
         assertSoftly(docCommit) {
             title shouldBe "Update documentation"
-            body shouldContain ("This commit updates the README file")
+            body shouldContain ("This commit does some stuff but no issues are linked.")
             jiraIssues.size shouldBe 0
         }
+    }
+
+    test("toGitCommits supports multiple tags for a commit") {
+        val commit1 = fakeRevCommit("Release version 1.0.0")
+        val tag1 = fakeTagRef("v1.0.0", commit1)
+        val tag2 = fakeTagRef("stable", commit1)
+
+        val gitTags = toGitTags(listOf(tag1, tag2))
+        val gitCommits = toGitCommits(listOf(commit1), gitTags)
+
+        gitCommits.size shouldBe 1
+        val releaseCommit = gitCommits.first()
+        releaseCommit.tags.size shouldBe 2
+        releaseCommit.tags.map { it.name } shouldBe listOf("v1.0.0", "stable")
     }
 
     test("toGitTags converts refs to git tags") {
@@ -88,7 +103,7 @@ class GitOperationsTest : FunSpec({
         }
     }
 
-    test("getCommitsBetweenTags extracts commits between two tags") {
+    context("getCommitsBetweenTags") {
         val commit1 = fakeRevCommit("First commit", commitTime = 1600000001)
         val commit2 = fakeRevCommit("Second commit", commitTime = 1600000002)
         val commit3 = fakeRevCommit("Third commit", commitTime = 1600000003)
@@ -99,28 +114,62 @@ class GitOperationsTest : FunSpec({
 
         val gitTags = toGitTags(listOf(tag, tag2))
 
-
-
         val commits = toGitCommits(
             listOf(commit1, commit2, commit3, commit4),
             gitTags
         )
 
-        val commitsBetweenTags = getCommitsBetweenTags(
-            commits,
-            fromTag = gitTags.first(),
-            toTag = gitTags.last()
-        )
+        test("extracts commits between two tags") {
+            val commitsBetweenTags = getCommitsBetweenTags(
+                commits,
+                fromTag = gitTags.first(),
+                toTag = gitTags.last()
+            )
 
-        commitsBetweenTags.size shouldBe 3
-        commitsBetweenTags.map { it.title } shouldBe listOf(
-            "Second commit",
-            "Third commit",
-            "Fourth commit",
-        )
+            commitsBetweenTags.size shouldBe 3
+            commitsBetweenTags.map { it.title } shouldBe listOf(
+                "Second commit",
+                "Third commit",
+                "Fourth commit",
+            )
+        }
+
+        test("errors on invalid tag order") {
+            shouldThrow<IllegalArgumentException> {
+                getCommitsBetweenTags(
+                    commits,
+                    fromTag = gitTags.last(),
+                    toTag = gitTags.first()
+                )
+            }
+        }
+
+        test("can cross tags without issues") {
+            val commit5 = fakeRevCommit("Fifth commit", commitTime = 1600000005)
+            val commit6 = fakeRevCommit("Sixth commit", commitTime = 1600000006)
+
+            val tag3 = fakeTagRef("v3.0.0", commit6)
+            val extendedGitTags = toGitTags(listOf(tag, tag2, tag3))
+            val extendedCommits = toGitCommits(
+                listOf(commit1, commit2, commit3, commit4, commit5, commit6),
+                extendedGitTags
+            )
+            val commitsBetweenTags = getCommitsBetweenTags(
+                extendedCommits,
+                fromTag = extendedGitTags[0],
+                toTag = extendedGitTags[2]
+            )
+
+            commitsBetweenTags.size shouldBe 5
+            commitsBetweenTags.map { it.title } shouldBe listOf(
+                "Second commit",
+                "Third commit",
+                "Fourth commit",
+                "Fifth commit",
+                "Sixth commit",
+            )
+        }
     }
-
-
 })
 
 fun fakeRevCommit(

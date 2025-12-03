@@ -10,29 +10,33 @@ kotlinx-serialization = "1.9.0"
 kotest = "6.0.4"
 kotest-koin = "1.1.0"
 kotlinfaker = "1.16.0"
+ktor = "3.3.3"
 mockk = "1.14.6"
 picocli = "4.7.7"
 slf4j = "2.0.17"
 
+
 [plugins]
-elhub-gradle-plugin-library = { id = "no.elhub.devxp.kotlin-library", version.ref = "elhub-gradle" }
 elhub-gradle-plugin-application = { id = "no.elhub.devxp.kotlin-application", version.ref = "elhub-gradle" }
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinx-serialization" }
+ktor-plugin = { id = "io.ktor.plugin", version.ref = "ktor" }
 
 [libraries]
-apache-commons-io = { group = "commons-io", name = "commons-io", version.ref = "commons-io" }
 cli-picocli = { group = "info.picocli", name = "picocli", version.ref = "picocli" }
-di-koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 git-jgit = { group = "org.eclipse.jgit", name = "org.eclipse.jgit", version.ref = "jgit" }
 git-jgit-ssh = { group = "org.eclipse.jgit", name = "org.eclipse.jgit.ssh.jsch", version.ref = "jgit" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json-jvm", version.ref = "kotlinx-serialization" }
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+
 logging-slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 logging-slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 test-kotest-runner-junit5 = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
 test-kotest-assertions-json = { group = "io.kotest", name = "kotest-assertions-json", version.ref = "kotest" }
-test-kotest-extensions-koin = { group = "io.kotest.extensions", name = "kotest-extensions-koin", version.ref = "kotest-koin" }
-test-kotlin-faker = { group = "io.github.serpro69", name = "kotlin-faker", version.ref = "kotlinfaker" }
 test-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 
 [bundles]
 logging = ["logging-slf4j-api", "logging-slf4j-simple"]
+ktor = ["ktor-client-core", "ktor-client-content-negotiation", "ktor-client-cio", "ktor-serialization-kotlinx-json"]

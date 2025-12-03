@@ -7,7 +7,7 @@ data class GitCommit(
     val title: String,
     val body: String,
     val date: LocalDateTime,
-    val tag: GitTag?,
+    val tags: List<GitTag>,
     val jiraIssues: List<String>
 )
 

@@ -17,21 +17,14 @@ fun toGitTags(tags: List<Ref>): List<GitTag> {
 }
 
 fun toGitCommits(rawCommits: List<RevCommit>, tags: List<GitTag>): List<GitCommit> {
-    val tagCommits = tags.associate { it.commitHash to it.name }
+    val tagCommits = tags.groupBy { it.commitHash }
     return rawCommits.map {
         GitCommit(
             hash = it.name,
             title = it.shortMessage,
             body = it.fullMessage.split('\n').drop(1).joinToString("\n").trim(),
             date = LocalDateTime.ofEpochSecond(it.commitTime.toLong(), 0, ZoneOffset.UTC),
-            tag = if (it.name in tagCommits) {
-                GitTag(
-                    name = tagCommits[it.name]!!,
-                    commitHash = it.name,
-                )
-            } else {
-                null
-            },
+            tags = tagCommits[it.name] ?: emptyList(),
             jiraIssues = extractJiraIssues(it.fullMessage)
         )
     }

@@ -5,6 +5,13 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import kotlin.system.exitProcess
+import kotlinx.coroutines.runBlocking
+import no.elhub.devxp.autochangelog.JiraClient
+import no.elhub.devxp.autochangelog.extractJiraIssuesIdsFromCommits
+import no.elhub.devxp.autochangelog.model.GitCommit
+import no.elhub.devxp.autochangelog.model.JiraIssue
+import no.elhub.devxp.autochangelog.populateJiraMap
+import no.elhub.devxp.autochangelog.printJiraIssues
 import no.elhub.devxp.autochangelog.toGitTags
 
 @Command(
@@ -32,17 +39,16 @@ object AutoChangelog : Runnable {
         val rawCommits = git.log().call().toList().reversed()
         val commits = toGitCommits(rawCommits, tags)
 
-        commits
-            .filter { it.jiraIssues.isNotEmpty() }
-            .take(3)
-            .forEach {
-                println("Hash: ${it.hash}")
-                println("Title: ${it.title}")
-                println("Date: ${it.date}")
-                println("Tag: ${it.tag?.name ?: "No Tag"}")
-                println("JiraIssues: ${it.jiraIssues.joinToString(", ")}")
-                println("-----")
-            }
+        val jiraIssueIds = extractJiraIssuesIdsFromCommits(commits)
+
+        val client = JiraClient()
+
+        val jiraMap: Map<JiraIssue, List<GitCommit>>
+
+        runBlocking {
+            jiraMap = populateJiraMap(jiraIssueIds, client)
+        }
+        printJiraIssues(jiraMap)
     }
 }
 

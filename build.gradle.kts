@@ -1,11 +1,14 @@
 plugins {
     alias(libs.plugins.elhub.gradle.plugin.application)
     alias(libs.plugins.kotlin.plugin.serialization)
+    alias(libs.plugins.ktor.plugin)
 }
 
 dependencies {
     implementation(libs.cli.picocli)
-    implementation("org.eclipse.jgit:org.eclipse.jgit:6.8.0.202311291450-r")
+    implementation(libs.git.jgit)
+    implementation(libs.bundles.ktor)
+
     testImplementation(libs.test.kotest.assertions.json)
     testImplementation(libs.test.kotest.runner.junit5)
     testImplementation(libs.test.mockk)

@@ -4,15 +4,12 @@ import AutoChangelog
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.string.shouldNotContain
-import org.eclipse.jgit.api.InitCommand
-import picocli.CommandLine
 import java.io.File
 import java.nio.file.Path
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
+import org.eclipse.jgit.api.InitCommand
+import picocli.CommandLine
 
 class AutoChangelogCliTest : FunSpec({
     // Shared test resources
