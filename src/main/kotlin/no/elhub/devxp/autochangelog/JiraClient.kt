@@ -29,6 +29,10 @@ class JiraClient(
         }
         val username = System.getenv("JIRA_USERNAME")
         val token = System.getenv("JIRA_API_TOKEN")
+
+        check(!username.isNullOrBlank()) { "JIRA_USERNAME environment variable is not set." }
+        check(!token.isNullOrBlank()) { "JIRA_API_TOKEN environment variable is not set." }
+
         val encodedAuth = Base64.getEncoder().encodeToString("$username:$token".toByteArray())
 
         defaultRequest {

@@ -42,15 +42,13 @@ class JiraClientTest : FunSpec({
     val client = JiraClient(httpClient)
 
     test("getIssueById returns correct JiraIssue base on API response") {
-
-
         val result = client.getIssueById("GOG-100")
         result.key shouldBe "GOG-100"
         result.title shouldBe "Dummy Title"
         result.body shouldBe "Dummy Body"
     }
 
-    test("populateJiraMap") {
+    test("populateJiraMap should populate JiraIssue details in the map") {
         val commit1 = GitCommit(
             hash = "abc123",
             title = "Implement feature X",
