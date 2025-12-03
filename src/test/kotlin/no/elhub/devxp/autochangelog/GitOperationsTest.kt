@@ -7,6 +7,9 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
+import no.elhub.devxp.autochangelog.features.git.getCommitsBetweenTags
+import no.elhub.devxp.autochangelog.features.git.toGitCommits
+import no.elhub.devxp.autochangelog.features.git.toGitTags
 import org.eclipse.jgit.internal.storage.dfs.DfsRepositoryDescription
 import org.eclipse.jgit.internal.storage.dfs.InMemoryRepository
 import org.eclipse.jgit.lib.Constants
@@ -77,7 +80,7 @@ class GitOperationsTest : FunSpec({
 
     test("toGitCommits supports multiple tags for a commit") {
         val commit1 = fakeRevCommit("Release version 1.0.0")
-        val tag1 = fakeTagRef("v1.0.0", commit1)
+        val tag1 = fakeTagRef("refs/tags/v1.0.0", commit1)
         val tag2 = fakeTagRef("stable", commit1)
 
         val gitTags = toGitTags(listOf(tag1, tag2))
@@ -91,7 +94,7 @@ class GitOperationsTest : FunSpec({
 
     test("toGitTags converts refs to git tags") {
         val commit1 = fakeRevCommit("Initial commit")
-        val tagRef = fakeTagRef("v1.0.0", commit1)
+        val tagRef = fakeTagRef("refs/tags/v1.0.0", commit1)
 
         val gitTags = toGitTags(listOf(tagRef))
         gitTags.size shouldBe 1
@@ -109,8 +112,8 @@ class GitOperationsTest : FunSpec({
         val commit3 = fakeRevCommit("Third commit", commitTime = 1600000003)
         val commit4 = fakeRevCommit("Fourth commit", commitTime = 1600000004)
 
-        val tag = fakeTagRef("v1.0.0", commit1)
-        val tag2 = fakeTagRef("v2.0.0", commit4)
+        val tag = fakeTagRef("refs/tags/v1.0.0", commit1)
+        val tag2 = fakeTagRef("refs/tags/v2.0.0", commit4)
 
         val gitTags = toGitTags(listOf(tag, tag2))
 
@@ -194,15 +197,13 @@ fun fakeRevCommit(
     return RevWalk(repo).parseCommit(commitId)
 }
 
-fun fakeTagRef(tagName: String, commit: RevCommit): Ref {
-    return object : Ref {
-        override fun getName() = tagName
-        override fun getObjectId(): ObjectId = commit.id
-        override fun getPeeledObjectId(): ObjectId? = null
-        override fun getStorage() = Ref.Storage.LOOSE
-        override fun isSymbolic() = false
-        override fun isPeeled() = false
-        override fun getLeaf() = this
-        override fun getTarget() = this
-    }
+fun fakeTagRef(tagName: String, commit: RevCommit): Ref = object : Ref {
+    override fun getName() = tagName
+    override fun getObjectId(): ObjectId = commit.id
+    override fun getPeeledObjectId(): ObjectId? = null
+    override fun getStorage() = Ref.Storage.LOOSE
+    override fun isSymbolic() = false
+    override fun isPeeled() = false
+    override fun getLeaf() = this
+    override fun getTarget() = this
 }

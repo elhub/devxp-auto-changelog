@@ -11,10 +11,11 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
-import java.time.LocalDateTime
+import java.time.LocalDate
 import kotlinx.serialization.json.Json
-import no.elhub.devxp.autochangelog.model.GitCommit
-import no.elhub.devxp.autochangelog.model.JiraIssue
+import no.elhub.devxp.autochangelog.features.git.GitCommit
+import no.elhub.devxp.autochangelog.features.jira.JiraClient
+import no.elhub.devxp.autochangelog.features.jira.JiraIssue
 
 class JiraClientTest : FunSpec({
     val json = Json {
@@ -53,7 +54,7 @@ class JiraClientTest : FunSpec({
             hash = "abc123",
             title = "Implement feature X",
             body = "This commit implements feature X.\n\nRelated to ABC-101 and PROJ-ABC.",
-            date = LocalDateTime.of(2020, 1, 1, 1, 1),
+            date = LocalDate.of(2020, 1, 1),
             tags = emptyList(),
             jiraIssues = listOf("ABC-101", "ABC-102")
         )
@@ -62,7 +63,7 @@ class JiraClientTest : FunSpec({
             hash = "def456",
             title = "Fix bug Y",
             body = "Fixes bug Y reported in XYZ-202.",
-            date = LocalDateTime.of(2020, 1, 2, 1, 1),
+            date = LocalDate.of(2020, 1, 2),
             tags = emptyList(),
             jiraIssues = listOf("ABC-101")
         )
@@ -71,7 +72,7 @@ class JiraClientTest : FunSpec({
             hash = "ghi789",
             title = "Update documentation",
             body = "Updates the documentation. No related issue.",
-            date = LocalDateTime.of(2020, 1, 3, 1, 1),
+            date = LocalDate.of(2020, 1, 3),
             tags = emptyList(),
             jiraIssues = emptyList()
         )

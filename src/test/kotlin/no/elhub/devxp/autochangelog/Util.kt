@@ -1,7 +1,6 @@
 package no.elhub.devxp.autochangelog
 
-fun createMockResponse(key: String, title: String, body: String): String {
-    return """
+fun createMockResponse(key: String, title: String, body: String): String = """
         {
             "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
             "id": "1",
@@ -26,5 +25,4 @@ fun createMockResponse(key: String, title: String, body: String): String {
                 }
             }
         }
-    """.trimIndent()
-}
+""".trimIndent()

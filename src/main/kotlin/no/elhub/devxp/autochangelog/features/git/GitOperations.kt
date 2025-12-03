@@ -1,14 +1,14 @@
 package no.elhub.devxp.autochangelog.features.git
 
+import java.time.LocalDate
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.revwalk.RevCommit
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 fun toGitTags(tags: List<Ref>): List<GitTag> = tags.map {
+    val commitId = it.peeledObjectId ?: it.objectId
     GitTag(
-        name = it.name,
-        commitHash = it.objectId.name,
+        name = it.name.replace("refs/tags/", ""),
+        commitHash = commitId.name
     )
 }
 
@@ -19,7 +19,7 @@ fun toGitCommits(rawCommits: List<RevCommit>, tags: List<GitTag>): List<GitCommi
             hash = it.name,
             title = it.shortMessage,
             body = it.fullMessage.split('\n').drop(1).joinToString("\n").trim(),
-            date = LocalDateTime.ofEpochSecond(it.commitTime.toLong(), 0, ZoneOffset.UTC),
+            date = LocalDate.ofEpochDay(it.commitTime.toLong()),
             tags = tagCommits[it.name] ?: emptyList(),
             jiraIssues = extractJiraIssues(it.fullMessage)
         )
