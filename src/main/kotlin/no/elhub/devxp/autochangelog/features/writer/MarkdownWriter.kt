@@ -41,5 +41,6 @@ fun formatMarkdown(jiraIssues: Map<JiraIssue, List<GitCommit>>): String {
 
 fun writeMarkdownToFile(markdown: String, filePath: String) {
     val file = File(filePath)
+    file.parentFile?.mkdirs()
     file.writeText(markdown)
 }

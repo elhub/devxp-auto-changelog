@@ -1,3 +1,5 @@
+package no.elhub.devxp.autochangelog
+
 import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
 import no.elhub.devxp.autochangelog.features.git.GitCommit
@@ -22,10 +24,25 @@ import picocli.CommandLine.Command
 )
 object AutoChangelog : Runnable {
     @CommandLine.Option(
-        names = ["-j", "--json"],
-        description = ["Output json"]
+        names = ["--from-tag", "--from"],
+        required = true,
+        description = ["The tag to start the changelog from (exclusive)"]
     )
-    var outputJson: Boolean = false
+    var fromTagName: String? = null
+
+    @CommandLine.Option(
+        names = ["--to-tag", "--to"],
+        required = true,
+        description = ["The tag to end the changelog at (inclusive)"]
+    )
+    var toTagName: String? = null
+
+    @CommandLine.Option(
+        names = ["-o", "--output-file-path"],
+        required = false,
+        description = ["The output file path for the changelog file"]
+    )
+    var outputFilePath: String = "."
 
     override fun run() {
         val repo: Repository = FileRepositoryBuilder()
@@ -37,8 +54,11 @@ object AutoChangelog : Runnable {
         val rawTags = git.tagList().call().toList()
         val tags = toGitTags(rawTags)
 
-        val fromTag = tags.first { it.name == "v0.1.0" }
-        val toTag = tags.first { it.name == "v0.4.0" }
+        val fromTag = tags.firstOrNull() { it.name == fromTagName }
+        require(fromTag != null) { "Tag '$fromTagName' does not exist." }
+
+        val toTag = tags.firstOrNull() { it.name == toTagName }
+        require(toTag != null) { "Tag '$toTagName' does not exist." }
 
         val rawCommits = git.log().call().toList().reversed()
         val commits = toGitCommits(rawCommits, tags)
@@ -56,7 +76,7 @@ object AutoChangelog : Runnable {
         }
 
         val md = formatMarkdown(jiraMap)
-        writeMarkdownToFile(md, "CHANGELOG [${fromTag.name}-${toTag.name}].md")
+        writeMarkdownToFile(md, "$outputFilePath/CHANGELOG [${fromTag.name}-${toTag.name}].md")
     }
 }
 

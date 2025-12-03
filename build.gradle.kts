@@ -15,5 +15,5 @@ dependencies {
 }
 
 application {
-    mainClass.set("AutoChangelogKt")
+    mainClass.set("no.elhub.devxp.autochangelog.AutoChangelogKt")
 }
