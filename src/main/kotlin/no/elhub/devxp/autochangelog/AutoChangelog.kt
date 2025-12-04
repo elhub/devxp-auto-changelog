@@ -9,7 +9,9 @@ import no.elhub.devxp.autochangelog.features.git.getTagsFromRepo
 import no.elhub.devxp.autochangelog.features.git.initRepository
 import no.elhub.devxp.autochangelog.features.jira.JiraClient
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
+import no.elhub.devxp.autochangelog.features.writer.formatJson
 import no.elhub.devxp.autochangelog.features.writer.formatMarkdown
+import no.elhub.devxp.autochangelog.features.writer.writeJsonToFile
 import no.elhub.devxp.autochangelog.features.writer.writeMarkdownToFile
 import picocli.CommandLine
 import picocli.CommandLine.Command
@@ -42,11 +44,11 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
     var toTagName: String? = null
 
     @CommandLine.Option(
-        names = ["-o", "--output-file-path"],
+        names = ["-j", "-json"],
         required = false,
-        description = ["The output file path for the changelog file"]
+        description = ["Whether to output changelog in JSON format instead of Markdown"]
     )
-    var outputFilePath: String = "."
+    var json: Boolean = false
 
     override fun run() {
         val gitRepository = initRepository(workingDir)
@@ -67,14 +69,19 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
             jiraMap = client.populateJiraMap(jiraIssueIds)
         }
 
-        // Format and write the changelog to a markdown file
-        val md = formatMarkdown(jiraMap)
-        val changeLogSuffix = if (maybeFromTag != null || maybeToTag != null) {
+        val changelogName = "CHANGELOG"
+        val changeLogFileSuffix = if (maybeFromTag != null || maybeToTag != null) {
             " [${maybeFromTag?.name ?: ""}-${maybeToTag?.name ?: ""}]"
+        } else ""
+
+        if (json) {
+            val jsonContent = formatJson(jiraMap)
+            writeJsonToFile(jsonContent, "$changelogName$changeLogFileSuffix.json")
         } else {
-            ""
+            val markdownContent = formatMarkdown(jiraMap)
+            writeMarkdownToFile(markdownContent, "$changelogName$changeLogFileSuffix.md")
+
         }
-        writeMarkdownToFile(md, "$outputFilePath/CHANGELOG$changeLogSuffix.md")
     }
 }
 

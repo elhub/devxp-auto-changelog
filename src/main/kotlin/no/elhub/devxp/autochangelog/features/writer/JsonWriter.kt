@@ -1,0 +1,72 @@
+package no.elhub.devxp.autochangelog.features.writer
+
+import java.io.File
+import java.time.LocalDate.now
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
+import no.elhub.devxp.autochangelog.features.git.GitCommit
+import no.elhub.devxp.autochangelog.features.jira.JiraIssue
+
+fun formatJson(jiraIssues: Map<JiraIssue, List<GitCommit>>): String {
+    val json = buildJsonObject {
+        put("generatedAt", now().toString())
+
+        val noJiraEntry = jiraIssues.entries.filter { it.key.key == "NO-JIRA" }
+
+        putJsonArray("issues") {
+            jiraIssues
+                .filterNot { it.key.key == "NO-JIRA" }
+                .forEach { (jiraIssue, commits) ->
+                    addJsonObject {
+                        put("key", jiraIssue.key)
+                        put("title", jiraIssue.title)
+                        put("body", jiraIssue.body)
+                        putJsonArray("commits") {
+                            commits.forEach { commit ->
+                                add(commit.toJsonObject())
+                            }
+                        }
+                    }
+                }
+        }
+
+        if (noJiraEntry.isNotEmpty()) {
+            putJsonArray("commitsWithoutJira") {
+                noJiraEntry.first().value.forEach { commit ->
+                    add(commit.toJsonObject())
+                }
+            }
+        }
+    }
+    val prettyJson = Json { prettyPrint = true }
+    return prettyJson.encodeToString(json)
+}
+
+private fun GitCommit.toJsonObject(): JsonObject = buildJsonObject {
+    put("hash", hash)
+    put("title", title)
+    put("body", body)
+    put("date", date.toString())
+    putJsonArray("tags") {
+        tags.forEach { tag ->
+            addJsonObject {
+                put("name", tag.name)
+                put("commitHash", tag.commitHash)
+            }
+        }
+    }
+    putJsonArray("jiraIssues") {
+        jiraIssues.forEach { add(it) }
+    }
+}
+
+fun writeJsonToFile(json: String, filePath: String) {
+    val file = File(filePath)
+    file.parentFile?.mkdirs()
+    file.writeText(json)
+}

@@ -1,7 +1,9 @@
 package no.elhub.devxp.autochangelog.features.git
 
 import java.io.File
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.lib.Repository
@@ -49,7 +51,9 @@ fun toGitCommits(rawCommits: List<RevCommit>, tags: List<GitTag>): List<GitCommi
             hash = it.name,
             title = it.shortMessage,
             body = it.fullMessage.split('\n').drop(1).joinToString("\n").trim(),
-            date = LocalDate.ofEpochDay(it.commitTime.toLong()),
+            date = Instant.ofEpochSecond(it.commitTime.toLong())
+                .atZone(ZoneOffset.UTC)
+                .toLocalDate(),
             tags = tagCommits[it.name] ?: emptyList(),
             jiraIssues = extractJiraIssues(it.fullMessage)
         )
