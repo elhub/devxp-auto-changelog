@@ -3,16 +3,29 @@ package no.elhub.devxp.autochangelog
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.ktor.client.HttpClient
+import io.mockk.coEvery
+import io.mockk.mockk
+import io.mockk.spyk
 import org.eclipse.jgit.api.InitCommand
 import picocli.CommandLine
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
+import no.elhub.devxp.autochangelog.features.jira.JiraClient
+import no.elhub.devxp.autochangelog.features.jira.JiraIssue
 
 class AutoChangelogCliTest : FunSpec({
-    // Shared test resources
-    val cmd = CommandLine(AutoChangelog)
+    val mockHttpClient = mockk<HttpClient>()
+    val mockJiraClient = spyk(JiraClient(mockHttpClient))
+    coEvery { mockJiraClient.getIssueById(any()) } returns JiraIssue(
+        key = "TEST-123",
+        title = "Mocked JIRA Issue",
+        body = "This is a mocked JIRA issue for testing purposes.",
+    )
+
+    val cmd = CommandLine(AutoChangelog(mockJiraClient))
     val outputChangelogFile = File("CHANGELOG.md")
 
     // Helper functions for test setup
@@ -65,7 +78,6 @@ class AutoChangelogCliTest : FunSpec({
     }
 
     context("AutoChangelog application") {
-        println("TODO: Find out how to deal with env vars")
 
         test("should fail when run in a non-git directory") {
             val nonGitDir = createNonGitDirectory()

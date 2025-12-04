@@ -24,20 +24,15 @@ ktor-plugin = { id = "io.ktor.plugin", version.ref = "ktor" }
 [libraries]
 cli-picocli = { group = "info.picocli", name = "picocli", version.ref = "picocli" }
 git-jgit = { group = "org.eclipse.jgit", name = "org.eclipse.jgit", version.ref = "jgit" }
-git-jgit-ssh = { group = "org.eclipse.jgit", name = "org.eclipse.jgit.ssh.jsch", version.ref = "jgit" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json-jvm", version.ref = "kotlinx-serialization" }
 ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
-logging-slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
-logging-slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 test-kotest-runner-junit5 = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
 test-kotest-assertions-json = { group = "io.kotest", name = "kotest-assertions-json", version.ref = "kotest" }
 test-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 
 [bundles]
-logging = ["logging-slf4j-api", "logging-slf4j-simple"]
 ktor = ["ktor-client-core", "ktor-client-content-negotiation", "ktor-client-cio", "ktor-client-mock", "ktor-serialization-kotlinx-json"]

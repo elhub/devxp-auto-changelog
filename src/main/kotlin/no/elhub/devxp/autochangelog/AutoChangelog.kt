@@ -23,7 +23,7 @@ import picocli.CommandLine.Command
     mixinStandardHelpOptions = true,
     description = ["TODO: WRITE ME"]
 )
-object AutoChangelog : Runnable {
+class AutoChangelog(val client: JiraClient) : Runnable {
     @CommandLine.Option(
         names = ["--working-dir", "-w"],
         required = false,
@@ -80,10 +80,9 @@ object AutoChangelog : Runnable {
         val jiraIssueIds = extractJiraIssuesIdsFromCommits(relevantCommits)
 
         // Populate the map with actual JIRA issue details
-        val client = JiraClient()
         val jiraMap: Map<JiraIssue, List<GitCommit>>
         runBlocking {
-            jiraMap = client.populateJiraMap(jiraIssueIds, client)
+            jiraMap = client.populateJiraMap(jiraIssueIds)
         }
 
         // Format and write the changelog to a markdown file
@@ -98,6 +97,6 @@ object AutoChangelog : Runnable {
 }
 
 fun main(args: Array<String>) {
-    val exitCode = CommandLine(AutoChangelog).execute(*args)
+    val exitCode = CommandLine(AutoChangelog(JiraClient())).execute(*args)
     exitProcess(exitCode)
 }

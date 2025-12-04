@@ -82,7 +82,7 @@ class JiraClientTest : FunSpec({
             "NO-JIRA" to listOf(commit3)
         )
 
-        val populatedMap = client.populateJiraMap(myMap, client)
+        val populatedMap = client.populateJiraMap(myMap)
         populatedMap.size shouldBe 3
 
         populatedMap.keys.map { it.key }.toSet() shouldBe setOf(

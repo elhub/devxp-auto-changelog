@@ -41,7 +41,6 @@ class JiraClient(
 
     suspend fun populateJiraMap(
         jiraMap: Map<String, List<GitCommit>>,
-        client: JiraClient
     ): Map<JiraIssue, List<GitCommit>> = jiraMap.mapKeys { (jiraIssueId, _) ->
         if (jiraIssueId == "NO-JIRA") {
             JiraIssue(
@@ -50,7 +49,7 @@ class JiraClient(
                 body = ""
             )
         } else {
-            client.getIssueById(jiraIssueId)
+            this.getIssueById(jiraIssueId)
         }
     }
 
