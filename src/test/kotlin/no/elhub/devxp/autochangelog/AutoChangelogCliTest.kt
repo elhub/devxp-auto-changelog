@@ -1,6 +1,5 @@
 package no.elhub.devxp.autochangelog
 
-import AutoChangelog
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -105,16 +104,38 @@ class AutoChangelogCliTest : FunSpec({
     }
 
     context("AutoChangelog application") {
+        println("TODO: Find out how to deal with env vars")
 
         test("should fail when run in a non-git directory") {
             val nonGitDir = createNonGitDirectory()
-            val exitCode = cmd.execute("-j", nonGitDir.toString())
-            exitCode shouldNotBe 0
-            outputChangelogFile.exists() shouldBe false
+            val originalDir = System.getProperty("user.dir")
+            try {
+                System.setProperty("user.dir", nonGitDir.toString())
+                println("I am in dir: ${System.getProperty("user.dir")}")
+                val exitCode = cmd.execute()
+                exitCode shouldBe 0
+                outputChangelogFile.exists() shouldBe false
+            } finally {
+                System.setProperty("user.dir", originalDir)
+            }
         }
 
         test("should have a help option on -h") {
             cmd.execute("-h") shouldBe 0
+        }
+
+        test("should generate basic changelog in a git repository") {
+            val gitRepo = createGitRepository("basic-git-repo")
+            val originalDir = System.getProperty("user.dir")
+            try {
+                System.setProperty("user.dir", gitRepo.toString())
+                println("I am in dir: ${System.getProperty("user.dir")}")
+                val exitCode = cmd.execute()
+                exitCode shouldBe 0
+                outputChangelogFile.exists() shouldBe true
+            } finally {
+                System.setProperty("user.dir", originalDir)
+            }
         }
     }
 })

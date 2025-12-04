@@ -33,11 +33,13 @@ private fun extractJiraIssues(message: String): List<String> {
 
 fun getCommitsBetweenTags(
     commits: List<GitCommit>,
-    fromTag: GitTag,
-    toTag: GitTag
+    fromTag: GitTag?,
+    toTag: GitTag?
 ): List<GitCommit> {
-    val fromCommit = commits.first { it.hash == fromTag.commitHash }
-    val toCommit = commits.first { it.hash == toTag.commitHash }
+    // If fromTag is null, start from the beginning
+    val fromCommit = fromTag?.let { tag -> commits.first { it.hash == tag.commitHash } } ?: commits.first()
+    // If toTag is null, go until the latest commit
+    val toCommit = toTag?.let { tag -> commits.first { it.hash == tag.commitHash } } ?: commits.last()
 
     val startIndex = commits.indexOf(fromCommit) + 1
     val endIndex = commits.indexOf(toCommit) + 1

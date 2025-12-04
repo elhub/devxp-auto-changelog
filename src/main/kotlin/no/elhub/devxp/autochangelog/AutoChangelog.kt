@@ -1,5 +1,6 @@
 package no.elhub.devxp.autochangelog
 
+import java.io.File
 import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
 import no.elhub.devxp.autochangelog.features.git.GitCommit
@@ -24,15 +25,22 @@ import picocli.CommandLine.Command
 )
 object AutoChangelog : Runnable {
     @CommandLine.Option(
+        names = ["--working-dir", "-w"],
+        required = false,
+        description = ["The directory in which to run the changelog (mainly for testing)"]
+    )
+    var workingDir: String = "."
+
+    @CommandLine.Option(
         names = ["--from-tag", "--from"],
-        required = true,
+        required = false,
         description = ["The tag to start the changelog from (exclusive)"]
     )
     var fromTagName: String? = null
 
     @CommandLine.Option(
         names = ["--to-tag", "--to"],
-        required = true,
+        required = false,
         description = ["The tag to end the changelog at (inclusive)"]
     )
     var toTagName: String? = null
@@ -45,8 +53,12 @@ object AutoChangelog : Runnable {
     var outputFilePath: String = "."
 
     override fun run() {
+        val workingDirectory = File(workingDir)
+        require(workingDirectory.exists()) { "Working directory $workingDirectory does not exist." }
+        require(workingDirectory.isDirectory) { "Working directory $workingDirectory is not a directory." }
+
         val repo: Repository = FileRepositoryBuilder()
-            .findGitDir()
+            .setWorkTree(workingDirectory)
             .build()
 
         val git = Git(repo)
@@ -54,16 +66,13 @@ object AutoChangelog : Runnable {
         val rawTags = git.tagList().call().toList()
         val tags = toGitTags(rawTags)
 
-        val fromTag = tags.firstOrNull() { it.name == fromTagName }
-        require(fromTag != null) { "Tag '$fromTagName' does not exist." }
-
-        val toTag = tags.firstOrNull() { it.name == toTagName }
-        require(toTag != null) { "Tag '$toTagName' does not exist." }
+        val maybeFromTag = tags.firstOrNull() { it.name == fromTagName }
+        val maybeToTag = tags.firstOrNull() { it.name == toTagName }
 
         val rawCommits = git.log().call().toList().reversed()
         val commits = toGitCommits(rawCommits, tags)
 
-        val relevantCommits = getCommitsBetweenTags(commits, fromTag, toTag)
+        val relevantCommits = getCommitsBetweenTags(commits, maybeFromTag, maybeToTag)
 
         val jiraIssueIds = extractJiraIssuesIdsFromCommits(relevantCommits)
 
@@ -76,7 +85,13 @@ object AutoChangelog : Runnable {
         }
 
         val md = formatMarkdown(jiraMap)
-        writeMarkdownToFile(md, "$outputFilePath/CHANGELOG [${fromTag.name}-${toTag.name}].md")
+
+        val changeLogSuffix = if (maybeFromTag != null || maybeToTag != null) {
+            " [${maybeFromTag?.name ?: ""}-${maybeToTag?.name ?: ""}]"
+        } else {
+            ""
+        }
+        writeMarkdownToFile(md, "$outputFilePath/CHANGELOG$changeLogSuffix.md")
     }
 }
 
