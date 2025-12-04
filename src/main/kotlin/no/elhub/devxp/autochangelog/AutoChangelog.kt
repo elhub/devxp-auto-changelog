@@ -58,12 +58,14 @@ object AutoChangelog : Runnable {
         require(workingDirectory.isDirectory) { "Working directory $workingDirectory is not a directory." }
         require(workingDirectory.resolve(".git").exists()) { "Working directory $workingDirectory does not contain a .git directory." }
 
+        // Initialize Git repository
         val repo: Repository = FileRepositoryBuilder()
             .setWorkTree(workingDirectory)
             .build()
 
         val git = Git(repo)
 
+        // Convert tags and commits to internal representations
         val rawTags = git.tagList().call().toList()
         val tags = toGitTags(rawTags)
 
@@ -71,22 +73,21 @@ object AutoChangelog : Runnable {
         val maybeToTag = tags.firstOrNull() { it.name == toTagName }
 
         val rawCommits = git.log().call().toList().reversed()
-        val commits = toGitCommits(rawCommits, tags)
+        val gitCommits = toGitCommits(rawCommits, tags)
+        val relevantCommits = getCommitsBetweenTags(gitCommits, maybeFromTag, maybeToTag)
 
-        val relevantCommits = getCommitsBetweenTags(commits, maybeFromTag, maybeToTag)
-
+        // Create a mapping of JIRA issue IDs to commits
         val jiraIssueIds = extractJiraIssuesIdsFromCommits(relevantCommits)
 
+        // Populate the map with actual JIRA issue details
         val client = JiraClient()
-
         val jiraMap: Map<JiraIssue, List<GitCommit>>
-
         runBlocking {
             jiraMap = client.populateJiraMap(jiraIssueIds, client)
         }
 
+        // Format and write the changelog to a markdown file
         val md = formatMarkdown(jiraMap)
-
         val changeLogSuffix = if (maybeFromTag != null || maybeToTag != null) {
             " [${maybeFromTag?.name ?: ""}-${maybeToTag?.name ?: ""}]"
         } else {
