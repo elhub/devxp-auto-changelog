@@ -4,12 +4,12 @@ import java.io.File
 import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
 import no.elhub.devxp.autochangelog.features.git.GitCommit
+import no.elhub.devxp.autochangelog.features.git.extractJiraIssuesIdsFromCommits
 import no.elhub.devxp.autochangelog.features.git.getCommitsBetweenTags
 import no.elhub.devxp.autochangelog.features.git.toGitCommits
 import no.elhub.devxp.autochangelog.features.git.toGitTags
 import no.elhub.devxp.autochangelog.features.jira.JiraClient
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
-import no.elhub.devxp.autochangelog.features.jira.extractJiraIssuesIdsFromCommits
 import no.elhub.devxp.autochangelog.features.writer.formatMarkdown
 import no.elhub.devxp.autochangelog.features.writer.writeMarkdownToFile
 import org.eclipse.jgit.api.Git

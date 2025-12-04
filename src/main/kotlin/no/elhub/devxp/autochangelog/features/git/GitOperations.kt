@@ -47,3 +47,20 @@ fun getCommitsBetweenTags(
     require(startIndex <= endIndex) { "The 'from' cannot be newer than the 'to' tag." }
     return commits.subList(startIndex, endIndex)
 }
+
+fun extractJiraIssuesIdsFromCommits(commits: List<GitCommit>): Map<String, List<GitCommit>> {
+    val jiraIdToCommitMap = mutableMapOf<String, MutableList<GitCommit>>()
+    commits.forEach {
+        if (it.jiraIssues.isNotEmpty()) {
+            it.jiraIssues.forEach { jiraIssue ->
+                jiraIdToCommitMap
+                    .getOrPut(jiraIssue) { mutableListOf() }
+                    .add(it)
+            }
+        } else {
+            jiraIdToCommitMap.getOrPut("NO-JIRA") { mutableListOf() }
+                .add(it)
+        }
+    }
+    return jiraIdToCommitMap.toMap()
+}
