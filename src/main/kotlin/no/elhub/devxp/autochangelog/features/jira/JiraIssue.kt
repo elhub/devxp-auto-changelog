@@ -57,7 +57,12 @@ data class AdfMark(
     val type: String
 )
 
-// Helper function to extract plain text from ADF
+/**
+ * Converts an [AdfDocument] to plain text by extracting all text nodes.
+ *
+ * @receiver An optional [AdfDocument] to convert.
+ * @return A [String] containing the concatenated plain text from the document.
+ */
 fun AdfDocument?.toPlainText(): String {
     if (this == null) return ""
 

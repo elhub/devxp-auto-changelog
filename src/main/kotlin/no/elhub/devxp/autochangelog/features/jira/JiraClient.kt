@@ -39,6 +39,12 @@ class JiraClient(
         }
     }
 
+    /**
+     * Populates a map of JIRA ID [String]s to [GitCommit]s with full [JiraIssue] details.
+     *
+     * @param jiraMap A map where the key is the JIRA ID [String] and the value is a list of [GitCommit]s associated with that issue.
+     * @return A map where the key is a [JiraIssue] and the value is a list of [GitCommit]s associated with that issue.
+     */
     suspend fun populateJiraMap(
         jiraMap: Map<String, List<GitCommit>>,
     ): Map<JiraIssue, List<GitCommit>> = jiraMap.mapKeys { (jiraIssueId, _) ->
@@ -53,6 +59,12 @@ class JiraClient(
         }
     }
 
+    /**
+     * Fetches a JIRA issue by its ID.
+     *
+     * @param issueId The ID of the JIRA issue to fetch.
+     * @return A [JiraIssue] object containing the details of the fetched issue.
+     */
     suspend fun getIssueById(issueId: String): JiraIssue {
         val response = internalClient.get("issue/$issueId?fields=summary,description")
         val apiResponse = response.body() as JiraApiResponse

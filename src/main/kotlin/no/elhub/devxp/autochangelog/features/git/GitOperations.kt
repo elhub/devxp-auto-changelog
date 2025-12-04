@@ -1,8 +1,32 @@
 package no.elhub.devxp.autochangelog.features.git
 
+import java.io.File
 import java.time.LocalDate
+import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.Ref
+import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.revwalk.RevCommit
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder
+
+fun initRepository(workingDir: String): Git {
+    val workingDirectory = File(workingDir)
+    require(workingDirectory.exists()) { "Working directory $workingDirectory does not exist." }
+    require(workingDirectory.isDirectory) { "Working directory $workingDirectory is not a directory." }
+    require(workingDirectory.resolve(".git").exists()) { "Working directory $workingDirectory does not contain a .git directory." }
+
+    // Initialize Git repository
+    val repo: Repository = FileRepositoryBuilder()
+        .setWorkTree(workingDirectory)
+        .build()
+
+    return Git(repo)
+}
+
+fun getTagsFromRepo(git: Git): List<GitTag> {
+    val rawTags = git.tagList().call().toList()
+    return toGitTags(rawTags)
+}
+
 
 fun toGitTags(tags: List<Ref>): List<GitTag> = tags.map {
     val commitId = it.peeledObjectId ?: it.objectId
@@ -10,6 +34,12 @@ fun toGitTags(tags: List<Ref>): List<GitTag> = tags.map {
         name = it.name.replace("refs/tags/", ""),
         commitHash = commitId.name
     )
+}
+
+fun getRelevantCommits(git: Git, from: GitTag?, to: GitTag?, tags: List<GitTag>): List<GitCommit> {
+    val rawCommits = git.log().call().toList().reversed()
+    val gitCommits = toGitCommits(rawCommits, tags)
+    return getCommitsBetweenTags(gitCommits, from, to)
 }
 
 fun toGitCommits(rawCommits: List<RevCommit>, tags: List<GitTag>): List<GitCommit> {

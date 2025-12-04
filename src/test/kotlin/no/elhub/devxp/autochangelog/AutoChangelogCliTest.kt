@@ -3,22 +3,22 @@ package no.elhub.devxp.autochangelog
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import io.ktor.client.HttpClient
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
-import org.eclipse.jgit.api.InitCommand
-import picocli.CommandLine
 import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.writeText
 import no.elhub.devxp.autochangelog.features.jira.JiraClient
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
+import picocli.CommandLine
 
 class AutoChangelogCliTest : FunSpec({
+
+    // Mock JiraClient to avoid real HTTP calls
     val mockHttpClient = mockk<HttpClient>()
     val mockJiraClient = spyk(JiraClient(mockHttpClient))
+
     coEvery { mockJiraClient.getIssueById(any()) } returns JiraIssue(
         key = "TEST-123",
         title = "Mocked JIRA Issue",
@@ -27,42 +27,6 @@ class AutoChangelogCliTest : FunSpec({
 
     val cmd = CommandLine(AutoChangelog(mockJiraClient))
     val outputChangelogFile = File("CHANGELOG.md")
-
-    // Helper functions for test setup
-    fun createNonGitDirectory(): Path {
-        val tempDir = createTempDirectory("not-a-git-repo")
-        tempDir.toFile().deleteOnExit()
-        return tempDir
-    }
-
-    data class TestCommit(
-        val fileName: String,
-        val content: String,
-        val message: String,
-        val tags: List<String> = emptyList()
-    )
-
-    fun createRepositoryFromCommits(name: String, commits: List<TestCommit>): Path {
-        val tempDir = createTempDirectory(name)
-        InitCommand().setDirectory(tempDir.toFile()).call().use { git ->
-            commits.forEach { commit ->
-                val f = tempDir.resolve(name)
-                f.writeText(commit.content)
-                git.add().addFilepattern(name).call()
-                val c = git.commit().setMessage(commit.message).call()
-                if (commit.tags.isNotEmpty()) {
-                    commit.tags.forEach { tag ->
-                        git
-                            .tag()
-                            .setName(tag)
-                            .setObjectId(c)
-                            .call()
-                    }
-                }
-            }
-        }
-        return tempDir
-    }
 
     // Cleanup after tests
     afterEach {
@@ -78,7 +42,6 @@ class AutoChangelogCliTest : FunSpec({
     }
 
     context("AutoChangelog application") {
-
         test("should fail when run in a non-git directory") {
             val nonGitDir = createNonGitDirectory()
             val exitCode = cmd.execute("--working-dir", nonGitDir.toString())
@@ -111,6 +74,155 @@ class AutoChangelogCliTest : FunSpec({
             val content = outputChangelogFile.readText()
             content shouldContain "Initial commit"
             content shouldContain "Add main function"
+        }
+
+        test("should generate changelog with mocked JIRA issues") {
+            val commits = listOf(
+                TestCommit(
+                    fileName = "Feature.kt",
+                    content = "fun feature() { println(\"Feature!\") }",
+                    message = "Implement feature TEST-123",
+                )
+            )
+            val gitRepo = createRepositoryFromCommits("jira-git-repo", commits)
+            val exitCode = cmd.execute("--working-dir", gitRepo.toString())
+            exitCode shouldBe 0
+            outputChangelogFile.exists() shouldBe true
+            val content = outputChangelogFile.readText()
+            content shouldContain "Mocked JIRA Issue"
+            content shouldContain "Implement feature TEST-123"
+        }
+
+        test("should generate changelog with no JIRA issues") {
+            val commits = listOf(
+                TestCommit(
+                    fileName = "NoJira.kt",
+                    content = "fun noJira() { println(\"No JIRA!\") }",
+                    message = "Implement no JIRA feature",
+                )
+            )
+            val gitRepo = createRepositoryFromCommits("no-jira-git-repo", commits)
+            val exitCode = cmd.execute("--working-dir", gitRepo.toString())
+            exitCode shouldBe 0
+            outputChangelogFile.exists() shouldBe true
+            val content = outputChangelogFile.readText()
+            content shouldContain "Commits without associated JIRA issues"
+            content shouldContain "Implement no JIRA feature"
+        }
+
+        test("should allow --from-tag and --to-tag options") {
+            val fromTag = "v1.0.0"
+            val toTag = "v1.1.0"
+            val changelogFile = File("CHANGELOG [$fromTag-$toTag].md")
+            try {
+                val commits = listOf(
+                    TestCommit(
+                        fileName = "Versioned.kt",
+                        content = "fun versioned() { println(\"Versioned!\") }",
+                        message = "Add versioned feature",
+                        tags = listOf("v1.0.0")
+                    ),
+                    TestCommit(
+                        fileName = "Versioned2.kt",
+                        content = "fun versioned2() { println(\"Versioned 2!\") }",
+                        message = "Add another versioned feature",
+                        tags = listOf("v1.1.0")
+                    )
+                )
+                val gitRepo = createRepositoryFromCommits("versioned-git-repo", commits)
+
+                val exitCode = cmd.execute(
+                    "--working-dir", gitRepo.toString(),
+                    "--from-tag", "v1.0.0",
+                    "--to-tag", "v1.1.0"
+                )
+                exitCode shouldBe 0
+                changelogFile.exists() shouldBe true
+                val content = changelogFile.readText()
+                content shouldContain "Add another versioned feature"
+                content shouldNotContain "Add versioned feature"
+            } finally {
+                if (changelogFile.exists()) {
+                    changelogFile.delete()
+                }
+            }
+        }
+
+        test("should allow only --to-tag option") {
+            val toTag = "v2.0.0"
+            val changelogFile = File("CHANGELOG [-$toTag].md")
+            try {
+                val commits = listOf(
+                    TestCommit(
+                        fileName = "PreToTag.kt",
+                        content = "fun preToTag() { println(\"Pre To Tag!\") }",
+                        message = "Add pre to-tag feature",
+                    ),
+                    TestCommit(
+                        fileName = "OtherTag.kt",
+                        content = "fun preToTag() { println(\"Pre To Tag 2!\") }",
+                        message = "Add first tag",
+                        tags = listOf("v1.0.0")
+                    ),
+                    TestCommit(
+                        fileName = "ToTag.kt",
+                        content = "fun toTag() { println(\"To Tag!\") }",
+                        message = "Add to-tag feature",
+                        tags = listOf("v2.0.0")
+                    )
+                )
+                val gitRepo = createRepositoryFromCommits("to-tag-git-repo", commits)
+
+                val exitCode = cmd.execute(
+                    "--working-dir", gitRepo.toString(),
+                    "--to-tag", "v2.0.0"
+                )
+                exitCode shouldBe 0
+                changelogFile.exists() shouldBe true
+                val content = changelogFile.readText()
+                content shouldContain "Add pre to-tag feature"
+                content shouldContain "Add first tag"
+                content shouldContain "Add to-tag feature"
+            } finally {
+                if (changelogFile.exists()) {
+                    changelogFile.delete()
+                }
+            }
+        }
+
+        test("should allow only --from-tag option") {
+            val fromTag = "v1.0.0"
+            val changelogFile = File("CHANGELOG [$fromTag-].md")
+            try {
+                val commits = listOf(
+                    TestCommit(
+                        fileName = "FromTag.kt",
+                        content = "fun fromTag() { println(\"From Tag!\") }",
+                        message = "Add from-tag feature",
+                        tags = listOf("v1.0.0")
+                    ),
+                    TestCommit(
+                        fileName = "PostFromTag.kt",
+                        content = "fun postFromTag() { println(\"Post From Tag!\") }",
+                        message = "Add post from-tag feature",
+                    )
+                )
+                val gitRepo = createRepositoryFromCommits("from-tag-git-repo", commits)
+
+                val exitCode = cmd.execute(
+                    "--working-dir", gitRepo.toString(),
+                    "--from-tag", "v1.0.0"
+                )
+                exitCode shouldBe 0
+                changelogFile.exists() shouldBe true
+                val content = changelogFile.readText()
+                content shouldContain "Add post from-tag feature"
+                content shouldNotContain "Add from-tag feature"
+            } finally {
+                if (changelogFile.exists()) {
+                    changelogFile.delete()
+                }
+            }
         }
     }
 })
