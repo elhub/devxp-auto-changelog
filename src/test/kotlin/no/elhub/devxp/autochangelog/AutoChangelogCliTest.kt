@@ -2,7 +2,7 @@ package no.elhub.devxp.autochangelog
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
 import org.eclipse.jgit.api.InitCommand
 import picocli.CommandLine
 import java.io.File
@@ -22,72 +22,33 @@ class AutoChangelogCliTest : FunSpec({
         return tempDir
     }
 
-    fun createGitRepository(name: String): Path {
+    data class TestCommit(
+        val fileName: String,
+        val content: String,
+        val message: String,
+        val tags: List<String> = emptyList()
+    )
+
+    fun createRepositoryFromCommits(name: String, commits: List<TestCommit>): Path {
         val tempDir = createTempDirectory(name)
-        tempDir.toFile().deleteOnExit()
-
         InitCommand().setDirectory(tempDir.toFile()).call().use { git ->
-            val readmeFile = tempDir.resolve("README.md")
-            readmeFile.writeText("# Test Repository")
-            git.add().addFilepattern("README.md").call()
-            git.commit().setMessage("Initial commit").call()
-        }
-
-        return tempDir
-    }
-
-    fun createGitRepositoryWithConfig(): Path {
-        val tempDir = createTempDirectory("git-repo-with-config")
-        tempDir.toFile().deleteOnExit()
-        InitCommand().setDirectory(tempDir.toFile()).call().use { git ->
-            val readmeFile = tempDir.resolve("README.md")
-            readmeFile.writeText("# Test Repository")
-
-            val configFile = tempDir.resolve("changelog-config.yml")
-            configFile.writeText("version: 1.0.0")
-
-            git.add().addFilepattern("README.md").call()
-            git.add().addFilepattern("changelog-config.yml").call()
-            git.commit().setMessage("Initial commit with config").call()
-        }
-        return tempDir
-    }
-
-    fun createComplexRepository(): Path {
-        val tempDir = createTempDirectory("complex-extra")
-        InitCommand().setDirectory(tempDir.toFile()).call().use { git ->
-            fun commit(
-                name: String,
-                content: String,
-                msg: String,
-                tag: String? = null,
-            ) {
+            commits.forEach { commit ->
                 val f = tempDir.resolve(name)
-                f.writeText(content)
+                f.writeText(commit.content)
                 git.add().addFilepattern(name).call()
-                val c = git.commit().setMessage(msg).call()
-                if (tag != null) {
-                    git
-                        .tag()
-                        .setName(tag)
-                        .setObjectId(c)
-                        .call()
+                val c = git.commit().setMessage(commit.message).call()
+                if (commit.tags.isNotEmpty()) {
+                    commit.tags.forEach { tag ->
+                        git
+                            .tag()
+                            .setName(tag)
+                            .setObjectId(c)
+                            .call()
+                    }
                 }
             }
-            commit("a.txt", "a", "chore: initial", "v0.1.0")
-            commit("b.txt", "b", "feat: add feature A")
-            commit("c.txt", "c", "fix: bug fix 1", "v1.0.0")
-            commit("d.txt", "d", "feat: add feature B")
-            commit("e.txt", "e", "refactor: code cleanup", "v1.1.0")
-            commit("f.txt", "f", "feat: add feature C")
         }
         return tempDir
-    }
-
-    fun createOutputDirectory(): Path {
-        val outputDir = createTempDirectory("output-dir")
-        outputDir.toFile().deleteOnExit()
-        return outputDir
     }
 
     // Cleanup after tests
@@ -108,34 +69,36 @@ class AutoChangelogCliTest : FunSpec({
 
         test("should fail when run in a non-git directory") {
             val nonGitDir = createNonGitDirectory()
-            val originalDir = System.getProperty("user.dir")
-            try {
-                System.setProperty("user.dir", nonGitDir.toString())
-                println("I am in dir: ${System.getProperty("user.dir")}")
-                val exitCode = cmd.execute()
-                exitCode shouldBe 0
-                outputChangelogFile.exists() shouldBe false
-            } finally {
-                System.setProperty("user.dir", originalDir)
-            }
+            val exitCode = cmd.execute("--working-dir", nonGitDir.toString())
+            exitCode shouldBe 1
+            outputChangelogFile.exists() shouldBe false
         }
 
         test("should have a help option on -h") {
             cmd.execute("-h") shouldBe 0
         }
 
-        test("should generate basic changelog in a git repository") {
-            val gitRepo = createGitRepository("basic-git-repo")
-            val originalDir = System.getProperty("user.dir")
-            try {
-                System.setProperty("user.dir", gitRepo.toString())
-                println("I am in dir: ${System.getProperty("user.dir")}")
-                val exitCode = cmd.execute()
-                exitCode shouldBe 0
-                outputChangelogFile.exists() shouldBe true
-            } finally {
-                System.setProperty("user.dir", originalDir)
-            }
+        test("should generate changelog for basic git repository") {
+            val commits = listOf(
+                TestCommit(
+                    fileName = "README.md",
+                    content = "# Test Repository",
+                    message = "Initial commit",
+                ),
+                TestCommit(
+                    fileName = "Main.kt",
+                    content = "fun main() { println(\"Hello, World!\") }",
+                    message = "Add main function",
+                )
+
+            )
+            val gitRepo = createRepositoryFromCommits("basic-git-repo", commits)
+            val exitCode = cmd.execute("--working-dir", gitRepo.toString())
+            exitCode shouldBe 0
+            outputChangelogFile.exists() shouldBe true
+            val content = outputChangelogFile.readText()
+            content shouldContain "Initial commit"
+            content shouldContain "Add main function"
         }
     }
 })

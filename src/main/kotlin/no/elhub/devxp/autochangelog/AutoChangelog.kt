@@ -56,6 +56,7 @@ object AutoChangelog : Runnable {
         val workingDirectory = File(workingDir)
         require(workingDirectory.exists()) { "Working directory $workingDirectory does not exist." }
         require(workingDirectory.isDirectory) { "Working directory $workingDirectory is not a directory." }
+        require(workingDirectory.resolve(".git").exists()) { "Working directory $workingDirectory does not contain a .git directory." }
 
         val repo: Repository = FileRepositoryBuilder()
             .setWorkTree(workingDirectory)

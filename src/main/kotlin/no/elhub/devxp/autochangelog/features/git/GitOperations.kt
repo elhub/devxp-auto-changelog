@@ -36,14 +36,14 @@ fun getCommitsBetweenTags(
     fromTag: GitTag?,
     toTag: GitTag?
 ): List<GitCommit> {
-    // If fromTag is null, start from the beginning
-    val fromCommit = fromTag?.let { tag -> commits.first { it.hash == tag.commitHash } } ?: commits.first()
-    // If toTag is null, go until the latest commit
-    val toCommit = toTag?.let { tag -> commits.first { it.hash == tag.commitHash } } ?: commits.last()
+    val startIndex = fromTag?.let { tag ->
+        commits.indexOfFirst { it.hash == tag.commitHash } + 1
+    } ?: 0
 
-    val startIndex = commits.indexOf(fromCommit) + 1
-    val endIndex = commits.indexOf(toCommit) + 1
+    val endIndex = toTag?.let { tag ->
+        commits.indexOfFirst { it.hash == tag.commitHash } + 1
+    } ?: commits.size
 
-    require(startIndex < endIndex) { "The 'from' tag must be older than the 'to' tag." }
+    require(startIndex <= endIndex) { "The 'from' cannot be newer than the 'to' tag." }
     return commits.subList(startIndex, endIndex)
 }
