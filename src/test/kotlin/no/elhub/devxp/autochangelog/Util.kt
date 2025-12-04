@@ -1,9 +1,9 @@
 package no.elhub.devxp.autochangelog
 
+import org.eclipse.jgit.api.InitCommand
 import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
-import org.eclipse.jgit.api.InitCommand
 
 fun createMockResponse(key: String, title: String, body: String): String = """
         {
@@ -31,7 +31,6 @@ fun createMockResponse(key: String, title: String, body: String): String = """
             }
         }
 """.trimIndent()
-
 
 data class TestCommit(
     val fileName: String,

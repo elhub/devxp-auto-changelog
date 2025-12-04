@@ -11,10 +11,10 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
-import java.time.LocalDate
 import kotlinx.serialization.json.Json
 import no.elhub.devxp.autochangelog.createMockResponse
 import no.elhub.devxp.autochangelog.features.git.GitCommit
+import java.time.LocalDate
 
 class JiraClientTest : FunSpec({
     val json = Json {

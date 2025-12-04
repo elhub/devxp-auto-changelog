@@ -8,10 +8,10 @@ import io.ktor.client.HttpClient
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
-import java.io.File
 import no.elhub.devxp.autochangelog.features.jira.JiraClient
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
 import picocli.CommandLine
+import java.io.File
 
 class AutoChangelogCliTest : FunSpec({
 
@@ -132,9 +132,12 @@ class AutoChangelogCliTest : FunSpec({
                 val gitRepo = createRepositoryFromCommits("versioned-git-repo", commits)
 
                 val exitCode = cmd.execute(
-                    "--working-dir", gitRepo.toString(),
-                    "--from-tag", "v1.0.0",
-                    "--to-tag", "v1.1.0"
+                    "--working-dir",
+                    gitRepo.toString(),
+                    "--from-tag",
+                    "v1.0.0",
+                    "--to-tag",
+                    "v1.1.0"
                 )
                 exitCode shouldBe 0
                 changelogFile.exists() shouldBe true
@@ -174,8 +177,10 @@ class AutoChangelogCliTest : FunSpec({
                 val gitRepo = createRepositoryFromCommits("to-tag-git-repo", commits)
 
                 val exitCode = cmd.execute(
-                    "--working-dir", gitRepo.toString(),
-                    "--to-tag", "v2.0.0"
+                    "--working-dir",
+                    gitRepo.toString(),
+                    "--to-tag",
+                    "v2.0.0"
                 )
                 exitCode shouldBe 0
                 changelogFile.exists() shouldBe true
@@ -210,8 +215,10 @@ class AutoChangelogCliTest : FunSpec({
                 val gitRepo = createRepositoryFromCommits("from-tag-git-repo", commits)
 
                 val exitCode = cmd.execute(
-                    "--working-dir", gitRepo.toString(),
-                    "--from-tag", "v1.0.0"
+                    "--working-dir",
+                    gitRepo.toString(),
+                    "--from-tag",
+                    "v1.0.0"
                 )
                 exitCode shouldBe 0
                 changelogFile.exists() shouldBe true

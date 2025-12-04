@@ -2,12 +2,12 @@ package no.elhub.devxp.autochangelog.features.writer
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.io.File
-import java.time.LocalDate
 import no.elhub.devxp.autochangelog.features.git.GitCommit
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
+import java.io.File
+import java.time.LocalDate
 
-class JsonWriterTest: FunSpec({
+class JsonWriterTest : FunSpec({
 
     test("formatJson correctly formats json content") {
         val commit1 = GitCommit(
@@ -61,7 +61,7 @@ class JsonWriterTest: FunSpec({
 
         val formattedJson = formatJson(myMap)
 
-        formattedJson shouldBe  """
+        formattedJson shouldBe """
             {
                 "generatedAt": "${LocalDate.now()}",
                 "issues": [

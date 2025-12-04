@@ -1,7 +1,5 @@
 package no.elhub.devxp.autochangelog.features.writer
 
-import java.io.File
-import java.time.LocalDate.now
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
@@ -11,6 +9,8 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import no.elhub.devxp.autochangelog.features.git.GitCommit
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
+import java.io.File
+import java.time.LocalDate.now
 
 fun formatJson(jiraIssues: Map<JiraIssue, List<GitCommit>>): String {
     val json = buildJsonObject {

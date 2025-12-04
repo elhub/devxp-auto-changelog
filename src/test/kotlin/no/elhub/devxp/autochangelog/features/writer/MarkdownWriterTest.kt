@@ -2,12 +2,12 @@ package no.elhub.devxp.autochangelog.features.writer
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.io.File
-import java.time.LocalDate
 import no.elhub.devxp.autochangelog.features.git.GitCommit
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
+import java.io.File
+import java.time.LocalDate
 
-class MarkdownWriterTest: FunSpec({
+class MarkdownWriterTest : FunSpec({
 
     test("formatMarkdown correctly formats markdown content") {
         val commit1 = GitCommit(
@@ -59,15 +59,9 @@ class MarkdownWriterTest: FunSpec({
             noIssue to listOf(commit3)
         )
 
-        myMap.forEach { (key, value) ->
-            println("Jira Issue: ${key.key} - ${key.title}")
-            value.forEach { commit ->
-                println("  Commit: ${commit.hash} - ${commit.title}")
-            }
-        }
         val formattedMarkDownWithoutDate = formatMarkdown(myMap).substringAfter("\n")
 
-        formattedMarkDownWithoutDate shouldBe  """
+        formattedMarkDownWithoutDate shouldBe """
             ## ABC-101: Implement feature X
 
             This is a description for ABC-101.

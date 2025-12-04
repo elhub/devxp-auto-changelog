@@ -1,6 +1,5 @@
 package no.elhub.devxp.autochangelog
 
-import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
 import no.elhub.devxp.autochangelog.features.git.GitCommit
 import no.elhub.devxp.autochangelog.features.git.extractJiraIssuesIdsFromCommits
@@ -15,11 +14,12 @@ import no.elhub.devxp.autochangelog.features.writer.writeJsonToFile
 import no.elhub.devxp.autochangelog.features.writer.writeMarkdownToFile
 import picocli.CommandLine
 import picocli.CommandLine.Command
+import kotlin.system.exitProcess
 
 @Command(
     name = "auto-changelog",
     mixinStandardHelpOptions = true,
-    description = ["TODO: WRITE ME"]
+    description = ["Generates changelogs based on JIRA issues for a given repository."]
 )
 class AutoChangelog(private val client: JiraClient) : Runnable {
     @CommandLine.Option(
@@ -55,8 +55,8 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
 
         val tags = getTagsFromRepo(gitRepository)
 
-        val maybeFromTag = tags.firstOrNull() { it.name == fromTagName }
-        val maybeToTag = tags.firstOrNull() { it.name == toTagName }
+        val maybeFromTag = tags.firstOrNull { it.name == fromTagName }
+        val maybeToTag = tags.firstOrNull { it.name == toTagName }
 
         val relevantCommits = getRelevantCommits(gitRepository, maybeFromTag, maybeToTag, tags)
 
@@ -72,7 +72,9 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
         val changelogName = "CHANGELOG"
         val changeLogFileSuffix = if (maybeFromTag != null || maybeToTag != null) {
             " [${maybeFromTag?.name ?: ""}-${maybeToTag?.name ?: ""}]"
-        } else ""
+        } else {
+            ""
+        }
 
         if (json) {
             val jsonContent = formatJson(jiraMap)
@@ -80,7 +82,6 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
         } else {
             val markdownContent = formatMarkdown(jiraMap)
             writeMarkdownToFile(markdownContent, "$changelogName$changeLogFileSuffix.md")
-
         }
     }
 }

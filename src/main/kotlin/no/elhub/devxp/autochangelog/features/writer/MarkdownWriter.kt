@@ -1,10 +1,9 @@
 package no.elhub.devxp.autochangelog.features.writer
 
-import java.io.File
-import java.time.LocalDate.now
 import no.elhub.devxp.autochangelog.features.git.GitCommit
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
-
+import java.io.File
+import java.time.LocalDate.now
 
 fun formatMarkdown(jiraIssues: Map<JiraIssue, List<GitCommit>>): String {
     val markdown = buildString {

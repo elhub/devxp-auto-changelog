@@ -1,14 +1,14 @@
 package no.elhub.devxp.autochangelog.features.git
 
-import java.io.File
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneOffset
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
+import java.io.File
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 fun initRepository(workingDir: String): Git {
     val workingDirectory = File(workingDir)
@@ -28,7 +28,6 @@ fun getTagsFromRepo(git: Git): List<GitTag> {
     val rawTags = git.tagList().call().toList()
     return toGitTags(rawTags)
 }
-
 
 fun toGitTags(tags: List<Ref>): List<GitTag> = tags.map {
     val commitId = it.peeledObjectId ?: it.objectId
