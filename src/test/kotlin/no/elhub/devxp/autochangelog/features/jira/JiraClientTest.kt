@@ -14,7 +14,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import no.elhub.devxp.autochangelog.createMockResponse
 import no.elhub.devxp.autochangelog.features.git.GitCommit
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 class JiraClientTest : FunSpec({
     val json = Json {
@@ -53,7 +53,7 @@ class JiraClientTest : FunSpec({
             hash = "abc123",
             title = "Implement feature X",
             body = "This commit implements feature X.\n\nRelated to ABC-101 and PROJ-ABC.",
-            date = LocalDate.of(2020, 1, 1),
+            commitTime = LocalDateTime.of(2020, 1, 1, 0, 0),
             tags = emptyList(),
             jiraIssues = listOf("ABC-101", "ABC-102")
         )
@@ -62,7 +62,7 @@ class JiraClientTest : FunSpec({
             hash = "def456",
             title = "Fix bug Y",
             body = "Fixes bug Y reported in XYZ-202.",
-            date = LocalDate.of(2020, 1, 2),
+            commitTime = LocalDateTime.of(2020, 1, 2, 0, 0),
             tags = emptyList(),
             jiraIssues = listOf("ABC-101")
         )
@@ -71,7 +71,7 @@ class JiraClientTest : FunSpec({
             hash = "ghi789",
             title = "Update documentation",
             body = "Updates the documentation. No related issue.",
-            date = LocalDate.of(2020, 1, 3),
+            commitTime = LocalDateTime.of(2020, 1, 3, 0, 0),
             tags = emptyList(),
             jiraIssues = emptyList()
         )

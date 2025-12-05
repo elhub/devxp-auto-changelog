@@ -15,7 +15,7 @@ import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.revwalk.RevWalk
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 class GitOperationsTest : FunSpec({
 
@@ -178,7 +178,7 @@ class GitOperationsTest : FunSpec({
             hash = "abc123",
             title = "Implement feature X",
             body = "This commit implements feature X.\n\nRelated to ABC-101 and PROJ-ABC.",
-            date = LocalDate.of(2020, 1, 1),
+            commitTime = LocalDateTime.of(2020, 1, 1, 0, 0),
             tags = emptyList(),
             jiraIssues = listOf("ABC-101", "ABC-102")
         )
@@ -187,7 +187,7 @@ class GitOperationsTest : FunSpec({
             hash = "def456",
             title = "Fix bug Y",
             body = "Fixes bug Y reported in XYZ-202.",
-            date = LocalDate.of(2020, 1, 2),
+            commitTime = LocalDateTime.of(2020, 1, 2, 0, 0),
             tags = emptyList(),
             jiraIssues = listOf("XYZ-202")
         )
@@ -196,7 +196,7 @@ class GitOperationsTest : FunSpec({
             hash = "ghi789",
             title = "Update documentation",
             body = "Updates the documentation. No related issue.",
-            date = LocalDate.of(2020, 1, 3),
+            commitTime = LocalDateTime.of(2020, 1, 3, 0, 0),
             tags = emptyList(),
             jiraIssues = emptyList()
         )
@@ -205,7 +205,7 @@ class GitOperationsTest : FunSpec({
             hash = "jkl012",
             title = "Refactor codebase",
             body = "Refactors the codebase for better readability. See ABC-101 for details.",
-            date = LocalDate.of(2020, 1, 4),
+            commitTime = LocalDateTime.of(2020, 1, 4, 0, 0),
             tags = emptyList(),
             jiraIssues = listOf("ABC-101")
         )

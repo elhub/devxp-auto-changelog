@@ -11,8 +11,6 @@ import no.elhub.devxp.autochangelog.features.git.GitCommit
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
 import java.io.File
 import java.time.LocalDate.now
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonPrimitive
 
 fun formatJson(jiraIssues: Map<JiraIssue, List<GitCommit>>): String {
     val json = buildJsonObject {
@@ -89,7 +87,7 @@ private fun GitCommit.toJsonObject(): JsonObject = buildJsonObject {
     put("hash", hash)
     put("title", title)
     put("body", body)
-    put("date", date.toString())
+    put("commitTime", commitTime.toString())
     putJsonArray("tags") {
         tags.forEach { tag ->
             addJsonObject {

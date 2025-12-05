@@ -91,7 +91,7 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
             val commitMap = jiraMap
                 .flatMap { (key, values) -> values.map { it to key } }
                 .groupBy({ it.first }, { it.second })
-                .toSortedMap((compareByDescending { it.date })) // TODO: Maybe do some datetime stuff here so commits are sorted properly
+                .toSortedMap((compareByDescending { it.commitTime }))
 
             if (json) {
                 val jsonContent = formatCommitJson(commitMap)

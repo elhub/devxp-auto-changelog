@@ -49,9 +49,9 @@ fun toGitCommits(rawCommits: List<RevCommit>, tags: List<GitTag>): List<GitCommi
             hash = it.name,
             title = it.shortMessage,
             body = it.fullMessage.split('\n').drop(1).joinToString("\n").trim(),
-            date = Instant.ofEpochSecond(it.commitTime.toLong())
+            commitTime = Instant.ofEpochSecond(it.commitTime.toLong())
                 .atZone(ZoneOffset.UTC)
-                .toLocalDate(),
+                .toLocalDateTime(),
             tags = tagCommits[it.name] ?: emptyList(),
             jiraIssues = extractJiraIssues(it.fullMessage)
         )

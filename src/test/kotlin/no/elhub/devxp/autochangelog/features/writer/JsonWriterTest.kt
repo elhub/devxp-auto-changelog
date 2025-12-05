@@ -6,6 +6,7 @@ import no.elhub.devxp.autochangelog.features.git.GitCommit
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
 import java.io.File
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class JsonWriterTest : FunSpec({
     context("formatting") {
@@ -13,7 +14,7 @@ class JsonWriterTest : FunSpec({
             hash = "abc123",
             title = "Implement feature X",
             body = "This commit implements feature X.\n\nRelated to ABC-101 and PROJ-ABC.",
-            date = LocalDate.of(2020, 1, 1),
+            commitTime = LocalDateTime.of(2020, 1, 1, 0, 0),
             tags = emptyList(),
             jiraIssues = listOf("ABC-101", "ABC-102")
         )
@@ -22,7 +23,7 @@ class JsonWriterTest : FunSpec({
             hash = "def456",
             title = "Fix bug Y",
             body = "Fixes bug Y reported in XYZ-202.",
-            date = LocalDate.of(2020, 1, 2),
+            commitTime = LocalDateTime.of(2020, 1, 2, 0, 0),
             tags = emptyList(),
             jiraIssues = listOf("ABC-101")
         )
@@ -31,7 +32,7 @@ class JsonWriterTest : FunSpec({
             hash = "ghi789",
             title = "Update documentation",
             body = "Updates the documentation. No related issue.",
-            date = LocalDate.of(2020, 1, 3),
+            commitTime = LocalDateTime.of(2020, 1, 3, 0, 0),
             tags = emptyList(),
             jiraIssues = emptyList()
         )
@@ -74,7 +75,7 @@ class JsonWriterTest : FunSpec({
                                 "hash": "abc123",
                                 "title": "Implement feature X",
                                 "body": "This commit implements feature X.\n\nRelated to ABC-101 and PROJ-ABC.",
-                                "date": "2020-01-01",
+                                "commitTime": "2020-01-01T00:00",
                                 "tags": [],
                                 "jiraIssues": [
                                     "ABC-101",
@@ -85,7 +86,7 @@ class JsonWriterTest : FunSpec({
                                 "hash": "def456",
                                 "title": "Fix bug Y",
                                 "body": "Fixes bug Y reported in XYZ-202.",
-                                "date": "2020-01-02",
+                                "commitTime": "2020-01-02T00:00",
                                 "tags": [],
                                 "jiraIssues": [
                                     "ABC-101"
@@ -102,7 +103,7 @@ class JsonWriterTest : FunSpec({
                                 "hash": "abc123",
                                 "title": "Implement feature X",
                                 "body": "This commit implements feature X.\n\nRelated to ABC-101 and PROJ-ABC.",
-                                "date": "2020-01-01",
+                                "commitTime": "2020-01-01T00:00",
                                 "tags": [],
                                 "jiraIssues": [
                                     "ABC-101",
@@ -117,7 +118,7 @@ class JsonWriterTest : FunSpec({
                         "hash": "ghi789",
                         "title": "Update documentation",
                         "body": "Updates the documentation. No related issue.",
-                        "date": "2020-01-03",
+                        "commitTime": "2020-01-03T00:00",
                         "tags": [],
                         "jiraIssues": []
                     }
@@ -142,7 +143,7 @@ class JsonWriterTest : FunSpec({
                             "hash": "abc123",
                             "title": "Implement feature X",
                             "body": "This commit implements feature X.\n\nRelated to ABC-101 and PROJ-ABC.",
-                            "date": "2020-01-01",
+                            "commitTime": "2020-01-01T00:00",
                             "tags": [],
                             "jiraIssues": [
                                 "ABC-101",
@@ -165,7 +166,7 @@ class JsonWriterTest : FunSpec({
                             "hash": "def456",
                             "title": "Fix bug Y",
                             "body": "Fixes bug Y reported in XYZ-202.",
-                            "date": "2020-01-02",
+                            "commitTime": "2020-01-02T00:00",
                             "tags": [],
                             "jiraIssues": [
                                 "ABC-101"
@@ -182,7 +183,7 @@ class JsonWriterTest : FunSpec({
                             "hash": "ghi789",
                             "title": "Update documentation",
                             "body": "Updates the documentation. No related issue.",
-                            "date": "2020-01-03",
+                            "commitTime": "2020-01-03T00:00",
                             "tags": [],
                             "jiraIssues": [],
                             "issues": []
@@ -210,7 +211,7 @@ class JsonWriterTest : FunSpec({
         test("Can write json content to a file") {
             val jsonContent = """
                 {
-                "generatedAt": "${'$'}{LocalDate.now()}",
+                "generatedAt": "${LocalDate.now()}",
                 "issues": [
                     {
                         "key": "ABC-101",
@@ -221,7 +222,7 @@ class JsonWriterTest : FunSpec({
                                 "hash": "abc123",
                                 "title": "Implement feature X",
                                 "body": "This commit implements feature X.\n\nRelated to ABC-101 and PROJ-ABC.",
-                                "date": "2020-01-01",
+                                "commitTime": "2020-01-01T00:00",
                                 "tags": [],
                                 "jiraIssues": [
                                     "ABC-101",
@@ -232,7 +233,7 @@ class JsonWriterTest : FunSpec({
                                 "hash": "def456",
                                 "title": "Fix bug Y",
                                 "body": "Fixes bug Y reported in XYZ-202.",
-                                "date": "2020-01-02",
+                                "commitTime": "2020-01-02T00:00",
                                 "tags": [],
                                 "jiraIssues": [
                                     "ABC-101"
@@ -246,7 +247,7 @@ class JsonWriterTest : FunSpec({
                         "hash": "ghi789",
                         "title": "Update documentation",
                         "body": "Updates the documentation. No related issue.",
-                        "date": "2020-01-03",
+                        "commitTime": "2020-01-03T00:00",
                         "tags": [],
                         "jiraIssues": []
                     }
