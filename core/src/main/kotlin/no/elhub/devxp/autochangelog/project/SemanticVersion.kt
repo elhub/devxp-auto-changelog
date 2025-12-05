@@ -26,7 +26,7 @@ class SemanticVersion : Comparable<SemanticVersion>, Version {
 
     constructor (versionString: String) {
         val matcher = versionPattern.matcher(versionString)
-        if (!matcher.matches()) throw IllegalArgumentException("Version '$versionString' is not compliant with semantic release rules")
+        require(matcher.matches()) { "Version '$versionString' is not compliant with semantic release rules" }
         major = matcher.group(1).toInt()
         minor = matcher.group(2).toInt()
         patch = matcher.group(3).toInt()
@@ -54,21 +54,26 @@ class SemanticVersion : Comparable<SemanticVersion>, Version {
     }
 
     override fun compareTo(other: SemanticVersion): Int {
-        when {
+        return when {
             major != other.major -> return major - other.major
+
             minor != other.minor -> return minor - other.minor
+
             patch != other.patch -> return patch - other.patch
+
             preReleaseId != other.preReleaseId -> {
                 if (preReleaseId == null) return 1
                 if (other.preReleaseId == null) return -1
-                return preReleaseId.compareTo(other.preReleaseId)
+                preReleaseId.compareTo(other.preReleaseId)
             }
+
             preRelease != other.preRelease -> {
                 if (preRelease == null) return 1
                 if (other.preRelease == null) return -1
-                return preRelease - other.preRelease
+                preRelease - other.preRelease
             }
-            else -> return 0
+
+            else -> 0
         }
     }
 
