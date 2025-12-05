@@ -15,6 +15,8 @@ import no.elhub.devxp.autochangelog.features.writer.writeMarkdownToFile
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import kotlin.system.exitProcess
+import no.elhub.devxp.autochangelog.features.writer.formatCommitJson
+import no.elhub.devxp.autochangelog.features.writer.formatCommitMarkdown
 
 @Command(
     name = "auto-changelog",
@@ -50,6 +52,14 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
     )
     var json: Boolean = false
 
+    @CommandLine.Option(
+        names = ["--group-by-commit"],
+        required = false,
+        description = ["Whether to group the changelog entries by commit instead of JIRA issue"]
+    )
+    var commitGrouping: Boolean = false
+
+
     override fun run() {
         val gitRepository = initRepository(workingDir)
 
@@ -76,12 +86,29 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
             ""
         }
 
-        if (json) {
-            val jsonContent = formatJson(jiraMap)
-            writeJsonToFile(jsonContent, "$changelogName$changeLogFileSuffix.json")
+        if (commitGrouping) {
+            // Reverse the mapping to be GitCommit -> List<JiraIssue>
+            val commitMap = jiraMap
+                .flatMap { (key, values) -> values.map { it to key } }
+                .groupBy({ it.first }, { it.second })
+                .toSortedMap((compareByDescending { it.date })) // TODO: Maybe do some datetime stuff here so commits are sorted properly
+
+            if (json) {
+                val jsonContent = formatCommitJson(commitMap)
+                writeJsonToFile(jsonContent, "$changelogName$changeLogFileSuffix.json")
+            } else {
+                val markdownContent = formatCommitMarkdown(commitMap)
+                writeMarkdownToFile(markdownContent, "$changelogName$changeLogFileSuffix.md")
+            }
+
         } else {
-            val markdownContent = formatMarkdown(jiraMap)
-            writeMarkdownToFile(markdownContent, "$changelogName$changeLogFileSuffix.md")
+            if (json) {
+                val jsonContent = formatJson(jiraMap)
+                writeJsonToFile(jsonContent, "$changelogName$changeLogFileSuffix.json")
+            } else {
+                val markdownContent = formatMarkdown(jiraMap)
+                writeMarkdownToFile(markdownContent, "$changelogName$changeLogFileSuffix.md")
+            }
         }
     }
 }

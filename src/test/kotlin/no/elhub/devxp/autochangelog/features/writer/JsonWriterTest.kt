@@ -8,8 +8,7 @@ import java.io.File
 import java.time.LocalDate
 
 class JsonWriterTest : FunSpec({
-
-    test("formatJson correctly formats json content") {
+    context("formatting") {
         val commit1 = GitCommit(
             hash = "abc123",
             title = "Implement feature X",
@@ -59,9 +58,10 @@ class JsonWriterTest : FunSpec({
             noIssue to listOf(commit3)
         )
 
-        val formattedJson = formatJson(myMap)
+        test("formatJson correctly formats json content") {
+            val formattedJson = formatJson(myMap)
 
-        formattedJson shouldBe """
+            formattedJson shouldBe """
             {
                 "generatedAt": "${LocalDate.now()}",
                 "issues": [
@@ -124,6 +124,73 @@ class JsonWriterTest : FunSpec({
                 ]
             }
         """.trimIndent()
+        }
+
+        test("formatCommitJson correctly formats json content grouped by commit") {
+            val commitMap = myMap
+                .flatMap { (key, values) -> values.map { it to key } }
+                .groupBy({ it.first }, { it.second })
+
+            val formattedJson = formatCommitJson(commitMap)
+            println(formattedJson)
+
+            formattedJson shouldBe """
+                {
+                    "generatedAt": "${LocalDate.now()}",
+                    "commits": [
+                        {
+                            "hash": "abc123",
+                            "title": "Implement feature X",
+                            "body": "This commit implements feature X.\n\nRelated to ABC-101 and PROJ-ABC.",
+                            "date": "2020-01-01",
+                            "tags": [],
+                            "jiraIssues": [
+                                "ABC-101",
+                                "ABC-102"
+                            ],
+                            "issues": [
+                                {
+                                    "key": "ABC-101",
+                                    "title": "Implement feature X",
+                                    "body": "This is a description for ABC-101."
+                                },
+                                {
+                                    "key": "ABC-102",
+                                    "title": "Fix bug Y",
+                                    "body": "This is a description for ABC-102."
+                                }
+                            ]
+                        },
+                        {
+                            "hash": "def456",
+                            "title": "Fix bug Y",
+                            "body": "Fixes bug Y reported in XYZ-202.",
+                            "date": "2020-01-02",
+                            "tags": [],
+                            "jiraIssues": [
+                                "ABC-101"
+                            ],
+                            "issues": [
+                                {
+                                    "key": "ABC-101",
+                                    "title": "Implement feature X",
+                                    "body": "This is a description for ABC-101."
+                                }
+                            ]
+                        },
+                        {
+                            "hash": "ghi789",
+                            "title": "Update documentation",
+                            "body": "Updates the documentation. No related issue.",
+                            "date": "2020-01-03",
+                            "tags": [],
+                            "jiraIssues": [],
+                            "issues": []
+                        }
+                    ]
+                }
+        """.trimIndent()
+        }
     }
 
     context("writeJsonToFile") {

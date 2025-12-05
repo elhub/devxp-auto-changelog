@@ -8,8 +8,7 @@ import java.io.File
 import java.time.LocalDate
 
 class MarkdownWriterTest : FunSpec({
-
-    test("formatMarkdown correctly formats markdown content") {
+    context("formatting") {
         val commit1 = GitCommit(
             hash = "abc123",
             title = "Implement feature X",
@@ -59,31 +58,46 @@ class MarkdownWriterTest : FunSpec({
             noIssue to listOf(commit3)
         )
 
-        val formattedMarkDownWithoutDate = formatMarkdown(myMap).substringAfter("\n")
+        test("formatMarkdown correctly formats markdown content") {
+            val formattedMarkDownWithoutDate = formatMarkdown(myMap).substringAfter("\n")
 
-        formattedMarkDownWithoutDate shouldBe """
-            ## ABC-101: Implement feature X
+            formattedMarkDownWithoutDate shouldBe """
+                ## ABC-101: Implement feature X
+                This is a description for ABC-101.
+                ### Related Commits
+                - `abc123`: Implement feature X
+                - `def456`: Fix bug Y
 
-            This is a description for ABC-101.
+                ## ABC-102: Fix bug Y
+                This is a description for ABC-102.
+                ### Related Commits
+                - `abc123`: Implement feature X
 
-            ### Related Commits
+                ## Commits without associated JIRA issues
+                - `ghi789`: Update documentation
 
-            - `abc123`: Implement feature X
-            - `def456`: Fix bug Y
+            """.trimIndent()
+        }
 
-            ## ABC-102: Fix bug Y
+        test("formatCommitMarkdown correctly formats commit grouped markdown content") {
+            val commitMap = myMap
+                .flatMap { (key, values) -> values.map { it to key } }
+                .groupBy({ it.first }, { it.second })
+                .toSortedMap((compareByDescending { it.date }))
+            val formattedMarkDownWithoutDate = formatCommitMarkdown(commitMap).substringAfter("\n")
 
-            This is a description for ABC-102.
+            formattedMarkDownWithoutDate shouldBe """
+                ## `ghi789` **Update documentation**
 
-            ### Related Commits
+                ## `def456` **Fix bug Y**
+                - ABC-101: Implement feature X
 
-            - `abc123`: Implement feature X
+                ## `abc123` **Implement feature X**
+                - ABC-101: Implement feature X
+                - ABC-102: Fix bug Y
 
-            ## Commits without associated JIRA issues
-
-            - `ghi789`: Update documentation
-
-        """.trimIndent()
+            """.trimIndent()
+        }
     }
 
     context("writeMarkdownToFile") {

@@ -11,6 +11,8 @@ import no.elhub.devxp.autochangelog.features.git.GitCommit
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
 import java.io.File
 import java.time.LocalDate.now
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonPrimitive
 
 fun formatJson(jiraIssues: Map<JiraIssue, List<GitCommit>>): String {
     val json = buildJsonObject {
@@ -43,6 +45,42 @@ fun formatJson(jiraIssues: Map<JiraIssue, List<GitCommit>>): String {
             }
         }
     }
+    val prettyJson = Json { prettyPrint = true }
+    return prettyJson.encodeToString(json)
+}
+
+fun formatCommitJson(commitsMap: Map<GitCommit, List<JiraIssue>>): String {
+    val json = buildJsonObject {
+        put("generatedAt", now().toString())
+
+        putJsonArray("commits") {
+            commitsMap.forEach { (commit, jiraIssues) ->
+                addJsonObject {
+                    val commitJson = commit.toJsonObject()
+                    commitJson.forEach { key, value ->
+                        put(key, value)
+                    }
+
+                    putJsonArray("tags") {
+                        commit.tags.forEach { tag -> add(tag.name) }
+                    }
+
+                    putJsonArray("issues") {
+                        if (jiraIssues.firstOrNull()?.key != "NO-JIRA") {
+                            jiraIssues.forEach { jiraIssue ->
+                                addJsonObject {
+                                    put("key", jiraIssue.key)
+                                    put("title", jiraIssue.title)
+                                    put("body", jiraIssue.body)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     val prettyJson = Json { prettyPrint = true }
     return prettyJson.encodeToString(json)
 }

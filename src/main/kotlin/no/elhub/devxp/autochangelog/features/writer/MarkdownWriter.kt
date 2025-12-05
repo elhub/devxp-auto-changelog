@@ -15,11 +15,8 @@ fun formatMarkdown(jiraIssues: Map<JiraIssue, List<GitCommit>>): String {
             .filterNot { it.key.key == "NO-JIRA" }
             .forEach { (jiraIssue, commits) ->
                 appendLine("## ${jiraIssue.key}: ${jiraIssue.title}")
-                appendLine()
                 appendLine(jiraIssue.body)
-                appendLine()
                 appendLine("### Related Commits")
-                appendLine()
                 commits.forEach { commit ->
                     appendLine("- `${commit.hash}`: ${commit.title}")
                 }
@@ -28,12 +25,32 @@ fun formatMarkdown(jiraIssues: Map<JiraIssue, List<GitCommit>>): String {
 
         if (noJiraEntry.isNotEmpty()) {
             appendLine("## Commits without associated JIRA issues")
-            appendLine()
             noJiraEntry.first().value.forEach { commit ->
                 appendLine("- `${commit.hash}`: ${commit.title}")
             }
         }
     }
+
+    return markdown
+}
+
+fun formatCommitMarkdown(commitsMap: Map<GitCommit, List<JiraIssue>>): String {
+    val markdown = buildString {
+        appendLine("Generated at ${now()}")
+
+        commitsMap.forEach { (commit, jiraIssues) ->
+            if (commit.tags.isNotEmpty()) {
+                appendLine("# ${commit.tags.joinToString(", ") { it.name }}")
+            }
+            appendLine("## `${commit.hash}` **${commit.title}**")
+            if (jiraIssues.first().key != "NO-JIRA") {
+                jiraIssues.forEach { jiraIssue ->
+                    appendLine("- ${jiraIssue.key}: ${jiraIssue.title}")
+                }
+            }
+            appendLine()
+        }
+    }.trimEnd().plus("\n") // Ensure exactly one newline
 
     return markdown
 }
