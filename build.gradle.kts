@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.elhub.gradle.plugin.application)
     alias(libs.plugins.kotlin.plugin.serialization)
-    alias(libs.plugins.ktor.plugin)
 }
 
 dependencies {
