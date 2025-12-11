@@ -36,7 +36,7 @@ To build a local version, run:
 #### ⌨️ CLI
 
 ```sh
-java -jar auto-changelog-cli.jar --help
+java -jar devxp-auto-changelog.jar --help
 ```
 
 The following options are available for the CLI:

@@ -2,7 +2,7 @@
 format.version = "1.1"
 
 [versions]
-elhub-gradle = "0.9.1"
+elhub-gradle = "0.9.5"
 jgit = "7.4.0.202509020913-r"
 kotlinx-serialization = "1.9.0"
 kotest = "6.0.4"
