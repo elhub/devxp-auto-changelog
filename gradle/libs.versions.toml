@@ -14,7 +14,6 @@ picocli = "4.7.7"
 [plugins]
 elhub-gradle-plugin-application = { id = "no.elhub.devxp.kotlin-application", version.ref = "elhub-gradle" }
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinx-serialization" }
-ktor-plugin = { id = "io.ktor.plugin", version.ref = "ktor" }
 
 [libraries]
 cli-picocli = { group = "info.picocli", name = "picocli", version.ref = "picocli" }
