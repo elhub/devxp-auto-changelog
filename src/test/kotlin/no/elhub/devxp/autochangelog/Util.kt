@@ -2,8 +2,11 @@ package no.elhub.devxp.autochangelog
 
 import org.eclipse.jgit.api.InitCommand
 import java.nio.file.Path
+import java.time.Instant
+import java.time.ZoneId
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
+import org.eclipse.jgit.lib.PersonIdent
 
 fun createMockResponse(key: String, title: String, body: String): String = """
         {
@@ -41,12 +44,22 @@ data class TestCommit(
 
 fun createRepositoryFromCommits(name: String, commits: List<TestCommit>): Path {
     val tempDir = createTempDirectory(name)
+    val baseTime = Instant.now()
+
     InitCommand().setDirectory(tempDir.toFile()).call().use { git ->
-        commits.forEach { commit ->
+        commits.forEachIndexed { index, commit ->
             val f = tempDir.resolve(name)
             f.writeText(commit.content)
             git.add().addFilepattern(name).call()
-            val c = git.commit().setMessage(commit.message).call()
+
+            // Calculate timestamp: use explicit offset if provided, otherwise use index
+            val timestamp = baseTime.plusSeconds(index.toLong())
+
+            val c = git.commit()
+                .setMessage(commit.message)
+                .setCommitter(PersonIdent("Test User", "test@example.com", timestamp, ZoneId.systemDefault()))
+                .call()
+
             if (commit.tags.isNotEmpty()) {
                 commit.tags.forEach { tag ->
                     git

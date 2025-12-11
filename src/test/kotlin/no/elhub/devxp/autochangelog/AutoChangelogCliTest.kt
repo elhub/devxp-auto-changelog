@@ -1,5 +1,6 @@
 package no.elhub.devxp.autochangelog
 
+import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -72,8 +73,10 @@ class AutoChangelogCliTest : FunSpec({
             exitCode shouldBe 0
             outputChangelogFile.exists() shouldBe true
             val content = outputChangelogFile.readText()
-            content shouldContain "Initial commit"
-            content shouldContain "Add main function"
+            assertSoftly {
+                content shouldContain "Initial commit"
+                content shouldContain "Add main function"
+            }
         }
 
         test("should generate changelog with mocked JIRA issues") {
@@ -89,8 +92,10 @@ class AutoChangelogCliTest : FunSpec({
             exitCode shouldBe 0
             outputChangelogFile.exists() shouldBe true
             val content = outputChangelogFile.readText()
-            content shouldContain "Mocked JIRA Issue"
-            content shouldContain "Implement feature TEST-123"
+            assertSoftly {
+                content shouldContain "Mocked JIRA Issue"
+                content shouldContain "Implement feature TEST-123"
+            }
         }
 
         test("should generate changelog with no JIRA issues") {
@@ -106,8 +111,10 @@ class AutoChangelogCliTest : FunSpec({
             exitCode shouldBe 0
             outputChangelogFile.exists() shouldBe true
             val content = outputChangelogFile.readText()
-            content shouldContain "Commits without associated JIRA issues"
-            content shouldContain "Implement no JIRA feature"
+            assertSoftly {
+                content shouldContain "Commits without associated JIRA issues"
+                content shouldContain "Implement no JIRA feature"
+            }
         }
 
         test("should allow --from-tag and --to-tag options") {
@@ -142,8 +149,10 @@ class AutoChangelogCliTest : FunSpec({
                 exitCode shouldBe 0
                 changelogFile.exists() shouldBe true
                 val content = changelogFile.readText()
-                content shouldContain "Add another versioned feature"
-                content shouldNotContain "Add versioned feature"
+                assertSoftly {
+                    content shouldContain "Add another versioned feature"
+                    content shouldNotContain "Add versioned feature"
+                }
             } finally {
                 if (changelogFile.exists()) {
                     changelogFile.delete()
@@ -185,9 +194,11 @@ class AutoChangelogCliTest : FunSpec({
                 exitCode shouldBe 0
                 changelogFile.exists() shouldBe true
                 val content = changelogFile.readText()
-                content shouldContain "Add pre to-tag feature"
-                content shouldContain "Add first tag"
-                content shouldContain "Add to-tag feature"
+                assertSoftly {
+                    content shouldContain "Add pre to-tag feature"
+                    content shouldContain "Add first tag"
+                    content shouldContain "Add to-tag feature"
+                }
             } finally {
                 if (changelogFile.exists()) {
                     changelogFile.delete()
@@ -229,6 +240,37 @@ class AutoChangelogCliTest : FunSpec({
                 if (changelogFile.exists()) {
                     changelogFile.delete()
                 }
+            }
+        }
+
+        test("should group on commits if '--group-by-commit' flag is set ") {
+            val commits = listOf(
+                TestCommit(
+                    fileName = "NoJira.kt",
+                    content = "fun noJira() { println(\"No JIRA!\") }",
+                    message = "Implement no JIRA feature",
+                ),
+                TestCommit(
+                    fileName = "SomeJira.kt",
+                    content = "fun someJira() { println(\"I'm JIRAing here!\") }",
+                    message = "Implement TDX-123",
+                ),
+                TestCommit(
+                    fileName = "README.md",
+                    content = "# Just a readme",
+                    message = "Add README",
+                ),
+            )
+            val gitRepo = createRepositoryFromCommits("git-repo", commits)
+            val exitCode = cmd.execute("--working-dir", gitRepo.toString(), "--group-by-commit")
+            exitCode shouldBe 0
+            outputChangelogFile.exists() shouldBe true
+            val content = outputChangelogFile.readText()
+            assertSoftly {
+                content shouldContain "Implement TDX-123"
+                content shouldContain "Implement no JIRA feature"
+                content shouldContain "Add README"
+                content.shouldContain("- TEST-123: Mocked JIRA Issue")
             }
         }
     }
