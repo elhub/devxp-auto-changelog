@@ -96,9 +96,6 @@ private fun GitCommit.toJsonObject(): JsonObject = buildJsonObject {
             }
         }
     }
-    putJsonArray("jiraIssues") {
-        jiraIssues.forEach { add(it) }
-    }
 }
 
 fun writeJsonToFile(json: String, filePath: String) {
