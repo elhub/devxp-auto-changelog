@@ -76,7 +76,7 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
         // Populate the map with actual JIRA issue details
         val jiraMap: Map<JiraIssue, List<GitCommit>>
         runBlocking {
-            jiraMap = client.populateJiraMap(jiraIssueIds)
+            jiraMap = client.getIssueDetails(jiraIssueIds)
         }
 
         val changelogName = "CHANGELOG"

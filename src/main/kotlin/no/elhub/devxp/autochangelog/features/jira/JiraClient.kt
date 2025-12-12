@@ -45,7 +45,7 @@ class JiraClient(
      * @param jiraMap A map where the key is the JIRA ID [String] and the value is a list of [GitCommit]s associated with that issue.
      * @return A map where the key is a [JiraIssue] and the value is a list of [GitCommit]s associated with that issue.
      */
-    suspend fun populateJiraMap(
+    suspend fun getIssueDetails(
         jiraMap: Map<String, List<GitCommit>>,
     ): Map<JiraIssue, List<GitCommit>> = jiraMap.mapKeys { (jiraIssueId, _) ->
         if (jiraIssueId == "NO-JIRA") {

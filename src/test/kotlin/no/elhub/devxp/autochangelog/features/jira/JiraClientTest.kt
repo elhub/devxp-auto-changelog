@@ -48,7 +48,7 @@ class JiraClientTest : FunSpec({
         result.body shouldBe "Dummy Body"
     }
 
-    test("populateJiraMap should populate JiraIssue details in the map") {
+    test("getIssueDetails should populate JiraIssue details in the map") {
         val commit1 = GitCommit(
             hash = "abc123",
             title = "Implement feature X",
@@ -82,7 +82,7 @@ class JiraClientTest : FunSpec({
             "NO-JIRA" to listOf(commit3)
         )
 
-        val populatedMap = client.populateJiraMap(myMap)
+        val populatedMap = client.getIssueDetails(myMap)
         populatedMap.size shouldBe 3
 
         populatedMap.keys.map { it.key }.toSet() shouldBe setOf(
