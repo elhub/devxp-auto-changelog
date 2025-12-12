@@ -1,11 +1,8 @@
 package no.elhub.devxp.autochangelog.git
 
-import java.io.File
 import java.io.IOException
 
 fun bareClone(repoUrl: String, targetDirectory: String) {
-    val directory = File(targetDirectory)
-
     try {
         // Do a bare clone of the repository
         val process = ProcessBuilder("git", "clone", "--bare", "--filter=blob:none", repoUrl, targetDirectory)

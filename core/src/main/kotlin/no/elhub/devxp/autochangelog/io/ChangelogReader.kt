@@ -7,7 +7,6 @@ import java.io.BufferedReader
 import java.io.Reader
 import java.lang.StringBuilder
 import java.nio.file.Path
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.bufferedReader
 
 class ChangelogReader {
@@ -18,7 +17,6 @@ class ChangelogReader {
      *
      * @param changelogPath path to the changelog file
      */
-    @OptIn(ExperimentalPathApi::class)
     constructor(changelogPath: Path) {
         changelogContent = changelogPath.bufferedReader()
     }
