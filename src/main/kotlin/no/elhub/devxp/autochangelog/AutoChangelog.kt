@@ -2,12 +2,15 @@ package no.elhub.devxp.autochangelog
 
 import kotlinx.coroutines.runBlocking
 import no.elhub.devxp.autochangelog.features.git.GitCommit
+import no.elhub.devxp.autochangelog.features.git.extractCurrentAndPreviousTag
 import no.elhub.devxp.autochangelog.features.git.extractJiraIssuesIdsFromCommits
 import no.elhub.devxp.autochangelog.features.git.getRelevantCommits
 import no.elhub.devxp.autochangelog.features.git.getTagsFromRepo
 import no.elhub.devxp.autochangelog.features.git.initRepository
 import no.elhub.devxp.autochangelog.features.jira.JiraClient
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
+import no.elhub.devxp.autochangelog.features.writer.formatCommitJson
+import no.elhub.devxp.autochangelog.features.writer.formatCommitMarkdown
 import no.elhub.devxp.autochangelog.features.writer.formatJson
 import no.elhub.devxp.autochangelog.features.writer.formatMarkdown
 import no.elhub.devxp.autochangelog.features.writer.writeJsonToFile
@@ -15,8 +18,6 @@ import no.elhub.devxp.autochangelog.features.writer.writeMarkdownToFile
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import kotlin.system.exitProcess
-import no.elhub.devxp.autochangelog.features.writer.formatCommitJson
-import no.elhub.devxp.autochangelog.features.writer.formatCommitMarkdown
 
 @Command(
     name = "auto-changelog",
@@ -30,6 +31,20 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
         description = ["The directory in which to run the changelog (mainly for testing)"]
     )
     var workingDir: String = "."
+
+    @CommandLine.Option(
+        names = ["--for-tag", "--for"],
+        required = false,
+        description = ["Generate a changelog for a specific tag, comparing it to the previous tag"]
+    )
+    var forTagName: String? = null
+
+    @CommandLine.Option(
+        names = ["--tag-regex"],
+        required = false,
+        description = ["Regex to compare tags when looking for the previous tag. Only used if --for-tag is set."]
+    )
+    var tagRegex: String? = null
 
     @CommandLine.Option(
         names = ["--from-tag", "--from"],
@@ -59,14 +74,17 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
     )
     var commitGrouping: Boolean = false
 
-
     override fun run() {
         val gitRepository = initRepository(workingDir)
 
         val tags = getTagsFromRepo(gitRepository)
 
-        val maybeFromTag = tags.firstOrNull { it.name == fromTagName }
-        val maybeToTag = tags.firstOrNull { it.name == toTagName }
+        val (maybeFromTag, maybeToTag) =
+            if (forTagName != null) {
+                extractCurrentAndPreviousTag(tags, forTagName, tagRegex)
+            } else {
+                tags.firstOrNull { it.name == fromTagName } to tags.firstOrNull { it.name == toTagName }
+            }
 
         val relevantCommits = getRelevantCommits(gitRepository, maybeFromTag, maybeToTag, tags)
 
@@ -100,7 +118,6 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
                 val markdownContent = formatCommitMarkdown(commitMap)
                 writeMarkdownToFile(markdownContent, "$changelogName$changeLogFileSuffix.md")
             }
-
         } else {
             if (json) {
                 val jsonContent = formatJson(jiraMap)

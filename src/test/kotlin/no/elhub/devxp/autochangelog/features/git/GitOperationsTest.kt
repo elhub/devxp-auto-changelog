@@ -106,6 +106,30 @@ class GitOperationsTest : FunSpec({
         }
     }
 
+    test("extractCurrentAndPreviousTag correctly finds tags without regex") {
+        val tag1 = GitTag("v1.0.0", "abc1234")
+        val tag2 = GitTag("v1.1.0", "def5678")
+        val tag3 = GitTag("v2.0.0", "ghi9012")
+        val tags = listOf(tag1, tag2, tag3)
+
+        val (currentTag, previousTag) = extractCurrentAndPreviousTag(tags, "v2.0.0", null)
+
+        currentTag shouldBe tag3
+        previousTag shouldBe tag2
+    }
+
+    test("extractCurrentAndPreviousTag correctly finds tags with regex") {
+        val tag1 = GitTag("deployed-v1.0.0", "abc1234")
+        val tag2 = GitTag("v1.1.0", "def5678")
+        val tag3 = GitTag("deployed-v2.0.0", "ghi9012")
+        val tags = listOf(tag1, tag2, tag3)
+
+        val (currentTag, previousTag) = extractCurrentAndPreviousTag(tags, "deployed-v2.0.0", "^deployed-.*$")
+
+        currentTag shouldBe tag3
+        previousTag shouldBe tag1
+    }
+
     context("getCommitsBetweenTags") {
         val commit1 = fakeRevCommit("First commit", commitTime = 1600000001)
         val commit2 = fakeRevCommit("Second commit", commitTime = 1600000002)
