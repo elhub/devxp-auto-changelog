@@ -30,17 +30,17 @@ class AutoChangelogCliTest : FunSpec({
     val outputChangelogFile = File("CHANGELOG.md")
 
     // Cleanup after tests
-//    afterEach {
-//        if (outputChangelogFile.exists()) {
-//            outputChangelogFile.delete()
-//        }
-//    }
+    afterEach {
+        if (outputChangelogFile.exists()) {
+            outputChangelogFile.delete()
+        }
+    }
 
-//    afterSpec {
-//        if (outputChangelogFile.exists()) {
-//            outputChangelogFile.delete()
-//        }
-//    }
+    afterSpec {
+        if (outputChangelogFile.exists()) {
+            outputChangelogFile.delete()
+        }
+    }
 
     context("AutoChangelog application") {
         test("should fail when run in a non-git directory") {
