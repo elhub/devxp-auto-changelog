@@ -243,6 +243,35 @@ class AutoChangelogCliTest : FunSpec({
             }
         }
 
+        test("Should create changelog with custom name when '--changelog-name' is provided") {
+            val customName = "MY_CUSTOM_CHANGELOG"
+            val commits = listOf(
+                TestCommit(
+                    fileName = "CustomName.kt",
+                    content = "fun customName() { println(\"Custom Name!\") }",
+                    message = "Add custom name feature",
+                )
+            )
+            val gitRepo = createRepositoryFromCommits("custom-name-git-repo", commits)
+            val exitCode = cmd.execute(
+                "--working-dir",
+                gitRepo.toString(),
+                "--changelog-name",
+                customName
+            )
+            exitCode shouldBe 0
+            val customChangelogFile = File("$customName.md")
+            try {
+                customChangelogFile.exists() shouldBe true
+                val content = customChangelogFile.readText()
+                content shouldContain "Add custom name feature"
+            } finally {
+                if (customChangelogFile.exists()) {
+                    customChangelogFile.delete()
+                }
+            }
+        }
+
         test("should group on commits if '--group-by-commit' flag is set ") {
             val commits = listOf(
                 TestCommit(
