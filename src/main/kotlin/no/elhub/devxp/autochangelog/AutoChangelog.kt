@@ -33,6 +33,13 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
     var workingDir: String = "."
 
     @CommandLine.Option(
+        names = ["--changelog-name"],
+        required = false,
+        description = ["Overrides the name of the generated changelog. Relevant file extension is still added."]
+    )
+    var customChangelogName: String? = null
+
+    @CommandLine.Option(
         names = ["--for-tag", "--for"],
         required = false,
         description = ["Generate a changelog for a specific tag, comparing it to the previous tag"]
@@ -97,11 +104,13 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
             jiraMap = client.getIssueDetails(jiraIssueIds)
         }
 
-        val changelogName = "CHANGELOG"
-        val changeLogFileSuffix = if (maybeFromTag != null || maybeToTag != null) {
-            " [${maybeFromTag?.name ?: ""}-${maybeToTag?.name ?: ""}]"
-        } else {
-            ""
+        val changelogName = customChangelogName ?: run {
+            val tagsSuffix = if (maybeFromTag != null || maybeToTag != null) {
+                " [${maybeFromTag?.name ?: ""}-${maybeToTag?.name ?: ""}]"
+            } else {
+                ""
+            }
+            "CHANGELOG$tagsSuffix"
         }
 
         if (commitGrouping) {
@@ -113,18 +122,18 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
 
             if (json) {
                 val jsonContent = formatCommitJson(commitMap)
-                writeJsonToFile(jsonContent, "$changelogName$changeLogFileSuffix.json")
+                writeJsonToFile(jsonContent, "$changelogName.json")
             } else {
                 val markdownContent = formatCommitMarkdown(commitMap)
-                writeMarkdownToFile(markdownContent, "$changelogName$changeLogFileSuffix.md")
+                writeMarkdownToFile(markdownContent, "$changelogName.md")
             }
         } else {
             if (json) {
                 val jsonContent = formatJson(jiraMap)
-                writeJsonToFile(jsonContent, "$changelogName$changeLogFileSuffix.json")
+                writeJsonToFile(jsonContent, "$changelogName.json")
             } else {
                 val markdownContent = formatMarkdown(jiraMap)
-                writeMarkdownToFile(markdownContent, "$changelogName$changeLogFileSuffix.md")
+                writeMarkdownToFile(markdownContent, "$changelogName.md")
             }
         }
     }
