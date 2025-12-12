@@ -32,7 +32,7 @@ fun toGitTags(tags: List<Ref>): List<GitTag> = tags.map {
     val commitId = it.peeledObjectId ?: it.objectId
     GitTag(
         name = it.name.replace("refs/tags/", ""),
-        commitHash = commitId.name
+        commitHash = commitId.name.take(7)
     )
 }
 
@@ -46,13 +46,13 @@ fun toGitCommits(rawCommits: List<RevCommit>, tags: List<GitTag>): List<GitCommi
     val tagCommits = tags.groupBy { it.commitHash }
     return rawCommits.map {
         GitCommit(
-            hash = it.name,
+            hash = it.name.take(7),
             title = it.shortMessage,
             body = it.fullMessage.split('\n').drop(1).joinToString("\n").trim(),
             commitTime = Instant.ofEpochSecond(it.commitTime.toLong())
                 .atZone(ZoneOffset.UTC)
                 .toLocalDateTime(),
-            tags = tagCommits[it.name] ?: emptyList(),
+            tags = tagCommits[it.name.take(7)] ?: emptyList(),
             jiraIssues = extractJiraIssues(it.fullMessage)
         )
     }

@@ -84,6 +84,7 @@ class GitOperationsTest : FunSpec({
 
         val gitTags = toGitTags(listOf(tag1, tag2))
         val gitCommits = toGitCommits(listOf(commit1), gitTags)
+        gitTags.forEach { println(it) }
 
         gitCommits.size shouldBe 1
         val releaseCommit = gitCommits.first()
@@ -101,7 +102,7 @@ class GitOperationsTest : FunSpec({
         val gitTag = gitTags.first()
         assertSoftly(gitTag) {
             name shouldBe "v1.0.0"
-            commitHash shouldBe commit1.name
+            commitHash shouldBe commit1.name.take(7)
         }
     }
 
