@@ -2,7 +2,6 @@ package no.elhub.devxp.autochangelog
 
 import kotlinx.coroutines.runBlocking
 import no.elhub.devxp.autochangelog.features.git.GitCommit
-import no.elhub.devxp.autochangelog.features.git.GitTag
 import no.elhub.devxp.autochangelog.features.git.extractCurrentAndPreviousTag
 import no.elhub.devxp.autochangelog.features.git.extractJiraIssuesIdsFromCommits
 import no.elhub.devxp.autochangelog.features.git.getRelevantCommits
