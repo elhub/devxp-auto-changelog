@@ -96,3 +96,14 @@ fun extractJiraIssuesIdsFromCommits(commits: List<GitCommit>): Map<String, List<
     }
     return jiraIdToCommitMap.toMap()
 }
+
+fun extractCurrentAndPreviousTag(tags: List<GitTag>, forTag: String?, tagRegex: String?): Pair<GitTag?, GitTag?> {
+    val from = tags.firstOrNull { it.name == forTag }
+    require(from != null) { "Tag '$forTag' not found in repository." }
+
+    val candidateTags = tags.takeWhile { it != from }
+    val to = tagRegex?.let { pattern ->
+        candidateTags.firstOrNull { Regex(pattern).matches(it.name) }
+    } ?: candidateTags.lastOrNull()
+    return from to to
+}
