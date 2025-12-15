@@ -68,7 +68,7 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
     var toTagName: String? = null
 
     @CommandLine.Option(
-        names = ["-j", "-json"],
+        names = ["-j", "--json"],
         required = false,
         description = ["Whether to output changelog in JSON format instead of Markdown"]
     )
