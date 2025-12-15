@@ -112,7 +112,7 @@ class JsonWriterTest : FunSpec({
                     }
                 ]
             }
-        """.trimIndent()
+            """.trimIndent()
         }
 
         test("formatCommitJson correctly formats json content grouped by commit") {
@@ -121,7 +121,6 @@ class JsonWriterTest : FunSpec({
                 .groupBy({ it.first }, { it.second })
 
             val formattedJson = formatCommitJson(commitMap)
-            println(formattedJson)
 
             formattedJson shouldBe """
                 {
@@ -170,7 +169,7 @@ class JsonWriterTest : FunSpec({
                         }
                     ]
                 }
-        """.trimIndent()
+            """.trimIndent()
         }
     }
 

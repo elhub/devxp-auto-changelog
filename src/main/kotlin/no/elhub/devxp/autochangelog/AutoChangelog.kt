@@ -92,8 +92,10 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
             } else {
                 tags.firstOrNull { it.name == fromTagName } to tags.firstOrNull { it.name == toTagName }
             }
+        println("Generating changelog from '${maybeFromTag?.name ?: "START"}' to '${maybeToTag?.name ?: "END"}'")
 
         val relevantCommits = getRelevantCommits(gitRepository, maybeFromTag, maybeToTag, tags)
+        println("Found ${relevantCommits.size} relevant commits.")
 
         // Create a mapping of JIRA issue IDs to commits
         val jiraIssueIds = extractJiraIssuesIdsFromCommits(relevantCommits)

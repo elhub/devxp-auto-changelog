@@ -25,13 +25,15 @@ fun initRepository(workingDir: String): Git {
 
 fun getTagsFromRepo(git: Git): List<GitTag> {
     val rawTags = git.tagList().call().toList()
-    return toGitTags(rawTags)
+    return toGitTags(rawTags, git.repository)
 }
 
-fun toGitTags(tags: List<Ref>): List<GitTag> = tags.map {
-    val commitId = it.peeledObjectId ?: it.objectId
+fun toGitTags(tags: List<Ref>, repo: Repository): List<GitTag> = tags.map {
+    val peeled = repo.refDatabase.peel(it)
+    val commitId = peeled.peeledObjectId ?: peeled.objectId
+
     GitTag(
-        name = it.name.replace("refs/tags/", ""),
+        name = it.name.removePrefix("refs/tags/"),
         commitHash = commitId.name.take(7)
     )
 }
@@ -98,12 +100,12 @@ fun extractJiraIssuesIdsFromCommits(commits: List<GitCommit>): Map<String, List<
 }
 
 fun extractCurrentAndPreviousTag(tags: List<GitTag>, forTag: String?, tagRegex: String?): Pair<GitTag?, GitTag?> {
-    val from = tags.firstOrNull { it.name == forTag }
-    require(from != null) { "Tag '$forTag' not found in repository." }
+    val current = tags.firstOrNull { it.name == forTag }
+    require(current != null) { "Tag '$forTag' not found in repository." }
 
-    val candidateTags = tags.takeWhile { it != from }
-    val to = tagRegex?.let { pattern ->
-        candidateTags.firstOrNull { Regex(pattern).matches(it.name) }
+    val candidateTags = tags.takeWhile { it != current }
+    val previous = tagRegex?.let { pattern ->
+        candidateTags.lastOrNull { Regex(pattern).matches(it.name) }
     } ?: candidateTags.lastOrNull()
-    return from to to
+    return previous to current
 }
