@@ -1,5 +1,6 @@
 package no.elhub.devxp.autochangelog.features.jira
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -40,6 +41,10 @@ class JiraClientTest : FunSpec({
         install(ContentNegotiation) { json(json) }
     }
     val client = JiraClient(httpClient)
+
+    test("jira client cannot be initiated without env vars being present") {
+        shouldThrow<IllegalStateException> { JiraClient() }
+    }
 
     test("getIssueById returns correct JiraIssue base on API response") {
         val result = client.getIssueById("GOG-100")
