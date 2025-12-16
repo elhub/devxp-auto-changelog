@@ -3,6 +3,7 @@ package no.elhub.devxp.autochangelog.features.jira
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.extensions.system.OverrideMode
 import io.kotest.extensions.system.withEnvironment
 import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -49,7 +50,8 @@ class JiraClientTest : FunSpec({
             mapOf(
                 "JIRA_USERNAME" to null,
                 "JIRA_API_TOKEN" to null
-            )
+            ),
+            mode = OverrideMode.SetOrOverride
         ) {
             shouldThrow<IllegalStateException> { JiraClient() }
         }
@@ -60,7 +62,8 @@ class JiraClientTest : FunSpec({
             mapOf(
                 "JIRA_USERNAME" to "dummy-username",
                 "JIRA_API_TOKEN" to "dummy-token"
-            )
+            ),
+            mode = OverrideMode.SetOrOverride
         ) {
             shouldNotThrowAny { JiraClient() }
         }
