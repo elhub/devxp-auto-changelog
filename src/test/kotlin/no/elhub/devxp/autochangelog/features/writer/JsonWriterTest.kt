@@ -174,7 +174,7 @@ class JsonWriterTest : FunSpec({
     }
 
     context("writeJsonToFile") {
-        val changelogFile = File("CHANGELOG.md")
+        val changelogFile = File("CHANGELOG.json")
 
         beforeEach {
             if (changelogFile.exists()) {
@@ -228,7 +228,7 @@ class JsonWriterTest : FunSpec({
             writeJsonToFile(jsonContent, changelogFile.path)
             changelogFile.exists() shouldBe true
             val fileContent = changelogFile.readText()
-            fileContent shouldBe jsonContent
+            fileContent shouldBe (jsonContent + "\n")
         }
     }
 })
