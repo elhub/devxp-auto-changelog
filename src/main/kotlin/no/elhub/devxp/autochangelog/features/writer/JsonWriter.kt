@@ -101,5 +101,5 @@ private fun GitCommit.toJsonObject(): JsonObject = buildJsonObject {
 fun writeJsonToFile(json: String, filePath: String) {
     val file = File(filePath)
     file.parentFile?.mkdirs()
-    file.writeText(json)
+    file.writeText(json + "\n")
 }
