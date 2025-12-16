@@ -13,14 +13,21 @@ import org.eclipse.jgit.internal.storage.dfs.InMemoryRepository
 import org.eclipse.jgit.lib.Constants
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Ref
+import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.revwalk.RevWalk
 import java.time.LocalDateTime
 
 class GitOperationsTest : FunSpec({
 
+    lateinit var repo: TestRepo
+
+    beforeTest {
+        repo = TestRepo()
+    }
+
     test("toGitCommits extracts stuff from commit message") {
-        val commit1 = fakeRevCommit(
+        val commit1 = repo.commit(
             """
                 Initial commit
 
@@ -45,7 +52,7 @@ class GitOperationsTest : FunSpec({
     }
 
     test("toGitCommits handles commit with no body") {
-        val commit1 = fakeRevCommit("Fix bug in production")
+        val commit1 = repo.commit("Fix bug in production")
 
         val gitCommits = toGitCommits(listOf(commit1), emptyList())
         gitCommits.size shouldBe 1
@@ -58,7 +65,7 @@ class GitOperationsTest : FunSpec({
     }
 
     test("toGitCommits handles commit with body but no issue IDs") {
-        val commit1 = fakeRevCommit(
+        val commit1 = repo.commit(
             """
                 Update documentation
 
@@ -78,13 +85,12 @@ class GitOperationsTest : FunSpec({
     }
 
     test("toGitCommits supports multiple tags for a commit") {
-        val commit1 = fakeRevCommit("Release version 1.0.0")
-        val tag1 = fakeTagRef("refs/tags/v1.0.0", commit1)
-        val tag2 = fakeTagRef("stable", commit1)
+        val commit1 = repo.commit("Release version 1.0.0")
+        val tag1 = repo.tag("refs/tags/v1.0.0", commit1)
+        val tag2 = repo.tag("stable", commit1)
 
-        val gitTags = toGitTags(listOf(tag1, tag2))
+        val gitTags = toGitTags(listOf(tag1, tag2), repo.repo)
         val gitCommits = toGitCommits(listOf(commit1), gitTags)
-        gitTags.forEach { println(it) }
 
         gitCommits.size shouldBe 1
         val releaseCommit = gitCommits.first()
@@ -93,10 +99,10 @@ class GitOperationsTest : FunSpec({
     }
 
     test("toGitTags converts refs to git tags") {
-        val commit1 = fakeRevCommit("Initial commit")
-        val tagRef = fakeTagRef("refs/tags/v1.0.0", commit1)
+        val commit1 = repo.commit("Initial commit")
+        val tagRef = repo.tag("refs/tags/v1.0.0", commit1)
 
-        val gitTags = toGitTags(listOf(tagRef))
+        val gitTags = toGitTags(listOf(tagRef), repo.repo)
         gitTags.size shouldBe 1
 
         val gitTag = gitTags.first()
@@ -112,10 +118,10 @@ class GitOperationsTest : FunSpec({
         val tag3 = GitTag("v2.0.0", "ghi9012")
         val tags = listOf(tag1, tag2, tag3)
 
-        val (currentTag, previousTag) = extractCurrentAndPreviousTag(tags, "v2.0.0", null)
+        val (previous, current) = extractCurrentAndPreviousTag(tags, "v2.0.0", null)
 
-        currentTag shouldBe tag3
-        previousTag shouldBe tag2
+        previous shouldBe tag2
+        current shouldBe tag3
     }
 
     test("extractCurrentAndPreviousTag correctly finds tags with regex") {
@@ -124,22 +130,22 @@ class GitOperationsTest : FunSpec({
         val tag3 = GitTag("deployed-v2.0.0", "ghi9012")
         val tags = listOf(tag1, tag2, tag3)
 
-        val (currentTag, previousTag) = extractCurrentAndPreviousTag(tags, "deployed-v2.0.0", "^deployed-.*$")
+        val (previous, current) = extractCurrentAndPreviousTag(tags, "deployed-v2.0.0", "^deployed-.*$")
 
-        currentTag shouldBe tag3
-        previousTag shouldBe tag1
+        previous shouldBe tag1
+        current shouldBe tag3
     }
 
     context("getCommitsBetweenTags") {
-        val commit1 = fakeRevCommit("First commit", commitTime = 1600000001)
-        val commit2 = fakeRevCommit("Second commit", commitTime = 1600000002)
-        val commit3 = fakeRevCommit("Third commit", commitTime = 1600000003)
-        val commit4 = fakeRevCommit("Fourth commit", commitTime = 1600000004)
+        val commit1 = repo.commit("First commit", commitTime = 1600000001)
+        val commit2 = repo.commit("Second commit", commitTime = 1600000002)
+        val commit3 = repo.commit("Third commit", commitTime = 1600000003)
+        val commit4 = repo.commit("Fourth commit", commitTime = 1600000004)
 
-        val tag = fakeTagRef("refs/tags/v1.0.0", commit1)
-        val tag2 = fakeTagRef("refs/tags/v2.0.0", commit4)
+        val tag = repo.tag("refs/tags/v1.0.0", commit1)
+        val tag2 = repo.tag("refs/tags/v2.0.0", commit4)
 
-        val gitTags = toGitTags(listOf(tag, tag2))
+        val gitTags = toGitTags(listOf(tag, tag2), repo.repo)
 
         val commits = toGitCommits(
             listOf(commit1, commit2, commit3, commit4),
@@ -172,11 +178,11 @@ class GitOperationsTest : FunSpec({
         }
 
         test("can cross tags without issues") {
-            val commit5 = fakeRevCommit("Fifth commit", commitTime = 1600000005)
-            val commit6 = fakeRevCommit("Sixth commit", commitTime = 1600000006)
+            val commit5 = repo.commit("Fifth commit", commitTime = 1600000005)
+            val commit6 = repo.commit("Sixth commit", commitTime = 1600000006)
 
-            val tag3 = fakeTagRef("v3.0.0", commit6)
-            val extendedGitTags = toGitTags(listOf(tag, tag2, tag3))
+            val tag3 = repo.tag("v3.0.0", commit6)
+            val extendedGitTags = toGitTags(listOf(tag, tag2, tag3), repo.repo)
             val extendedCommits = toGitCommits(
                 listOf(commit1, commit2, commit3, commit4, commit5, commit6),
                 extendedGitTags
@@ -249,35 +255,30 @@ class GitOperationsTest : FunSpec({
     }
 })
 
-fun fakeRevCommit(
-    fullMessage: String,
-    commitTime: Int = 1609459200
-): RevCommit {
-    val repo = InMemoryRepository.Builder()
+class TestRepo {
+    val repo: Repository = InMemoryRepository.Builder()
         .setRepositoryDescription(DfsRepositoryDescription("test"))
         .build()
-    val inserter = repo.objectDatabase.newInserter()
 
-    val commitContent = buildString {
-        append("tree " + ObjectId.zeroId().name() + "\n")
-        append("author Test <test@test.com> $commitTime +0000\n")
-        append("committer Test <test@test.com> $commitTime +0000\n\n")
-        append(fullMessage)
+    private val inserter = repo.objectDatabase.newInserter()
+
+    fun commit(message: String, commitTime: Int = 1609459200): RevCommit {
+        val content = buildString {
+            append("tree ${ObjectId.zeroId().name()}\n")
+            append("author Test <test@test.com> $commitTime +0000\n")
+            append("committer Test <test@test.com> $commitTime +0000\n\n")
+            append(message)
+        }
+
+        val id = inserter.insert(Constants.OBJ_COMMIT, content.toByteArray())
+        inserter.flush()
+        return RevWalk(repo).parseCommit(id)
     }
 
-    val commitId = inserter.insert(Constants.OBJ_COMMIT, commitContent.toByteArray())
-    inserter.flush()
-
-    return RevWalk(repo).parseCommit(commitId)
-}
-
-fun fakeTagRef(tagName: String, commit: RevCommit): Ref = object : Ref {
-    override fun getName() = tagName
-    override fun getObjectId(): ObjectId = commit.id
-    override fun getPeeledObjectId(): ObjectId? = null
-    override fun getStorage() = Ref.Storage.LOOSE
-    override fun isSymbolic() = false
-    override fun isPeeled() = false
-    override fun getLeaf() = this
-    override fun getTarget() = this
+    fun tag(name: String, commit: RevCommit): Ref {
+        val update = repo.refDatabase.newUpdate(name, false)
+        update.setNewObjectId(commit.id)
+        update.update()
+        return repo.findRef(name)!!
+    }
 }
