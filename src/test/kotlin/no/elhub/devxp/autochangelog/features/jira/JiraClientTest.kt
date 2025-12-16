@@ -1,6 +1,10 @@
 package no.elhub.devxp.autochangelog.features.jira
 
+import io.kotest.assertions.throwables.shouldNotThrowAny
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.extensions.system.OverrideMode
+import io.kotest.extensions.system.withEnvironment
 import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient
@@ -40,6 +44,30 @@ class JiraClientTest : FunSpec({
         install(ContentNegotiation) { json(json) }
     }
     val client = JiraClient(httpClient)
+
+    test("jira client cannot be initiated without env vars being present") {
+        withEnvironment(
+            mapOf(
+                "JIRA_USERNAME" to null,
+                "JIRA_API_TOKEN" to null
+            ),
+            mode = OverrideMode.SetOrOverride
+        ) {
+            shouldThrow<IllegalStateException> { JiraClient() }
+        }
+    }
+
+    test("jira client can be initiated when env vars are present") {
+        withEnvironment(
+            mapOf(
+                "JIRA_USERNAME" to "dummy-username",
+                "JIRA_API_TOKEN" to "dummy-token"
+            ),
+            mode = OverrideMode.SetOrOverride
+        ) {
+            shouldNotThrowAny { JiraClient() }
+        }
+    }
 
     test("getIssueById returns correct JiraIssue base on API response") {
         val result = client.getIssueById("GOG-100")

@@ -15,3 +15,10 @@ dependencies {
 application {
     mainClass.set("no.elhub.devxp.autochangelog.AutoChangelogKt")
 }
+
+// This allows kotest to use reflection on JDK 9+. See https://github.com/kotest/kotest/issues/2849
+tasks.withType<Test>().configureEach {
+    jvmArgs(
+        "--add-opens=java.base/java.util=ALL-UNNAMED"
+    )
+}
