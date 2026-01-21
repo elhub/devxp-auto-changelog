@@ -2,14 +2,13 @@
 format.version = "1.1"
 
 [versions]
-elhub-gradle = "0.9.5"
-jgit = "7.4.0.202509020913-r"
+elhub-gradle = "0.10.0"
+jgit = "7.5.0.202512021534-r"
 kotlinx-serialization = "2.3.0"
-kotest = "6.0.4"
+kotest = "6.1.0"
 ktor = "3.3.3"
-mockk = "1.14.6"
+mockk = "1.14.7"
 picocli = "4.7.7"
-
 
 [plugins]
 elhub-gradle-plugin-application = { id = "no.elhub.devxp.kotlin-application", version.ref = "elhub-gradle" }
@@ -23,7 +22,6 @@ ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-conte
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
-
 test-kotest-runner-junit5 = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
 test-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 
