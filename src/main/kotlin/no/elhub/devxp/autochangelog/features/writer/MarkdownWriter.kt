@@ -14,7 +14,11 @@ fun formatMarkdown(jiraIssues: Map<JiraIssue, List<GitCommit>>): String {
         jiraIssues
             .filterNot { it.key.key == "NO-JIRA" }
             .forEach { (jiraIssue, commits) ->
-                appendLine("## ${jiraIssue.key}: ${jiraIssue.title}")
+                if (jiraIssue.status == "Done") {
+                    appendLine("## ~~${jiraIssue.key}: ${jiraIssue.title}~~")
+                } else {
+                    appendLine("## ${jiraIssue.key}: ${jiraIssue.title}")
+                }
                 appendLine(jiraIssue.body)
                 appendLine("### Related Commits")
                 commits.forEach { commit ->

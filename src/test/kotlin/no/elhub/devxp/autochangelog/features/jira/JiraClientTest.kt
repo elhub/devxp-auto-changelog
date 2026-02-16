@@ -33,7 +33,8 @@ class JiraClientTest : FunSpec({
             content = createMockResponse(
                 key = issueId,
                 title = "Dummy Title",
-                body = "Dummy Body"
+                body = "Dummy Body",
+                status = "In Progress"
             ),
             status = HttpStatusCode.OK,
             headers = headersOf("Content-Type" to listOf(ContentType.Application.Json.toString()))
@@ -120,9 +121,9 @@ class JiraClientTest : FunSpec({
         )
 
         populatedMap shouldContainExactly mapOf(
-            JiraIssue("ABC-101", "Dummy Title", "Dummy Body") to listOf(commit1, commit2),
-            JiraIssue("ABC-102", "Dummy Title", "Dummy Body") to listOf(commit1),
-            JiraIssue("NO-JIRA", "Commits not associated with any JIRA issues", "") to listOf(commit3)
+            JiraIssue("ABC-101", "Dummy Title", "Dummy Body", "In Progress") to listOf(commit1, commit2),
+            JiraIssue("ABC-102", "Dummy Title", "Dummy Body", "In Progress") to listOf(commit1),
+            JiraIssue("NO-JIRA", "Commits not associated with any JIRA issues", "", "") to listOf(commit3)
         )
     }
 })

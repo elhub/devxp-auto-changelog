@@ -52,7 +52,8 @@ class JiraClient(
             JiraIssue(
                 key = "NO-JIRA",
                 title = "Commits not associated with any JIRA issues",
-                body = ""
+                body = "",
+                status = ""
             )
         } else {
             this.getIssueById(jiraIssueId)
@@ -66,7 +67,7 @@ class JiraClient(
      * @return A [JiraIssue] object containing the details of the fetched issue.
      */
     suspend fun getIssueById(issueId: String): JiraIssue {
-        val response = internalClient.get("issue/$issueId?fields=summary,description")
+        val response = internalClient.get("issue/$issueId?fields=summary,description,status")
         val apiResponse = response.body() as JiraApiResponse
         return apiResponse.toJiraIssue()
     }
