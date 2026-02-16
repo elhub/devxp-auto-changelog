@@ -5,6 +5,8 @@ import no.elhub.devxp.autochangelog.features.jira.JiraIssue
 import java.io.File
 import java.time.LocalDate.now
 
+const val jiraPrefix = "https://elhub.atlassian.net/browse/"
+
 fun formatMarkdown(jiraIssues: Map<JiraIssue, List<GitCommit>>, strikethrough: Boolean = false): String {
     val markdown = buildString {
         appendLine("Generated at ${now()}")
@@ -15,9 +17,9 @@ fun formatMarkdown(jiraIssues: Map<JiraIssue, List<GitCommit>>, strikethrough: B
             .filterNot { it.key.key == "NO-JIRA" }
             .forEach { (jiraIssue, commits) ->
                 if (strikethrough && jiraIssue.status == "Done") {
-                    appendLine("## ~~[${jiraIssue.key}](https://elhub.atlassian.net/browse/${jiraIssue.key})~~: ${jiraIssue.title}")
+                    appendLine("## ~~[${jiraIssue.key}]($jiraPrefix${jiraIssue.key})~~: ${jiraIssue.title}")
                 } else {
-                    appendLine("## [${jiraIssue.key}](https://elhub.atlassian.net/browse/${jiraIssue.key}): ${jiraIssue.title}")
+                    appendLine("## [${jiraIssue.key}]($jiraPrefix${jiraIssue.key}): ${jiraIssue.title}")
                 }
                 appendLine(jiraIssue.body)
                 appendLine("### Related Commits")
@@ -50,9 +52,9 @@ fun formatCommitMarkdown(commitsMap: Map<GitCommit, List<JiraIssue>>, strikethro
             if (jiraIssues.first().key != "NO-JIRA") {
                 jiraIssues.forEach { jiraIssue ->
                     if (strikethrough && jiraIssue.status == "Done") {
-                        appendLine("- ~~[${jiraIssue.key}](https://elhub.atlassian.net/browse/${jiraIssue.key})~~: ${jiraIssue.title}")
+                        appendLine("- ~~[${jiraIssue.key}]($jiraPrefix${jiraIssue.key})~~: ${jiraIssue.title}")
                     } else {
-                        appendLine("- [${jiraIssue.key}](https://elhub.atlassian.net/browse/${jiraIssue.key}): ${jiraIssue.title}")
+                        appendLine("- [${jiraIssue.key}]($jiraPrefix${jiraIssue.key}): ${jiraIssue.title}")
                     }
                 }
             }
