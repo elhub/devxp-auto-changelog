@@ -65,13 +65,13 @@ class MarkdownWriterTest : FunSpec({
             val formattedMarkDownWithoutDate = formatMarkdown(myMap).substringAfter("\n")
 
             formattedMarkDownWithoutDate shouldBe """
-                ## ABC-101: Implement feature X
+                ## [ABC-101](https://elhub.atlassian.net/browse/ABC-101): Implement feature X
                 This is a description for ABC-101.
                 ### Related Commits
                 - `abc123`: Implement feature X
                 - `def456`: Fix bug Y
 
-                ## ABC-102: Fix bug Y
+                ## [ABC-102](https://elhub.atlassian.net/browse/ABC-102): Fix bug Y
                 This is a description for ABC-102.
                 ### Related Commits
                 - `abc123`: Implement feature X
@@ -93,11 +93,11 @@ class MarkdownWriterTest : FunSpec({
                 ## `ghi789` **Update documentation**
 
                 ## `def456` **Fix bug Y**
-                - ABC-101: Implement feature X
+                - [ABC-101](https://elhub.atlassian.net/browse/ABC-101): Implement feature X
 
                 ## `abc123` **Implement feature X**
-                - ABC-101: Implement feature X
-                - ABC-102: Fix bug Y
+                - [ABC-101](https://elhub.atlassian.net/browse/ABC-101): Implement feature X
+                - [ABC-102](https://elhub.atlassian.net/browse/ABC-102): Fix bug Y
 
             """.trimIndent()
         }

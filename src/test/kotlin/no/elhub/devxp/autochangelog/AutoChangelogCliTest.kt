@@ -301,7 +301,7 @@ class AutoChangelogCliTest : FunSpec({
                 content shouldContain "Implement TDX-123"
                 content shouldContain "Implement no JIRA feature"
                 content shouldContain "Add README"
-                content.shouldContain("- TEST-123: Mocked JIRA Issue")
+                content.shouldContain("- [TEST-123](https://elhub.atlassian.net/browse/TEST-123): Mocked JIRA Issue")
             }
         }
 
@@ -337,8 +337,8 @@ class AutoChangelogCliTest : FunSpec({
             outputChangelogFile.exists() shouldBe true
             val content = outputChangelogFile.readText()
             assertSoftly {
-                content shouldContain "## ~~DONE-123: Done Issue~~"
-                content shouldContain "## PROG-123: In Progress Issue"
+                content shouldContain "## ~~[DONE-123](https://elhub.atlassian.net/browse/DONE-123)~~: Done Issue"
+                content shouldContain "## [PROG-123](https://elhub.atlassian.net/browse/PROG-123): In Progress Issue"
             }
         }
     }
