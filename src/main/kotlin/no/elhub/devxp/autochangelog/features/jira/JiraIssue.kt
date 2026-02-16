@@ -7,6 +7,7 @@ data class JiraIssue(
     val key: String,
     val title: String,
     val body: String,
+    val status: String,
 )
 
 @Serializable
@@ -18,13 +19,20 @@ data class JiraApiResponse(
 @Serializable
 data class JiraFields(
     val summary: String,
-    val description: AdfDocument? = null
+    val description: AdfDocument? = null,
+    val status: JiraStatus? = null,
+)
+
+@Serializable
+data class JiraStatus(
+    val name: String
 )
 
 fun JiraApiResponse.toJiraIssue(): JiraIssue = JiraIssue(
     key = key,
     title = fields.summary,
-    body = fields.description.toPlainText()
+    body = fields.description.toPlainText(),
+    status = fields.status?.name ?: "Unknown"
 )
 
 // Atlassian returns their description in Atlassian Document Format (ADF)

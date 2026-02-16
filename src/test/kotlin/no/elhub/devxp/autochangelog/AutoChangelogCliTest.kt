@@ -2,6 +2,7 @@ package no.elhub.devxp.autochangelog
 
 import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.core.spec.style.Test
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
@@ -24,6 +25,7 @@ class AutoChangelogCliTest : FunSpec({
         key = "TEST-123",
         title = "Mocked JIRA Issue",
         body = "This is a mocked JIRA issue for testing purposes.",
+        status = ""
     )
 
     val cmd = CommandLine(AutoChangelog(mockJiraClient))
@@ -300,6 +302,43 @@ class AutoChangelogCliTest : FunSpec({
                 content shouldContain "Implement no JIRA feature"
                 content shouldContain "Add README"
                 content.shouldContain("- TEST-123: Mocked JIRA Issue")
+            }
+        }
+
+        test("should strikethrough done jira issues if run with '--strikethrough-done-issues' flag") {
+            coEvery { mockJiraClient.getIssueById("DONE-123") } returns JiraIssue(
+                key = "DONE-123",
+                title = "Done Issue",
+                body = "This issue is done.",
+                status = "Done"
+            )
+            coEvery { mockJiraClient.getIssueById("PROG-123") } returns JiraIssue(
+                key = "PROG-123",
+                title = "In Progress Issue",
+                body = "This issue is in progress.",
+                status = "In Progress"
+            )
+
+            val commits = listOf(
+                TestCommit(
+                    fileName = "Done.kt",
+                    content = "fun done() { println(\"Done Issue!\") }",
+                    message = "Implement DONE-123",
+                ),
+                TestCommit(
+                    fileName = "InProgress.kt",
+                    content = "fun inProgress() { println(\"In Progress Issue!\") }",
+                    message = "Implement part of PROG-123",
+                )
+            )
+            val gitRepo = createRepositoryFromCommits("status-git-repo", commits)
+            val exitCode = cmd.execute("--working-dir", gitRepo.toString(), "--strikethrough-done-issues")
+            exitCode shouldBe 0
+            outputChangelogFile.exists() shouldBe true
+            val content = outputChangelogFile.readText()
+            assertSoftly {
+                content shouldContain "## ~~DONE-123: Done Issue~~"
+                content shouldContain "## PROG-123: In Progress Issue"
             }
         }
     }

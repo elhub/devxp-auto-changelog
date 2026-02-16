@@ -1,14 +1,14 @@
 package no.elhub.devxp.autochangelog
 
 import org.eclipse.jgit.api.InitCommand
+import org.eclipse.jgit.lib.PersonIdent
 import java.nio.file.Path
 import java.time.Instant
 import java.time.ZoneId
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
-import org.eclipse.jgit.lib.PersonIdent
 
-fun createMockResponse(key: String, title: String, body: String): String = """
+fun createMockResponse(key: String, title: String, body: String, status: String): String = """
         {
             "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
             "id": "1",
@@ -30,6 +30,9 @@ fun createMockResponse(key: String, title: String, body: String): String = """
                             ]
                         }
                     ]
+                },
+                "status": {
+                    "name": "$status"
                 }
             }
         }

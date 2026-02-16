@@ -40,17 +40,20 @@ class JsonWriterTest : FunSpec({
         val issue1 = JiraIssue(
             key = "ABC-101",
             title = "Implement feature X",
-            body = "This is a description for ABC-101."
+            body = "This is a description for ABC-101.",
+            status = "In Progress"
         )
         val issue2 = JiraIssue(
             key = "ABC-102",
             title = "Fix bug Y",
-            body = "This is a description for ABC-102."
+            body = "This is a description for ABC-102.",
+            status = "In Progress"
         )
         val noIssue = JiraIssue(
             key = "NO-JIRA",
             title = "No Jira Issue",
-            body = "Commits without linked Jira issues."
+            body = "Commits without linked Jira issues.",
+            status = ""
         )
 
         val myMap = mapOf(

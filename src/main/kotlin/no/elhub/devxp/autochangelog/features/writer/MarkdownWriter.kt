@@ -5,7 +5,7 @@ import no.elhub.devxp.autochangelog.features.jira.JiraIssue
 import java.io.File
 import java.time.LocalDate.now
 
-fun formatMarkdown(jiraIssues: Map<JiraIssue, List<GitCommit>>): String {
+fun formatMarkdown(jiraIssues: Map<JiraIssue, List<GitCommit>>, strikethrough: Boolean = false): String {
     val markdown = buildString {
         appendLine("Generated at ${now()}")
 
@@ -14,7 +14,11 @@ fun formatMarkdown(jiraIssues: Map<JiraIssue, List<GitCommit>>): String {
         jiraIssues
             .filterNot { it.key.key == "NO-JIRA" }
             .forEach { (jiraIssue, commits) ->
-                appendLine("## ${jiraIssue.key}: ${jiraIssue.title}")
+                if (strikethrough && jiraIssue.status == "Done") {
+                    appendLine("## ~~${jiraIssue.key}: ${jiraIssue.title}~~")
+                } else {
+                    appendLine("## ${jiraIssue.key}: ${jiraIssue.title}")
+                }
                 appendLine(jiraIssue.body)
                 appendLine("### Related Commits")
                 commits.forEach { commit ->
@@ -34,7 +38,7 @@ fun formatMarkdown(jiraIssues: Map<JiraIssue, List<GitCommit>>): String {
     return markdown
 }
 
-fun formatCommitMarkdown(commitsMap: Map<GitCommit, List<JiraIssue>>): String {
+fun formatCommitMarkdown(commitsMap: Map<GitCommit, List<JiraIssue>>, strikethrough: Boolean = false): String {
     val markdown = buildString {
         appendLine("Generated at ${now()}")
 
@@ -45,7 +49,11 @@ fun formatCommitMarkdown(commitsMap: Map<GitCommit, List<JiraIssue>>): String {
             appendLine("## `${commit.hash}` **${commit.title}**")
             if (jiraIssues.first().key != "NO-JIRA") {
                 jiraIssues.forEach { jiraIssue ->
-                    appendLine("- ${jiraIssue.key}: ${jiraIssue.title}")
+                    if (strikethrough && jiraIssue.status == "Done") {
+                        appendLine("- ~~${jiraIssue.key}: ${jiraIssue.title}~~")
+                    } else {
+                        appendLine("- ${jiraIssue.key}: ${jiraIssue.title}")
+                    }
                 }
             }
             appendLine()

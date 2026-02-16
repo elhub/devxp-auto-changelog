@@ -81,6 +81,13 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
     )
     var commitGrouping: Boolean = false
 
+    @CommandLine.Option(
+        names = ["--strikethrough-done-issues"],
+        required = false,
+        description = ["Whether to strikethough JIRA issues with status 'Done' in the generated changelog (only applies to Markdown output)"]
+    )
+    var strikethrough: Boolean = false
+
     override fun run() {
         val gitRepository = initRepository(workingDir)
 
@@ -126,7 +133,7 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
                 val jsonContent = formatCommitJson(commitMap)
                 writeJsonToFile(jsonContent, "$changelogName.json")
             } else {
-                val markdownContent = formatCommitMarkdown(commitMap)
+                val markdownContent = formatCommitMarkdown(commitMap, strikethrough)
                 writeMarkdownToFile(markdownContent, "$changelogName.md")
             }
         } else {
@@ -134,7 +141,7 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
                 val jsonContent = formatJson(jiraMap)
                 writeJsonToFile(jsonContent, "$changelogName.json")
             } else {
-                val markdownContent = formatMarkdown(jiraMap)
+                val markdownContent = formatMarkdown(jiraMap, strikethrough)
                 writeMarkdownToFile(markdownContent, "$changelogName.md")
             }
         }
