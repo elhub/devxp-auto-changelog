@@ -305,7 +305,7 @@ class AutoChangelogCliTest : FunSpec({
             }
         }
 
-        test("should strikethrough JIRA issue title only when issue is done") {
+        test("should strikethrough done jira issues if run with '--strikethrough-done-issues' flag") {
             coEvery { mockJiraClient.getIssueById("DONE-123") } returns JiraIssue(
                 key = "DONE-123",
                 title = "Done Issue",
@@ -332,7 +332,7 @@ class AutoChangelogCliTest : FunSpec({
                 )
             )
             val gitRepo = createRepositoryFromCommits("status-git-repo", commits)
-            val exitCode = cmd.execute("--working-dir", gitRepo.toString())
+            val exitCode = cmd.execute("--working-dir", gitRepo.toString(), "--strikethrough-done-issues")
             exitCode shouldBe 0
             outputChangelogFile.exists() shouldBe true
             val content = outputChangelogFile.readText()
