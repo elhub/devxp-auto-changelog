@@ -2,6 +2,7 @@ package no.elhub.devxp.autochangelog
 
 import kotlinx.coroutines.runBlocking
 import no.elhub.devxp.autochangelog.features.git.GitCommit
+import no.elhub.devxp.autochangelog.features.git.GithubClient
 import no.elhub.devxp.autochangelog.features.git.extractCurrentAndPreviousTag
 import no.elhub.devxp.autochangelog.features.git.extractJiraIssuesIdsFromCommits
 import no.elhub.devxp.autochangelog.features.git.getRelevantCommits
@@ -24,7 +25,7 @@ import kotlin.system.exitProcess
     mixinStandardHelpOptions = true,
     description = ["Generates changelogs based on JIRA issues for a given repository."]
 )
-class AutoChangelog(private val client: JiraClient) : Runnable {
+class AutoChangelog(private val jiraClient: JiraClient, private val githubClient: GithubClient) : Runnable {
     @CommandLine.Option(
         names = ["--working-dir", "-w"],
         required = false,
@@ -104,13 +105,18 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
         val relevantCommits = getRelevantCommits(gitRepository, maybeFromTag, maybeToTag, tags)
         println("Found ${relevantCommits.size} relevant commits.")
 
+        println("Populating JIRA issue details for the relevant commits based on commit messages and PR descriptions...")
+        runBlocking {
+            githubClient.populateJiraIssuesFromDescription(gitRepository, relevantCommits)
+        }
+
         // Create a mapping of JIRA issue IDs to commits
         val jiraIssueIds = extractJiraIssuesIdsFromCommits(relevantCommits)
 
         // Populate the map with actual JIRA issue details
         val jiraMap: Map<JiraIssue, List<GitCommit>>
         runBlocking {
-            jiraMap = client.getIssueDetails(jiraIssueIds)
+            jiraMap = jiraClient.getIssueDetails(jiraIssueIds)
         }
 
         val changelogName = customChangelogName ?: run {
@@ -149,6 +155,6 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
 }
 
 fun main(args: Array<String>) {
-    val exitCode = CommandLine(AutoChangelog(JiraClient())).execute(*args)
+    val exitCode = CommandLine(AutoChangelog(JiraClient(), GithubClient())).execute(*args)
     exitProcess(exitCode)
 }
