@@ -24,6 +24,8 @@ import org.eclipse.jgit.api.Git
 class GithubClient(
     client: HttpClient? = null,
 ) {
+    val semaphore = Semaphore(10)
+
     private val internalClient = client ?: HttpClient(CIO) {
         install(ContentNegotiation) {
             json(
@@ -53,7 +55,6 @@ class GithubClient(
     suspend fun populateJiraIssuesFromDescription(git: Git, commits: List<GitCommit>) {
         val (owner, repo) = getRepoInfo(git) ?: error("Could not determine repository information from Git configuration.")
 
-        val semaphore = Semaphore(10)
         coroutineScope {
             commits.map { commit ->
                 async {

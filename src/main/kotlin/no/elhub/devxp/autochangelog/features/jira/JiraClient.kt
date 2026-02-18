@@ -23,6 +23,8 @@ import kotlinx.coroutines.sync.withPermit
 class JiraClient(
     client: HttpClient? = null,
 ) {
+    val semaphore = Semaphore(10)
+
     private val internalClient = client ?: HttpClient(CIO) {
         install(ContentNegotiation) {
             json(
@@ -50,6 +52,7 @@ class JiraClient(
             header("Authorization", "Basic $encodedAuth")
             header("Accept", "application/json")
         }
+
     }
 
     /**
@@ -68,7 +71,6 @@ class JiraClient(
             status = ""
         )
 
-        val semaphore = Semaphore(10)
         return coroutineScope {
             jiraMap.map { (jiraIssueId, commits) ->
                 async {
