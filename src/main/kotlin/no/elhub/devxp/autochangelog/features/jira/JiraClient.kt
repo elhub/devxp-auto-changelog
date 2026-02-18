@@ -2,7 +2,9 @@ package no.elhub.devxp.autochangelog.features.jira
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.engine.ProxyBuilder
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.http
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
@@ -23,6 +25,11 @@ class JiraClient(
                     prettyPrint = true
                 }
             )
+        }
+        engine {
+            System.getenv("HTTPS_PROXY")?.let { proxyUrl ->
+                proxy = ProxyBuilder.http(proxyUrl)
+            }
         }
         val username = System.getenv("JIRA_USERNAME")
         val token = System.getenv("JIRA_API_TOKEN")
