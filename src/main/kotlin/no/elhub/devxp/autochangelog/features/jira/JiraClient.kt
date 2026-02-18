@@ -88,6 +88,8 @@ class JiraClient(
     suspend fun getIssueById(issueId: String): JiraIssue? {
         val response = internalClient.get("issue/$issueId?fields=summary,description,status")
         if (response.status != HttpStatusCode.OK) {
+            // Some PR descriptions may contain JIRA issues that aren't ours, such as KTOR-1234. In this case, we just log a warning and return null,
+            // which makes the issue get categorized under the "NO-JIRA" category.
             println("WARN: Failed to fetch details for JIRA issue '$issueId'. HTTP status: ${response.status}")
             return null
         }
