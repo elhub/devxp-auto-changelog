@@ -17,6 +17,8 @@ import java.util.Base64
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 class JiraClient(
     client: HttpClient? = null,
@@ -65,17 +67,24 @@ class JiraClient(
             body = "",
             status = ""
         )
+
+        val semaphore = Semaphore(10)
         return coroutineScope {
             jiraMap.map { (jiraIssueId, commits) ->
                 async {
-                    val issue = if (jiraIssueId == "NO-JIRA") {
-                        noJiraIssue
-                    } else {
-                        getIssueById(jiraIssueId) ?: noJiraIssue
+                    semaphore.withPermit {
+                        val issue = if (jiraIssueId == "NO-JIRA") {
+                            noJiraIssue
+                        } else {
+                            getIssueById(jiraIssueId) ?: noJiraIssue
+                        }
+                        issue to commits
                     }
-                    issue to commits
+
                 }
-            }.awaitAll().toMap()
+            }.awaitAll()
+                .groupBy({ it.first }, { it.second })
+                .mapValues { it.value.flatten() }
         }
     }
 

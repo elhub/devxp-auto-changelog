@@ -89,6 +89,14 @@ class AutoChangelog(private val jiraClient: JiraClient, private val githubClient
     )
     var strikethrough: Boolean = false
 
+    @CommandLine.Option(
+        names = ["--include-pr-description-issues"],
+        required = false,
+        description = ["Whether to include JIRA issues found in PR descriptions in addition to those found in commit messages. This may result in more complete changelogs, but also significantly increases the time it takes to generate the changelog, especially for repositories with many commits and PRs",
+            "Use with --for-tag to limit the number of commits/PRs that need to be processed."]
+    )
+    var includeDescriptionJira: Boolean = false
+
     override fun run() {
         val gitRepository = initRepository(workingDir)
 
@@ -105,9 +113,11 @@ class AutoChangelog(private val jiraClient: JiraClient, private val githubClient
         val relevantCommits = getRelevantCommits(gitRepository, maybeFromTag, maybeToTag, tags)
         println("Found ${relevantCommits.size} relevant commits.")
 
-        println("Populating JIRA issue details for the relevant commits based on commit messages and PR descriptions...")
-        runBlocking {
-            githubClient.populateJiraIssuesFromDescription(gitRepository, relevantCommits)
+        if (includeDescriptionJira) {
+            println("Populating JIRA issue details for the relevant commits based on commit messages and PR descriptions...")
+            runBlocking {
+                githubClient.populateJiraIssuesFromDescription(gitRepository, relevantCommits)
+            }
         }
 
         // Create a mapping of JIRA issue IDs to commits

@@ -14,6 +14,8 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -50,11 +52,15 @@ class GithubClient(
 
     suspend fun populateJiraIssuesFromDescription(git: Git, commits: List<GitCommit>) {
         val (owner, repo) = getRepoInfo(git) ?: error("Could not determine repository information from Git configuration.")
+
+        val semaphore = Semaphore(10)
         coroutineScope {
             commits.map { commit ->
                 async {
-                    val description = getPrDescription(owner, repo, commit.hash)
-                    commit.jiraIssues = commit.jiraIssues.plus(extractJiraIssues(description)).distinct()
+                    semaphore.withPermit {
+                        val description = getPrDescription(owner, repo, commit.hash)
+                        commit.jiraIssues = commit.jiraIssues.plus(extractJiraIssues(description)).distinct()
+                    }
                 }
             }.awaitAll()
         }

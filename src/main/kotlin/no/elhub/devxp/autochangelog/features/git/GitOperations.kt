@@ -62,7 +62,7 @@ fun toGitCommits(rawCommits: List<RevCommit>, tags: List<GitTag>): List<GitCommi
 
 fun extractJiraIssues(message: String): List<String> {
     val regex = Regex("""[A-Z][A-Z0-9]+-\d+""")
-    return regex.findAll(message).map { it.value }.toList()
+    return regex.findAll(message).map { it.value }.toList().distinct()
 }
 
 fun getCommitsBetweenTags(
