@@ -359,7 +359,7 @@ class AutoChangelogCliTest : FunSpec({
                 }
             }
 
-            coEvery{ mockJiraClient.getIssueById("TEST-456") } returns JiraIssue(
+            coEvery { mockJiraClient.getIssueById("TEST-456") } returns JiraIssue(
                 key = "TEST-456",
                 title = "Implement extra stuff",
                 body = "This JIRA issue is linked from the PR description.",

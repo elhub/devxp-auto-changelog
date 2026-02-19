@@ -11,14 +11,14 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.json.Json
-import no.elhub.devxp.autochangelog.features.git.GitCommit
-import java.util.Base64
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.serialization.json.Json
+import no.elhub.devxp.autochangelog.features.git.GitCommit
+import java.util.Base64
 
 class JiraClient(
     client: HttpClient? = null,
@@ -52,7 +52,6 @@ class JiraClient(
             header("Authorization", "Basic $encodedAuth")
             header("Accept", "application/json")
         }
-
     }
 
     /**
@@ -82,7 +81,6 @@ class JiraClient(
                         }
                         issue to commits
                     }
-
                 }
             }.awaitAll()
                 .groupBy({ it.first }, { it.second })
