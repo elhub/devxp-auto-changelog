@@ -72,7 +72,7 @@ class JiraClientTest : FunSpec({
 
     test("getIssueById returns correct JiraIssue base on API response") {
         val result = client.getIssueById("GOG-100")
-        result.key shouldBe "GOG-100"
+        result!!.key shouldBe "GOG-100"
         result.title shouldBe "Dummy Title"
         result.body shouldBe "Dummy Body"
     }

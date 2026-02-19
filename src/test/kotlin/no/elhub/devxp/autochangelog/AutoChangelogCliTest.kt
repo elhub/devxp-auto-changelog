@@ -10,6 +10,8 @@ import io.ktor.client.HttpClient
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
+import no.elhub.devxp.autochangelog.features.git.GitCommit
+import no.elhub.devxp.autochangelog.features.git.GithubClient
 import no.elhub.devxp.autochangelog.features.jira.JiraClient
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
 import picocli.CommandLine
@@ -17,9 +19,10 @@ import java.io.File
 
 class AutoChangelogCliTest : FunSpec({
 
-    // Mock JiraClient to avoid real HTTP calls
+    // Mock clients to avoid real HTTP calls
     val mockHttpClient = mockk<HttpClient>()
     val mockJiraClient = spyk(JiraClient(mockHttpClient))
+    val mockGithubClient = spyk(GithubClient(mockHttpClient))
 
     coEvery { mockJiraClient.getIssueById(any()) } returns JiraIssue(
         key = "TEST-123",
@@ -28,7 +31,13 @@ class AutoChangelogCliTest : FunSpec({
         status = ""
     )
 
-    val cmd = CommandLine(AutoChangelog(mockJiraClient))
+    coEvery { mockGithubClient.getPrDescription(any(), any(), any()) } returns "Mocked PR description for testing purposes."
+    coEvery { mockGithubClient.getRepoInfo(any()) } returns Pair("owner", "repo")
+    coEvery { mockGithubClient.populateJiraIssuesFromDescription(git = any(), commits = any()) } coAnswers {
+        arg<List<GitCommit>>(1)
+    }
+
+    val cmd = CommandLine(AutoChangelog(mockJiraClient, mockGithubClient))
     val outputChangelogFile = File("CHANGELOG.md")
 
     // Cleanup after tests
@@ -339,6 +348,40 @@ class AutoChangelogCliTest : FunSpec({
             assertSoftly {
                 content shouldContain "## ~~[DONE-123](https://elhub.atlassian.net/browse/DONE-123)~~: Done Issue"
                 content shouldContain "## [PROG-123](https://elhub.atlassian.net/browse/PROG-123): In Progress Issue"
+            }
+        }
+
+        test("should include PR description jira issues when '--include-pr-description-issues' flag is set") {
+            coEvery { mockGithubClient.populateJiraIssuesFromDescription(git = any(), commits = any()) } coAnswers {
+                val a = arg<List<GitCommit>>(1)
+                a.forEach {
+                    it.jiraIssues += listOf("TEST-456")
+                }
+            }
+
+            coEvery { mockJiraClient.getIssueById("TEST-456") } returns JiraIssue(
+                key = "TEST-456",
+                title = "Implement extra stuff",
+                body = "This JIRA issue is linked from the PR description.",
+                status = "In Progress"
+            )
+
+            val commits = listOf(
+                TestCommit(
+                    fileName = "someFile.kt",
+                    content = "fun someFun() { println(\"Something!\") }",
+                    message = "Implement TDX-123",
+                )
+            )
+            val gitRepo = createRepositoryFromCommits("pr-description-git-repo", commits)
+            val exitCode = cmd.execute("--working-dir", gitRepo.toString(), "--include-pr-description-issues")
+            exitCode shouldBe 0
+            outputChangelogFile.exists() shouldBe true
+            val content = outputChangelogFile.readText()
+            assertSoftly {
+                content shouldContain "[TEST-123](https://elhub.atlassian.net/browse/TEST-123): Mocked JIRA Issue"
+                content shouldContain "Implement TDX-123"
+                content shouldContain "[TEST-456](https://elhub.atlassian.net/browse/TEST-456): Implement extra stuff"
             }
         }
     }

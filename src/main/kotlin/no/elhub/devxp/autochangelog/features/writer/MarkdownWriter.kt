@@ -21,7 +21,6 @@ fun formatMarkdown(jiraIssues: Map<JiraIssue, List<GitCommit>>, strikethrough: B
                 } else {
                     appendLine("## [${jiraIssue.key}]($JIRA_PREFIX${jiraIssue.key}): ${jiraIssue.title}")
                 }
-                appendLine(jiraIssue.body)
                 appendLine("### Related Commits")
                 commits.forEach { commit ->
                     appendLine("- `${commit.hash}`: ${commit.title}")

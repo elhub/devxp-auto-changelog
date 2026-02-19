@@ -2,6 +2,7 @@ package no.elhub.devxp.autochangelog
 
 import kotlinx.coroutines.runBlocking
 import no.elhub.devxp.autochangelog.features.git.GitCommit
+import no.elhub.devxp.autochangelog.features.git.GithubClient
 import no.elhub.devxp.autochangelog.features.git.extractCurrentAndPreviousTag
 import no.elhub.devxp.autochangelog.features.git.extractJiraIssuesIdsFromCommits
 import no.elhub.devxp.autochangelog.features.git.getRelevantCommits
@@ -24,7 +25,7 @@ import kotlin.system.exitProcess
     mixinStandardHelpOptions = true,
     description = ["Generates changelogs based on JIRA issues for a given repository."]
 )
-class AutoChangelog(private val client: JiraClient) : Runnable {
+class AutoChangelog(private val jiraClient: JiraClient, private val githubClient: GithubClient) : Runnable {
     @CommandLine.Option(
         names = ["--working-dir", "-w"],
         required = false,
@@ -88,6 +89,18 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
     )
     var strikethrough: Boolean = false
 
+    @CommandLine.Option(
+        names = ["--include-pr-description-issues"],
+        required = false,
+        description = [
+            "Whether to include JIRA issues found in PR descriptions in addition to those found in commit messages.",
+            "This may result in more complete changelogs, but also significantly increases the time it takes to generate the changelog,",
+            "especially for repositories with many commits and PRs",
+            "Use with --for-tag to limit the number of commits/PRs that need to be processed."
+        ]
+    )
+    var includeDescriptionJira: Boolean = false
+
     override fun run() {
         val gitRepository = initRepository(workingDir)
 
@@ -104,13 +117,29 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
         val relevantCommits = getRelevantCommits(gitRepository, maybeFromTag, maybeToTag, tags)
         println("Found ${relevantCommits.size} relevant commits.")
 
+        if (includeDescriptionJira) {
+            if (relevantCommits.size > 200) {
+                println(
+                    """
+                    WARNING: You have enabled the option to include JIRA issues from PR descriptions, but there are ${relevantCommits.size}
+                    commits in the specified range. This might be slow, and you may end up hitting GitHub API rate limits.
+                    Consider using --from-tag and --to-tag to limit the number of commits processed.
+                    """.trimIndent()
+                )
+            }
+            println("Populating JIRA issue details for the relevant commits based on commit messages and PR descriptions...")
+            runBlocking {
+                githubClient.populateJiraIssuesFromDescription(gitRepository, relevantCommits)
+            }
+        }
+
         // Create a mapping of JIRA issue IDs to commits
         val jiraIssueIds = extractJiraIssuesIdsFromCommits(relevantCommits)
 
         // Populate the map with actual JIRA issue details
         val jiraMap: Map<JiraIssue, List<GitCommit>>
         runBlocking {
-            jiraMap = client.getIssueDetails(jiraIssueIds)
+            jiraMap = jiraClient.getIssueDetails(jiraIssueIds)
         }
 
         val changelogName = customChangelogName ?: run {
@@ -149,6 +178,6 @@ class AutoChangelog(private val client: JiraClient) : Runnable {
 }
 
 fun main(args: Array<String>) {
-    val exitCode = CommandLine(AutoChangelog(JiraClient())).execute(*args)
+    val exitCode = CommandLine(AutoChangelog(JiraClient(), GithubClient())).execute(*args)
     exitProcess(exitCode)
 }
