@@ -41,14 +41,16 @@ java -jar devxp-auto-changelog.jar --help
 
 The following options are available for the CLI:
 
-| Option              | Description                                                         | Default             |
-|---------------------|---------------------------------------------------------------------|---------------------|
-| `-j, --json`        | Whether to write the changelog as JSON.                             | `false`             |
-| `--from-tag=<tag>`  | Include commits after the specified tag (excluding the tag itself). | `null` (from start) |
-| `--to-tag=<tag>`    | Include commits up to and including the specified tag.              | `null` (to end)     |
-| `--group-by-commit` | Whether to create a more traditional changelog grouped by commit.   | `false`             |
-| `-h, --help`        | Print usage information and exit.                                   |                     |
-
+<!-- editorconfig-checker-disable -->
+| Option                            | Description                                                                                            | Default             |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------|---------------------|
+| `-j, --json`                      | Whether to write the changelog as JSON.                                                                | `false`             |
+| `--from-tag=<tag>`                | Include commits after the specified tag (excluding the tag itself).                                    | `null` (from start) |
+| `--to-tag=<tag>`                  | Include commits up to and including the specified tag.                                                 | `null` (to end)     |
+| `--group-by-commit`               | Whether to create a more traditional changelog grouped by commit.                                      | `false`             |
+| `--include-pr-description-issues` | Whether to include JIRA issues found in PR descriptions in addition to those found in commit messages. | `false`             |
+| `-h, --help`                      | Print usage information and exit.                                                                      |                     |
+<!-- editorconfig-checker-enable -->
 
 ## 🧪 Testing
 

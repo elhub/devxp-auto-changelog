@@ -118,6 +118,15 @@ class AutoChangelog(private val jiraClient: JiraClient, private val githubClient
         println("Found ${relevantCommits.size} relevant commits.")
 
         if (includeDescriptionJira) {
+            if (relevantCommits.size > 200) {
+                println(
+                    """
+                    WARNING: You have enabled the option to include JIRA issues from PR descriptions, but there are ${relevantCommits.size}
+                    commits in the specified range. This might be slow, and you may end up hitting GitHub API rate limits.
+                    Consider using --from-tag and --to-tag to limit the number of commits processed.
+                    """.trimIndent()
+                )
+            }
             println("Populating JIRA issue details for the relevant commits based on commit messages and PR descriptions...")
             runBlocking {
                 githubClient.populateJiraIssuesFromDescription(gitRepository, relevantCommits)
