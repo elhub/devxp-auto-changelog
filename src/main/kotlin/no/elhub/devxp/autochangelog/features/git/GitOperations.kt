@@ -44,6 +44,14 @@ fun getRelevantCommits(git: Git, from: GitTag?, to: GitTag?, tags: List<GitTag>)
     return getCommitsBetweenTags(gitCommits, from, to)
 }
 
+fun getRelevantCommitsBetweenCommits(git: Git, from: String?, to: String?): List<GitCommit> {
+    val rawCommits = git.log().call().toList().reversed()
+    val gitCommits = toGitCommits(rawCommits, emptyList())
+    val fromCommit = from?.let { hash -> gitCommits.firstOrNull { it.hash.startsWith(hash) } }
+    val toCommit = to?.let { hash -> gitCommits.firstOrNull { it.hash.startsWith(hash) } }
+    return getCommitsBetweenCommits(gitCommits, fromCommit, toCommit)
+}
+
 fun toGitCommits(rawCommits: List<RevCommit>, tags: List<GitTag>): List<GitCommit> {
     val tagCommits = tags.groupBy { it.commitHash }
     return rawCommits.map {
@@ -63,6 +71,22 @@ fun toGitCommits(rawCommits: List<RevCommit>, tags: List<GitTag>): List<GitCommi
 fun extractJiraIssues(message: String): List<String> {
     val regex = Regex("""[A-Z][A-Z0-9]+-\d+""")
     return regex.findAll(message).map { it.value }.toList().distinct()
+}
+
+fun getCommitsBetweenCommits(
+    commits: List<GitCommit>,
+    fromCommit: GitCommit?,
+    toCommit: GitCommit?
+): List<GitCommit> {
+    val startIndex = fromCommit?.let { commit ->
+        commits.indexOfFirst { it.hash == commit.hash }
+    } ?: 0
+    val endIndex = toCommit?.let {
+        commits.indexOfFirst { it.hash == toCommit.hash } + 1
+    } ?: commits.size
+
+    require(startIndex <= endIndex) { "The 'from' commit cannot be newer than the 'to' commit." }
+    return commits.subList(startIndex, endIndex)
 }
 
 fun getCommitsBetweenTags(

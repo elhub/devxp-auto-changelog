@@ -204,6 +204,55 @@ class GitOperationsTest : FunSpec({
         }
     }
 
+    context("getCommitsBetweenCommits") {
+        test("can get commits between commits") {
+            val commit1 = GitCommit(
+                hash = "abc123",
+                title = "Implement feature X",
+                body = "This commit implements feature X.\n\nRelated to ABC-101 and PROJ-ABC.",
+                commitTime = LocalDateTime.of(2020, 1, 1, 0, 0),
+                tags = emptyList(),
+                jiraIssues = emptyList(),
+            )
+
+            val commit2 = GitCommit(
+                hash = "def456",
+                title = "Fix bug Y",
+                body = "Fixes bug Y reported in XYZ-202.",
+                commitTime = LocalDateTime.of(2020, 1, 2, 0, 0),
+                tags = emptyList(),
+                jiraIssues = emptyList(),
+            )
+
+            val commit3 = GitCommit(
+                hash = "ghi789",
+                title = "Update documentation",
+                body = "Updates the documentation. No related issue.",
+                commitTime = LocalDateTime.of(2020, 1, 3, 0, 0),
+                tags = emptyList(),
+                jiraIssues = emptyList()
+            )
+
+            val commit4 = GitCommit(
+                hash = "jkl012",
+                title = "Refactor codebase",
+                body = "Refactors the codebase for better readability. See ABC-101 for details.",
+                commitTime = LocalDateTime.of(2020, 1, 4, 0, 0),
+                tags = emptyList(),
+                jiraIssues = emptyList(),
+            )
+
+            val commits = getCommitsBetweenCommits(listOf(commit1, commit2, commit3, commit4), fromCommit = commit1, toCommit = commit3)
+
+            commits.size shouldBe 3
+            commits.map { it.title } shouldBe listOf(
+                "Implement feature X",
+                "Fix bug Y",
+                "Update documentation"
+            )
+        }
+    }
+
     context("extractJiraIssuesIdsFromCommits") {
         val commit1 = GitCommit(
             hash = "abc123",
