@@ -4,6 +4,7 @@ import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.Test
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNot
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import io.ktor.client.HttpClient
@@ -16,6 +17,7 @@ import no.elhub.devxp.autochangelog.features.jira.JiraClient
 import no.elhub.devxp.autochangelog.features.jira.JiraIssue
 import picocli.CommandLine
 import java.io.File
+import java.time.Instant
 
 class AutoChangelogCliTest : FunSpec({
 
@@ -382,6 +384,62 @@ class AutoChangelogCliTest : FunSpec({
                 content shouldContain "[TEST-123](https://elhub.atlassian.net/browse/TEST-123): Mocked JIRA Issue"
                 content shouldContain "Implement TDX-123"
                 content shouldContain "[TEST-456](https://elhub.atlassian.net/browse/TEST-456): Implement extra stuff"
+            }
+        }
+
+        test("Should find commits between hashes if --hashes-as-tags flag is set") {
+            val commits = listOf(
+                // We cannot set hashes in our implementation, but they are deterministic based on content and timestamp
+                // c55e774
+                TestCommit(
+                    fileName = "First.kt",
+                    content = "fun first() { println(\"First!\") }",
+                    message = "First commit",
+                    timestamp = Instant.ofEpochSecond(1000),
+                ),
+                // 5386e19
+                TestCommit(
+                    fileName = "Second.kt",
+                    content = "fun second() { println(\"Second!\") }",
+                    message = "Second commit",
+                    timestamp = Instant.ofEpochSecond(1001),
+                ),
+                // 3270cc4
+                TestCommit(
+                    fileName = "Third.kt",
+                    content = "fun third() { println(\"Third!\") }",
+                    message = "Third commit",
+                    timestamp = Instant.ofEpochSecond(1002),
+                ),
+                TestCommit(
+                    fileName = "Fourth.kt",
+                    content = "fun fourth() { println(\"Fourth!\") }",
+                    message = "Fourth commit",
+                    timestamp = Instant.ofEpochSecond(1003),
+                ),
+            )
+            val gitRepo = createRepositoryFromCommits("hashes-as-tags-repo", commits)
+            val exitCode = cmd.execute(
+                "--working-dir",
+                gitRepo.toString(),
+                "--from-tag",
+                "c55e774",
+                "--to-tag",
+                "3270cc4",
+                "--hashes-as-tags"
+            )
+            exitCode shouldBe 0
+
+            val outputChangelogFile = File("CHANGELOG [c55e774-3270cc4].md")
+            outputChangelogFile.exists() shouldBe true
+
+            val content = outputChangelogFile.readText()
+            println(content)
+            assertSoftly {
+                content shouldContain "First commit"
+                content shouldContain "Second commit"
+                content shouldContain "Third commit"
+                content shouldNotContain "Fourth commit"
             }
         }
     }
