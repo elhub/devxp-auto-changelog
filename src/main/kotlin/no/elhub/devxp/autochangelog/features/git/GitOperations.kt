@@ -79,7 +79,7 @@ fun getCommitsBetweenCommits(
     toCommit: GitCommit?
 ): List<GitCommit> {
     val startIndex = fromCommit?.let { commit ->
-        commits.indexOfFirst { it.hash == commit.hash }
+        commits.indexOfFirst { it.hash == commit.hash } + 1
     } ?: 0
     val endIndex = toCommit?.let {
         commits.indexOfFirst { it.hash == toCommit.hash } + 1

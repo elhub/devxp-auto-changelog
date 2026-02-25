@@ -244,9 +244,8 @@ class GitOperationsTest : FunSpec({
 
             val commits = getCommitsBetweenCommits(listOf(commit1, commit2, commit3, commit4), fromCommit = commit1, toCommit = commit3)
 
-            commits.size shouldBe 3
+            commits.size shouldBe 2
             commits.map { it.title } shouldBe listOf(
-                "Implement feature X",
                 "Fix bug Y",
                 "Update documentation"
             )
