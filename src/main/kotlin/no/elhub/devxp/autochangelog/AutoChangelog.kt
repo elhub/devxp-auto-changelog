@@ -2,10 +2,12 @@ package no.elhub.devxp.autochangelog
 
 import kotlinx.coroutines.runBlocking
 import no.elhub.devxp.autochangelog.features.git.GitCommit
+import no.elhub.devxp.autochangelog.features.git.GitTag
 import no.elhub.devxp.autochangelog.features.git.GithubClient
 import no.elhub.devxp.autochangelog.features.git.extractCurrentAndPreviousTag
 import no.elhub.devxp.autochangelog.features.git.extractJiraIssuesIdsFromCommits
 import no.elhub.devxp.autochangelog.features.git.getRelevantCommits
+import no.elhub.devxp.autochangelog.features.git.getRelevantCommitsBetweenCommits
 import no.elhub.devxp.autochangelog.features.git.getTagsFromRepo
 import no.elhub.devxp.autochangelog.features.git.initRepository
 import no.elhub.devxp.autochangelog.features.jira.JiraClient
@@ -101,20 +103,39 @@ class AutoChangelog(private val jiraClient: JiraClient, private val githubClient
     )
     var includeDescriptionJira: Boolean = false
 
+    @CommandLine.Option(
+        names = ["--hashes-as-tags"],
+        required = false,
+        description = ["Whether to use hashes instead of tags when determining the commit range"]
+    )
+    var hashesAsTags: Boolean = false
+
     override fun run() {
         val gitRepository = initRepository(workingDir)
 
         val tags = getTagsFromRepo(gitRepository)
+        
+        var relevantCommits: List<GitCommit>
+        var maybeFromTag: GitTag?
+        var maybeToTag: GitTag?
 
-        val (maybeFromTag, maybeToTag) =
-            if (forTagName != null) {
-                extractCurrentAndPreviousTag(tags, forTagName, tagRegex)
-            } else {
-                tags.firstOrNull { it.name == fromTagName } to tags.firstOrNull { it.name == toTagName }
-            }
+        if (hashesAsTags) {
+            maybeFromTag = GitTag(fromTagName ?: "", fromTagName ?: "")
+            maybeToTag = GitTag(toTagName ?: "", toTagName ?: "")
+            relevantCommits = getRelevantCommitsBetweenCommits(gitRepository, fromTagName, toTagName)
+        } else {
+            val (from, to) =
+                if (forTagName != null) {
+                    extractCurrentAndPreviousTag(tags, forTagName, tagRegex)
+                } else {
+                    tags.firstOrNull { it.name == fromTagName } to tags.firstOrNull { it.name == toTagName }
+                }
+
+            maybeFromTag = from
+            maybeToTag = to
+            relevantCommits = getRelevantCommits(gitRepository, maybeFromTag, maybeToTag, tags)
+        }
         Logger.info("Generating changelog from '${maybeFromTag?.name ?: "START"}' to '${maybeToTag?.name ?: "END"}'")
-
-        val relevantCommits = getRelevantCommits(gitRepository, maybeFromTag, maybeToTag, tags)
         Logger.info("Found ${relevantCommits.size} relevant commits.")
 
         if (includeDescriptionJira) {

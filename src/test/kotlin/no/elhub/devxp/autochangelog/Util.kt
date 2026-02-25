@@ -42,7 +42,8 @@ data class TestCommit(
     val fileName: String,
     val content: String,
     val message: String,
-    val tags: List<String> = emptyList()
+    val tags: List<String> = emptyList(),
+    val timestamp: Instant? = null
 )
 
 fun createRepositoryFromCommits(name: String, commits: List<TestCommit>): Path {
@@ -56,7 +57,7 @@ fun createRepositoryFromCommits(name: String, commits: List<TestCommit>): Path {
             git.add().addFilepattern(name).call()
 
             // Calculate timestamp: use explicit offset if provided, otherwise use index
-            val timestamp = baseTime.plusSeconds(index.toLong())
+            val timestamp = commit.timestamp ?: baseTime.plusSeconds(index.toLong())
 
             val c = git.commit()
                 .setMessage(commit.message)
