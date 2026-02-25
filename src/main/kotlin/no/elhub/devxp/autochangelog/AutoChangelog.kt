@@ -114,7 +114,7 @@ class AutoChangelog(private val jiraClient: JiraClient, private val githubClient
         val gitRepository = initRepository(workingDir)
 
         val tags = getTagsFromRepo(gitRepository)
-        
+
         var relevantCommits: List<GitCommit>
         var maybeFromTag: GitTag?
         var maybeToTag: GitTag?
