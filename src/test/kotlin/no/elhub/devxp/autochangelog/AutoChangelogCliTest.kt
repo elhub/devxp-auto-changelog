@@ -436,7 +436,7 @@ class AutoChangelogCliTest : FunSpec({
             val content = outputChangelogFile.readText()
             println(content)
             assertSoftly {
-                content shouldContain "First commit"
+                content shouldNotContain "First commit"
                 content shouldContain "Second commit"
                 content shouldContain "Third commit"
                 content shouldNotContain "Fourth commit"
