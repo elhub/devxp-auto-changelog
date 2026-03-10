@@ -7,6 +7,7 @@ dependencies {
     implementation(libs.cli.picocli)
     implementation(libs.git.jgit)
     implementation(libs.bundles.ktor)
+    implementation(libs.logging.logback.classic)
 
     testImplementation(libs.test.kotest.runner.junit5)
     testImplementation(libs.test.mockk)

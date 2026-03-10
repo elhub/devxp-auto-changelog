@@ -17,6 +17,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.Json
+import no.elhub.devxp.autochangelog.Logger
 import no.elhub.devxp.autochangelog.features.git.GitCommit
 import java.util.Base64
 
@@ -99,7 +100,7 @@ class JiraClient(
         if (response.status != HttpStatusCode.OK) {
             // Some PR descriptions may contain JIRA issues that aren't ours, such as KTOR-1234. In this case, we just log a warning and return null,
             // which makes the issue get categorized under the "NO-JIRA" category.
-            println("WARN: Failed to fetch details for JIRA issue '$issueId'. HTTP status: ${response.status}")
+            Logger.warn("WARN: Failed to fetch details for JIRA issue '$issueId'. HTTP status: ${response.status}")
             return null
         }
         val apiResponse = response.body() as JiraApiResponse
