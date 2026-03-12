@@ -1,5 +1,6 @@
 package no.elhub.devxp.autochangelog.features.git
 
+import no.elhub.devxp.autochangelog.Logger
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.lib.Repository
@@ -40,13 +41,17 @@ fun toGitTags(tags: List<Ref>, repo: Repository): List<GitTag> = tags.map {
 
 fun getRelevantCommits(git: Git, from: GitTag?, to: GitTag?, tags: List<GitTag>): List<GitCommit> {
     val rawCommits = git.log().call().toList().reversed()
+    Logger.debug("Got ${rawCommits.size} commits from git log.")
     val gitCommits = toGitCommits(rawCommits, tags)
+    Logger.debug("Created ${gitCommits.size} GitCommit objects from raw commits.")
     return getCommitsBetweenTags(gitCommits, from, to)
 }
 
 fun getRelevantCommitsBetweenCommits(git: Git, from: String?, to: String?): List<GitCommit> {
     val rawCommits = git.log().call().toList().reversed()
+    Logger.debug("Got ${rawCommits.size} commits from git log.")
     val gitCommits = toGitCommits(rawCommits, emptyList())
+    Logger.debug("Created ${gitCommits.size} GitCommit objects from raw commits.")
     val fromCommit = from?.let { hash -> gitCommits.firstOrNull { it.hash.startsWith(hash) } }
     val toCommit = to?.let { hash -> gitCommits.firstOrNull { it.hash.startsWith(hash) } }
     return getCommitsBetweenCommits(gitCommits, fromCommit, toCommit)
@@ -86,7 +91,10 @@ fun getCommitsBetweenCommits(
     } ?: commits.size
 
     require(startIndex <= endIndex) { "The 'from' commit cannot be newer than the 'to' commit." }
-    return commits.subList(startIndex, endIndex)
+    Logger.debug("Finding commits between indices $startIndex and $endIndex (exclusive) in the list of ${commits.size} commits.")
+    val commits = commits.subList(startIndex, endIndex)
+    Logger.debug("Commit titles included in range: \n ${commits.joinToString("\n") { it.title }}")
+    return commits
 }
 
 fun getCommitsBetweenTags(
@@ -102,11 +110,15 @@ fun getCommitsBetweenTags(
         commits.indexOfFirst { it.hash == tag.commitHash } + 1
     } ?: commits.size
 
+    Logger.debug("Finding commits between indices $startIndex and $endIndex (exclusive) in the list of ${commits.size} commits.")
     require(startIndex <= endIndex) { "The 'from' cannot be newer than the 'to' tag." }
-    return commits.subList(startIndex, endIndex)
+    val commits = commits.subList(startIndex, endIndex)
+    Logger.debug("Commit titles included in range: \n ${commits.joinToString("\n") { it.title }}")
+    return commits
 }
 
 fun extractJiraIssuesIdsFromCommits(commits: List<GitCommit>): Map<String, List<GitCommit>> {
+    Logger.debug("Extracting JIRA issue IDs from ${commits.size} commits...")
     val jiraIdToCommitMap = mutableMapOf<String, MutableList<GitCommit>>()
     commits.forEach {
         if (it.jiraIssues.isNotEmpty()) {
