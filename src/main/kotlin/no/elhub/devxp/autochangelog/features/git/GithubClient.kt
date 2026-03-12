@@ -19,6 +19,7 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import no.elhub.devxp.autochangelog.Logger
 import org.eclipse.jgit.api.Git
 
 class GithubClient(
@@ -55,6 +56,7 @@ class GithubClient(
     suspend fun populateJiraIssuesFromDescription(git: Git, commits: List<GitCommit>) {
         val (owner, repo) = getRepoInfo(git) ?: error("Could not determine repository information from Git configuration.")
 
+        Logger.debug("Populating JIRA issues for ${commits.size} commits by fetching PR descriptions from GitHub API...")
         coroutineScope {
             commits.map { commit ->
                 async {
@@ -81,6 +83,7 @@ class GithubClient(
     }
 
     suspend fun getPrDescription(owner: String, repo: String, sha: String): String {
+        Logger.debug("Fetching PR description for commit $sha from GitHub API...")
         val response = internalClient.get("repos/$owner/$repo/commits/$sha/pulls") {
             header("Accept", "application/vnd.github.v3+json")
         }

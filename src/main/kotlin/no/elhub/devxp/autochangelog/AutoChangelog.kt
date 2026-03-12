@@ -104,6 +104,13 @@ class AutoChangelog(private val jiraClient: JiraClient, private val githubClient
     var includeDescriptionJira: Boolean = false
 
     @CommandLine.Option(
+        names = ["-v", "--verbose"],
+        required = false,
+        description = ["Whether to enable verbose logging for debugging purposes"]
+    )
+    var verbose: Boolean = false
+
+    @CommandLine.Option(
         names = ["--hashes-as-tags"],
         required = false,
         description = ["Whether to use hashes instead of tags when determining the commit range"]
@@ -113,6 +120,8 @@ class AutoChangelog(private val jiraClient: JiraClient, private val githubClient
     override fun run() {
         val gitRepository = initRepository(workingDir)
 
+        Logger.setLevel(verbose)
+
         val tags = getTagsFromRepo(gitRepository)
 
         var relevantCommits: List<GitCommit>
@@ -120,10 +129,12 @@ class AutoChangelog(private val jiraClient: JiraClient, private val githubClient
         var maybeToTag: GitTag?
 
         if (hashesAsTags) {
+            Logger.debug("Using hashes as tags to determine commit range")
             maybeFromTag = GitTag(fromTagName ?: "", fromTagName ?: "")
             maybeToTag = GitTag(toTagName ?: "", toTagName ?: "")
             relevantCommits = getRelevantCommitsBetweenCommits(gitRepository, fromTagName, toTagName)
         } else {
+            Logger.debug("Using actual Git tags to determine commit range")
             val (from, to) =
                 if (forTagName != null) {
                     extractCurrentAndPreviousTag(tags, forTagName, tagRegex)
@@ -133,6 +144,7 @@ class AutoChangelog(private val jiraClient: JiraClient, private val githubClient
 
             maybeFromTag = from
             maybeToTag = to
+            Logger.debug("Calculated tags: from: $from, to: $to")
             relevantCommits = getRelevantCommits(gitRepository, maybeFromTag, maybeToTag, tags)
         }
         Logger.info("Generating changelog from '${maybeFromTag?.name ?: "START"}' to '${maybeToTag?.name ?: "END"}'")
@@ -156,12 +168,18 @@ class AutoChangelog(private val jiraClient: JiraClient, private val githubClient
 
         // Create a mapping of JIRA issue IDs to commits
         val jiraIssueIds = extractJiraIssuesIdsFromCommits(relevantCommits)
+        Logger.debug("Finished extracting JIRA issue IDs from commits")
+        Logger.debug("Found ${jiraIssueIds.size - 1} unique JIRA issue IDs across all commits.")
+        Logger.debug(jiraIssueIds.map { "${it.key}: ${it.value.joinToString(", ") { it.title } }." }.joinToString("\n"))
 
         // Populate the map with actual JIRA issue details
         val jiraMap: Map<JiraIssue, List<GitCommit>>
         runBlocking {
             jiraMap = jiraClient.getIssueDetails(jiraIssueIds)
         }
+        Logger.debug("Finished fetching JIRA issue details for all issues.")
+        Logger.debug("Final mapping of JIRA issues to commits:")
+        Logger.debug(jiraMap.map { "${it.key.key}: ${it.value.joinToString(", ") { it.title } }." }.joinToString("\n"))
 
         val changelogName = customChangelogName ?: run {
             val tagsSuffix = if (maybeFromTag != null || maybeToTag != null) {
@@ -174,27 +192,35 @@ class AutoChangelog(private val jiraClient: JiraClient, private val githubClient
 
         if (commitGrouping) {
             // Reverse the mapping to be GitCommit -> List<JiraIssue>
+            Logger.debug("Grouping changelog entries by commit instead of JIRA issue")
             val commitMap = jiraMap
                 .flatMap { (key, values) -> values.map { it to key } }
                 .groupBy({ it.first }, { it.second })
                 .toSortedMap((compareByDescending { it.commitTime }))
 
             if (json) {
+                Logger.debug("Formatting changelog in JSON format")
                 val jsonContent = formatCommitJson(commitMap)
                 writeJsonToFile(jsonContent, "$changelogName.json")
             } else {
+                Logger.debug("Formatting changelog in Markdown format")
                 val markdownContent = formatCommitMarkdown(commitMap, strikethrough)
                 writeMarkdownToFile(markdownContent, "$changelogName.md")
             }
         } else {
+            Logger.debug("Grouping changelog entries by JIRA issue (default)")
             if (json) {
+                Logger.debug("Formatting changelog in JSON format")
                 val jsonContent = formatJson(jiraMap)
                 writeJsonToFile(jsonContent, "$changelogName.json")
             } else {
+                Logger.debug("Formatting changelog in Markdown format")
                 val markdownContent = formatMarkdown(jiraMap, strikethrough)
                 writeMarkdownToFile(markdownContent, "$changelogName.md")
             }
         }
+
+        Logger.info("Changelog generated successfully!")
     }
 }
 
