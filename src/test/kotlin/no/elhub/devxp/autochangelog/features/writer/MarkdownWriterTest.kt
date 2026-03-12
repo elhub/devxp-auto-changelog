@@ -66,12 +66,10 @@ class MarkdownWriterTest : FunSpec({
 
             formattedMarkDownWithoutDate shouldBe """
                 ## [ABC-101](https://elhub.atlassian.net/browse/ABC-101): Implement feature X
-                ### Related Commits
                 - `abc123`: Implement feature X
                 - `def456`: Fix bug Y
 
                 ## [ABC-102](https://elhub.atlassian.net/browse/ABC-102): Fix bug Y
-                ### Related Commits
                 - `abc123`: Implement feature X
 
                 ## Commits without associated JIRA issues
@@ -120,7 +118,6 @@ class MarkdownWriterTest : FunSpec({
                 Generated at 2050-06-01
                 ## [1.0.0] - 2024-01-01
                 - Initial release
-                ### Related Commits
                 - `abc123`: Initial commit
             """.trimIndent()
             writeMarkdownToFile(markdownContent, changelogFile.path)
