@@ -78,12 +78,13 @@ class JiraClient(
                         val issue = if (jiraIssueId == "NO-JIRA") {
                             noJiraIssue
                         } else {
-                            getIssueById(jiraIssueId) ?: noJiraIssue
+                            getIssueById(jiraIssueId) ?: return@withPermit null
                         }
                         issue to commits
                     }
                 }
             }.awaitAll()
+                .filterNotNull()
                 .groupBy({ it.first }, { it.second })
                 .mapValues { it.value.flatten() }
         }
