@@ -2,13 +2,13 @@
 format.version = "1.1"
 
 [versions]
-elhub-gradle = "0.10.0"
-jgit = "7.5.0.202512021534-r"
-kotlinx-serialization = "2.3.0"
-kotest = "6.1.0"
-ktor = "3.3.3"
-logback = "1.5.28"
-mockk = "1.14.7"
+elhub-gradle = "0.10.7"
+jgit = "7.6.0.202603022253-r"
+kotlinx-serialization = "2.3.20"
+kotest = "6.1.7"
+ktor = "3.4.1"
+logback = "1.5.32"
+mockk = "1.14.9"
 picocli = "4.7.7"
 
 [plugins]
