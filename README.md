@@ -1,6 +1,6 @@
 # 🪵 devxp-auto-changelog 🪵
 
-**devxp-auto-changelog** is a small application that automates creation of changelogs for software projects based on git commits and JIRA issues. It:
+**devxp-auto-changelog** is a command-line tool that generates changelogs for software projects from Git commits and associated Jira issues. It:
 
 * Determines the version number based on the git tags in the repository
 * Parses the commit log from the last version to determine the commit/release range to generate change logs for

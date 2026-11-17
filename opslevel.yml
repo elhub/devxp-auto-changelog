@@ -1,0 +1,28 @@
+---
+version: 1
+component:
+  name: devxp-auto-changelog
+  type: tool
+  lifecycle: production
+  tier: tier_3
+  owner: team-devxp
+  system: developer_experience
+  language: Kotlin
+  framework: Picocli
+  description: |-
+    A command-line utility for generating changelogs for software projects from Git commits and associated Jira issues.
+  aliases:
+    - devxp_auto_changelog
+    - no.elhub.devxp.devxp-auto-changelog
+  repositories:
+    - name: elhub/devxp-auto-changelog
+      path: /
+      provider: github
+      display_name: devxp-auto-changelog
+  tools:
+    - name: Source Code
+      category: code
+      url: https://github.com/elhub/devxp-auto-changelog
+  dependencies: []
+  alert_sources: []
+  properties: {}
