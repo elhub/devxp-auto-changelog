@@ -8,9 +8,7 @@ elhubProject(DEVXP, "devxp-auto-changelog") {
 
     pipeline {
         sequential {
-            val artifacts = gradleVerify {
-                enablePublishMetrics = true
-            }
+            val artifacts = gradleVerify()
 
             gradlePublish(artifacts = listOf(artifacts)) {
                 repository = ELHUB_BIN_RELEASE_LOCAL
